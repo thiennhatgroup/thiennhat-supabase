@@ -167,7 +167,27 @@
     .cat-toolbar button { width: auto; white-space: nowrap; }
     td code { background: #ECE5D8; padding: 2px 6px; border-radius: 6px; font-size: 12px; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(20,20,19,.45); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px; z-index: 40; overflow: auto; }
-    .modal-card { width: 100%; max-width: 560px; }
+    .modal-card { width: 100%; max-width: 620px; }
+    .plan-box { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff; }
+    .check-line { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--ink); margin: 0; }
+    .check-line input { width: auto; min-height: auto; }
+    .approve-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .approve-card { border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: #fff; cursor: pointer; transition: .15s; }
+    .approve-card:hover { border-color: var(--accent); box-shadow: 0 4px 14px rgba(0,0,0,.08); transform: translateY(-1px); }
+    .ac-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .ac-obj { font-weight: 700; margin-bottom: 4px; }
+    .ac-money { font-size: 18px; color: var(--accent-dark); font-weight: 800; }
+    .ac-money small { color: var(--muted); font-weight: 400; font-size: 12px; }
+    .ac-meta { color: var(--muted); font-size: 12px; margin: 6px 0; }
+    .ac-hint { color: var(--accent); font-size: 12px; margin-top: 8px; font-weight: 700; }
+    .detail-head { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px 16px; margin-bottom: 12px; }
+    .detail-head label { margin: 0; font-size: 12px; }
+    .line-clickable { cursor: pointer; }
+    .line-clickable:hover td { background: #FBF3D2; }
+    .mini-link { color: var(--accent); font-size: 11px; margin-left: 6px; }
+    .compare-panel { border: 1px solid var(--accent); border-radius: 8px; padding: 12px; margin-top: 12px; background: #FFFBF4; }
+    .compare-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .best-row td { background: #EEF8F1; font-weight: 700; }
     @media (max-width: 920px) {
       .app { grid-template-columns: 1fr; }
       nav { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; border-right: 0; border-bottom: 1px solid var(--line); }
@@ -231,8 +251,8 @@
     // Moi man hinh gan voi 1 quyen; nav chi hien man hinh ma vai tro co quyen (server VAN chot chan lai qua require_permission()).
     const allScreens = [
       ['quotes', 'Báo giá NCC', 'quote:read'],
-      ['proposal', 'Tạo đề xuất', 'proposal:create'],
-      ['approve', 'Duyệt đề xuất', 'proposal:approve'],
+      ['proposal', 'Đề xuất mua hàng / tạm ứng', 'proposal:create'],
+      ['approve', 'Duyệt đề xuất mua hàng', 'proposal:approve'],
       ['receipt', 'Nhận hàng', 'receipt:update'],
       ['payment', 'Thanh toán', 'payment:create'],
       ['dashboard', 'Dashboard công nợ', 'dashboard:read'],
@@ -611,14 +631,25 @@
     }
 
     function renderProposal() {
-      renderShell('Tạo đề xuất thanh toán/mua hàng', `
+      renderShell('Đề xuất mua hàng / tạm ứng', `
         <div class="grid">
+          <div class="field"><label>Loại đề xuất</label><select id="pLoai">
+            <option value="MuaHang">Mua hàng</option>
+            <option value="TamUng">Tạm ứng</option>
+          </select></div>
           <div class="field"><label>Ngày đề xuất</label><input id="pNgay" type="date" value="${todayStr()}"></div>
-          <div class="field"><label>Người đề nghị</label><input id="pNguoi" value="${esc(state.user?.name || '')}"></div>
         </div>
+        <div class="field"><label>Người đề nghị</label><input id="pNguoi" value="${esc(state.user?.name || '')}"></div>
         ${objectFields('p')}
         <div class="field"><label>Nội dung</label><textarea id="pNoiDung"></textarea></div>
         <div class="field"><label>Điều khoản thanh toán</label><textarea id="pDieuKhoanTT"></textarea></div>
+        <div class="plan-box">
+          <label class="check-line"><input type="checkbox" id="pInPlan" onchange="togglePlanJustify()"> Khoản này đã có trong kế hoạch chi tuần đã duyệt</label>
+          <div id="pJustifyWrap" class="field" style="margin-top:10px">
+            <label>Giải trình lý do phát sinh ngoài kế hoạch chi tuần *</label>
+            <textarea id="pGiaiTrinh" placeholder="Bắt buộc nếu khoản chi CHƯA có trong kế hoạch tuần. Nêu rõ vì sao phát sinh."></textarea>
+          </div>
+        </div>
         <h3>Dòng vật tư</h3>
         <div class="table-wrap"><table id="lineTable"><thead><tr><th>Mặt hàng</th><th>SL đặt</th><th>Đơn giá</th><th>VAT</th><th>Ghi chú</th><th></th></tr></thead><tbody></tbody></table></div>
         <div class="actions">
@@ -628,7 +659,13 @@
           <button onclick="saveProposal('Chờ duyệt', this)">Gửi duyệt</button>
         </div>`, 'proposal');
       addLine();
+      togglePlanJustify();
       loadRecent('proposal');
+    }
+    function togglePlanJustify() {
+      const inPlan = document.getElementById('pInPlan')?.checked;
+      const wrap = document.getElementById('pJustifyWrap');
+      if (wrap) wrap.style.display = inPlan ? 'none' : 'block';
     }
 
     function lineRow(line={}) {
@@ -662,8 +699,12 @@
     async function saveProposal(status, btn) {
       setMsg('Đang lưu đề xuất...');
       try {
+        const inPlan = document.getElementById('pInPlan')?.checked || false;
         const payload = {
           status,
+          loaiDeXuat: val('pLoai'),
+          trongKeHoachTuan: inPlan,
+          giaiTrinhNgoaiKeHoach: inPlan ? '' : val('pGiaiTrinh'),
           ngayDeXuat: val('pNgay'),
           nguoiDeNghi: val('pNguoi'),
           doiTuong: { ma: comboValue('pmaDoiTuong', 'pmaDoiTuongMoi'), ten: val('ptenDoiTuong'), dieuKhoanTT: val('pDieuKhoanTT') },
@@ -671,6 +712,11 @@
           dieuKhoanTT: val('pDieuKhoanTT'),
           lines: getProposalLines()
         };
+        if (status === 'Chờ duyệt' && !inPlan && !val('pGiaiTrinh').trim()) {
+          setMsg('Khoản chưa có trong kế hoạch chi tuần — cần nhập giải trình trước khi gửi duyệt.');
+          toast('Cần giải trình khoản ngoài kế hoạch tuần.', 'err');
+          return;
+        }
         const res = await withBusy(btn, 'Đang lưu...', () => call('rpc_create_proposal', { p_payload: payload }));
         setMsg(`Đã lưu ${res.maDeXuat} ở trạng thái ${res.status}.`);
         toast(`Đã lưu ${res.maDeXuat}.`, 'ok');
@@ -679,31 +725,137 @@
     }
 
     function renderApprove() {
-      renderShell('Duyệt đề xuất', `
-        <button onclick="loadPending(this)">Tải danh sách chờ duyệt</button>
-        <div id="pendingBox" class="table-wrap" style="margin-top:12px"></div>`, 'approved');
+      document.getElementById('content').innerHTML = `
+        <section class="card">
+          <h2>Duyệt đề xuất mua hàng / tạm ứng</h2>
+          <div class="notice ok">Lãnh đạo duyệt từng khoản. Nhấp vào một phiếu để xem chi tiết, so sánh giá NCC theo từng mặt hàng, và cờ kế hoạch chi tuần trước khi quyết định.</div>
+          <div class="actions"><button class="secondary" onclick="loadPending(this)">↻ Tải lại danh sách chờ duyệt</button></div>
+          <div id="pendingBox" style="margin-top:14px">${loadingText('Đang tải danh sách chờ duyệt...')}</div>
+        </section>`;
       loadPending();
-      loadRecent('approved');
     }
     async function loadPending(btn) {
       const box = document.getElementById('pendingBox');
-      box.innerHTML = loadingText('Đang tải danh sách chờ duyệt...');
+      if (box) box.innerHTML = loadingText('Đang tải danh sách chờ duyệt...');
       try {
-        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_get_pending_proposals', { p_limit: 50 }));
-        box.innerHTML = table(res.rows, ['MaDeXuat','NgayDeXuat','TenDoiTuong','NoiDung','DieuKhoanTT','NguoiDeNghi','TrangThai'], row =>
-          `<button onclick="approveProposal('${esc(row.MaDeXuat)}', this)">Duyệt</button> <button class="danger" onclick="rejectProposal('${esc(row.MaDeXuat)}', this)">Từ chối</button>`);
-      } catch (err) { box.innerHTML = esc(err.message || err); }
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_get_pending_proposals', { p_limit: 100 }));
+        state.pending = res.rows || [];
+        drawPending();
+      } catch (err) { if (box) box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; toast(err.message || String(err), 'err'); }
     }
+    function drawPending() {
+      const box = document.getElementById('pendingBox');
+      if (!box) return;
+      const rows = state.pending || [];
+      if (!rows.length) { box.innerHTML = '<p class="status">Không có đề xuất nào chờ duyệt.</p>'; return; }
+      box.innerHTML = `<div class="approve-grid">${rows.map(cardPending).join('')}</div>`;
+    }
+    function cardPending(p) {
+      const loai = p.LoaiDeXuat === 'TamUng' ? 'Tạm ứng' : 'Mua hàng';
+      const planPill = p.TrongKeHoachTuan
+        ? '<span class="pill ok">Trong kế hoạch tuần</span>'
+        : '<span class="pill warn">Ngoài kế hoạch — có giải trình</span>';
+      const nLines = (p.lines || []).length;
+      return `<div class="approve-card" ondblclick="openProposalDetail('${esc(p.MaDeXuat)}')" onclick="openProposalDetail('${esc(p.MaDeXuat)}')">
+        <div class="ac-top"><strong>${esc(p.MaDeXuat)}</strong><span class="pill">${esc(loai)}</span></div>
+        <div class="ac-obj">${esc(p.TenDoiTuong || '')}</div>
+        <div class="ac-money">${fmtMoney(p.TongTien)} <small>đ (sau VAT)</small></div>
+        <div class="ac-meta">${esc(p.NgayDeXuat || '')} · ${nLines} dòng · ${esc(p.NguoiDeNghi || '')}</div>
+        <div class="ac-plan">${planPill}</div>
+        <div class="ac-hint">Nhấp để xem chi tiết &amp; duyệt →</div>
+      </div>`;
+    }
+
+    function openProposalDetail(ma) {
+      const p = (state.pending || []).find(x => x.MaDeXuat === ma);
+      if (!p) return;
+      const loai = p.LoaiDeXuat === 'TamUng' ? 'Tạm ứng' : 'Mua hàng';
+      const planBlock = p.TrongKeHoachTuan
+        ? '<div class="notice ok" style="margin:0">✔ Đã có trong kế hoạch chi tuần đã duyệt.</div>'
+        : `<div class="notice">⚠ Ngoài kế hoạch chi tuần. Giải trình của bộ phận mua hàng:<br><b>${esc(p.GiaiTrinhNgoaiKeHoach || '(chưa nhập)')}</b></div>`;
+      const lineRows = (p.lines || []).map((l, i) => `
+        <tr class="line-clickable" onclick="showLineCompare('${esc(ma)}', ${i})" title="Xem so sánh giá NCC cho mặt hàng này">
+          <td>${esc(l.MatHang)} <span class="mini-link">so sánh giá ↗</span></td>
+          <td>${fmtMaybeMoney(l.SLDat)}</td>
+          <td>${fmtMaybeMoney(l.DonGiaChuaVAT)}</td>
+          <td>${fmtPct(l.VATRate)}</td>
+          <td>${fmtMoney(l.ThanhTienSauVAT)}</td>
+        </tr>`).join('');
+      openModal(`Phiếu ${ma} — ${loai}`, `
+        <div class="detail-head">
+          <div><label>Đối tượng / NCC</label><div>${esc(p.TenDoiTuong || '')}</div></div>
+          <div><label>Ngày đề xuất</label><div>${esc(p.NgayDeXuat || '')}</div></div>
+          <div><label>Người đề nghị</label><div>${esc(p.NguoiDeNghi || '')}</div></div>
+          <div><label>Tổng tiền (sau VAT)</label><div><b>${fmtMoney(p.TongTien)} đ</b></div></div>
+          <div><label>Điều khoản TT</label><div>${esc(p.DieuKhoanTT || '')}</div></div>
+        </div>
+        ${p.NoiDung ? `<div class="field"><label>Nội dung</label><div>${esc(p.NoiDung)}</div></div>` : ''}
+        ${planBlock}
+        <h3>Dòng vật tư — nhấp để so sánh giá NCC</h3>
+        <div class="table-wrap" style="max-height:none">
+          <table><thead><tr><th>Mặt hàng</th><th>SL đặt</th><th>Đơn giá chưa VAT</th><th>VAT</th><th>Thành tiền sau VAT</th></tr></thead>
+          <tbody>${lineRows}</tbody></table>
+        </div>
+        <div id="lineCompareBox"></div>
+        <div class="field" style="margin-top:14px"><label>Giải trình khi duyệt / lý do từ chối</label><textarea id="approveNote" placeholder="Ghi chú kèm quyết định (bắt buộc khi từ chối)."></textarea></div>
+        <div class="actions">
+          <button onclick="approveProposal('${esc(ma)}', this)">✔ Duyệt khoản này</button>
+          <button class="danger" onclick="rejectProposal('${esc(ma)}', this)">✘ Từ chối</button>
+        </div>`, null, null);
+    }
+
+    async function showLineCompare(ma, idx) {
+      const p = (state.pending || []).find(x => x.MaDeXuat === ma);
+      if (!p) return;
+      const line = (p.lines || [])[idx];
+      const box = document.getElementById('lineCompareBox');
+      if (!line || !box) return;
+      box.innerHTML = `<div class="compare-panel">${loadingText('Đang lấy báo giá NCC cho "' + esc(line.MatHang) + '"...')}</div>`;
+      try {
+        const res = await call('rpc_get_quote_dashboard', { p_item: line.MatHang, p_limit: 15 });
+        const rows = res.rows || [];
+        const best = res.best;
+        const cmp = rows.length ? `
+          <table><thead><tr><th>#</th><th>NCC</th><th>Ngày</th><th>Giá sau VAT</th><th>Xu hướng</th></tr></thead>
+          <tbody>${rows.map(r => `<tr class="${r.rank===1?'best-row':''}">
+            <td>${esc(r.rank)}</td><td>${esc(r.supplier)}</td><td>${esc(r.date)}</td>
+            <td>${fmtMaybeMoney(r.priceAfterVat)}</td><td>${esc(r.trend||'')}</td></tr>`).join('')}</tbody></table>`
+          : '<p class="status">Chưa có báo giá NCC nào cho mặt hàng này trong dữ liệu Báo giá.</p>';
+        const donGiaSauVat = Number(line.DonGiaChuaVAT) * (1 + Number(line.VATRate || 0));
+        box.innerHTML = `<div class="compare-panel">
+          <div class="compare-head">
+            <strong>So sánh giá NCC — ${esc(line.MatHang)}</strong>
+            <button class="secondary" onclick="document.getElementById('lineCompareBox').innerHTML=''">Đóng</button>
+          </div>
+          <div class="notice ${best && donGiaSauVat > Number(best.priceAfterVat) ? 'err' : 'ok'}">
+            Đơn giá trong phiếu (sau VAT): <b>${fmtMoney(Math.round(donGiaSauVat))} đ</b>${best ? ` · Giá tốt nhất đang có: <b>${fmtMoney(best.priceAfterVat)} đ</b> (${esc(best.supplier)})` : ''}
+          </div>
+          <div class="table-wrap" style="max-height:280px">${cmp}</div>
+        </div>`;
+      } catch (err) {
+        box.innerHTML = `<div class="compare-panel"><p class="status">Không lấy được báo giá: ${esc(err.message || err)}</p></div>`;
+      }
+    }
+
     async function approveProposal(ma, btn) {
+      const note = document.getElementById('approveNote')?.value || '';
       if (!confirm(`Duyệt đề xuất ${ma}?`)) return;
-      setMsg('Đang duyệt...');
-      try { const res = await withBusy(btn, 'Đang duyệt...', () => call('rpc_approve_proposal', { p_ma_de_xuat: ma })); setMsg(`Đã duyệt ${ma}, chuyển ${res.congNoRows} dòng sang công nợ.`); toast(`Đã duyệt ${ma}.`, 'ok'); loadPending(); loadRecent('approved'); }
-      catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
+      try {
+        const res = await withBusy(btn, 'Đang duyệt...', () => call('rpc_approve_proposal', { p_ma_de_xuat: ma, p_note: note }));
+        toast(`Đã duyệt ${ma}, chuyển ${res.congNoRows} dòng sang công nợ.`, 'ok');
+        closeModal();
+        loadPending();
+      } catch (err) { toast(err.message || String(err), 'err'); }
     }
     async function rejectProposal(ma, btn) {
-      const reason = prompt('Lý do từ chối', '') || '';
-      try { await withBusy(btn, 'Đang từ chối...', () => call('rpc_reject_proposal', { p_ma_de_xuat: ma, p_reason: reason })); toast(`Đã từ chối ${ma}.`, 'ok'); loadPending(); }
-      catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
+      const reason = (document.getElementById('approveNote')?.value || '').trim();
+      if (!reason) { toast('Cần nhập lý do từ chối để bộ phận mua hàng phản hồi.', 'err'); return; }
+      try {
+        await withBusy(btn, 'Đang từ chối...', () => call('rpc_reject_proposal', { p_ma_de_xuat: ma, p_reason: reason }));
+        toast(`Đã từ chối ${ma}.`, 'ok');
+        closeModal();
+        loadPending();
+      } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
     function renderReceipt() {
@@ -972,19 +1124,22 @@
       const overlay = document.createElement('div');
       overlay.className = 'modal-overlay';
       overlay.id = 'catModal';
+      const footer = onSave ? `
+          <div class="actions">
+            <button id="catSaveBtn">${esc(saveLabel || 'Lưu')}</button>
+            <button class="secondary" onclick="closeModal()">Huỷ</button>
+          </div>` : `
+          <div class="actions"><button class="secondary" onclick="closeModal()">Đóng</button></div>`;
       overlay.innerHTML = `
         <div class="modal-card card">
           <h2>${esc(title)}</h2>
           <div class="notice err js-modal-msg hidden"></div>
           ${bodyHtml}
-          <div class="actions">
-            <button id="catSaveBtn">${esc(saveLabel || 'Lưu')}</button>
-            <button class="secondary" onclick="closeModal()">Huỷ</button>
-          </div>
+          ${footer}
         </div>`;
       document.body.appendChild(overlay);
       overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-      document.getElementById('catSaveBtn').onclick = function () { onSave(this); };
+      if (onSave) document.getElementById('catSaveBtn').onclick = function () { onSave(this); };
     }
     function closeModal() { const m = document.getElementById('catModal'); if (m) m.remove(); }
     function modalErr(text) {
