@@ -1118,25 +1118,88 @@
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
+    // Nghiệm thu: chọn 1 khoản đã duyệt đang chờ nhận -> điền khối lượng thực,
+    // hồ sơ đã đủ chưa -> Lưu để chốt về công nợ (cơ sở NCC lập hóa đơn VAT).
     function renderReceipt() {
-      renderShell('Cập nhật nhận hàng', `
-        <div class="field"><label>Mã CN/ĐX</label><input id="rMaCN"><small>Chọn từ dữ liệu gần đây bên phải hoặc nhập trực tiếp.</small></div>
-        <div class="grid">
-          <div class="field"><label>SL thực nhận</label><input id="rSL" inputmode="decimal"></div>
-          <div class="field"><label>Ngày nhận thực tế</label><input id="rNgay" type="date" value="${todayStr()}"></div>
-        </div>
-        <div class="field"><label>Phiếu cân/chứng từ</label><input id="rChungTu"></div>
-        <div class="field"><label>Ghi chú</label><textarea id="rGhiChu"></textarea></div>
-        <button onclick="saveReceipt(this)">Lưu nhận hàng</button>`, 'receipt');
-      loadRecent('receipt');
+      document.getElementById('content').innerHTML = `
+        <div class="proposal-layout">
+          <section class="card">
+            <h2>Nghiệm thu nhận hàng</h2>
+            <div class="notice ok">Chọn khoản đã duyệt bên phải để nạp vào đây, rồi nhập khối lượng thực nhận, chứng từ và tình trạng hồ sơ. Bấm lưu để <b>chốt về công nợ</b> — đây là cơ sở để NCC lập hóa đơn VAT.</div>
+            <div class="notice js-msg"></div>
+            <div class="field"><label>Khoản đang nghiệm thu (Mã CN)</label><input id="rMaCN" readonly placeholder="Chọn một phiếu ở danh sách bên phải →"></div>
+            <div id="rInfo" class="review-head" style="min-height:8px"></div>
+            <div class="grid">
+              <div class="field"><label>SL thực nhận (khối lượng nghiệm thu) *</label><input id="rSL" class="js-money" inputmode="decimal" oninput="recalcReceipt()"></div>
+              <div class="field"><label>Ngày nhận thực tế</label><input id="rNgay" type="date" value="${todayStr()}"></div>
+            </div>
+            <div class="total-bar">Thành tiền thực nhận (sau VAT): <strong id="rThanhTien">0 đ</strong></div>
+            <div class="field"><label>Phiếu cân / chứng từ giao nhận</label><input id="rChungTu"></div>
+            <div class="plan-box"><label class="check-line"><input type="checkbox" id="rHoSo"> Hồ sơ / chứng từ đã đầy đủ (đủ điều kiện xuất hóa đơn VAT)</label></div>
+            <div class="field"><label>Ghi chú nghiệm thu (chất lượng, sai lệch…)</label><textarea id="rGhiChu"></textarea></div>
+            <button onclick="saveReceipt(this)">Lưu &amp; chốt về công nợ</button>
+          </section>
+          <aside class="card">
+            <h2>Khoản đã duyệt chờ nghiệm thu</h2>
+            <div class="actions"><button class="secondary" onclick="loadReceiptItems(this)">↻ Tải lại</button></div>
+            <div id="receiptItems" style="margin-top:12px">${loadingText('Đang tải...')}</div>
+          </aside>
+        </div>`;
+      loadReceiptItems();
+    }
+    async function loadReceiptItems(btn) {
+      const box = document.getElementById('receiptItems');
+      if (box) box.innerHTML = loadingText('Đang tải...');
+      try {
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_get_open_receipt_items', { p_limit: 200 }));
+        state.receiptItems = res.rows || [];
+        drawReceiptItems();
+      } catch (err) { if (box) box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    function drawReceiptItems() {
+      const box = document.getElementById('receiptItems');
+      const rows = state.receiptItems || [];
+      if (!rows.length) { box.innerHTML = '<p class="status">Không có khoản nào chờ nghiệm thu.</p>'; return; }
+      box.innerHTML = rows.map((r, i) => `<div class="approve-card" style="margin-bottom:10px" onclick="pickReceipt(${i})">
+        <div class="ac-top"><strong>${esc(r.MaCN)}</strong><span class="pill">${esc(r.MaDeXuat||'')}</span></div>
+        <div class="ac-obj">${esc(r.TenDoiTuong||'')}</div>
+        <div class="ac-meta">${esc(r.MatHang||'')} · SL đặt ${fmtMaybeMoney(r.SLDat)} · ${fmtMoney(r.ThanhTienDat)}đ</div>
+        <div class="ac-meta">Người đề nghị: ${esc(r.NguoiDeNghi||'')} · duyệt ${esc(r.NgayDuyet||'')}</div>
+        <div class="ac-hint">Nạp vào form nghiệm thu →</div>
+      </div>`).join('');
+    }
+    function pickReceipt(i) {
+      const r = (state.receiptItems || [])[i];
+      if (!r) return;
+      state.currentReceipt = r;
+      document.getElementById('rMaCN').value = r.MaCN;
+      document.getElementById('rInfo').innerHTML = `<div><b>${esc(r.MatHang||'')}</b> — ${esc(r.TenDoiTuong||'')}</div><div>SL đặt: ${fmtMaybeMoney(r.SLDat)} · Đơn giá: ${fmtMoney(r.DonGia)} · VAT ${fmtPct(r.VATRate)}</div>`;
+      const sl = document.getElementById('rSL');
+      sl.value = moneyFormat(r.SLDat); // gợi ý = SL đặt, sửa lại theo thực nhận
+      recalcReceipt();
+      toast(`Đã nạp ${r.MaCN}. Sửa khối lượng thực nhận nếu khác.`, 'ok');
+    }
+    function recalcReceipt() {
+      const r = state.currentReceipt;
+      const box = document.getElementById('rThanhTien');
+      if (!r || !box) { if (box) box.textContent = '0 đ'; return; }
+      const sl = moneyNum('rSL');
+      const tt = sl * Number(r.DonGia || 0) * (1 + Number(r.VATRate || 0));
+      box.textContent = fmtMoney(Math.round(tt)) + ' đ';
     }
     async function saveReceipt(btn) {
-      setMsg('Đang cập nhật nhận hàng...');
+      const maCN = val('rMaCN');
+      if (!maCN) { setMsg('Chọn một khoản ở danh sách bên phải trước.'); toast('Chưa chọn khoản nghiệm thu.', 'err'); return; }
+      if (!moneyRaw('rSL')) { toast('Cần nhập SL thực nhận.', 'err'); return; }
       try {
-        await withBusy(btn, 'Đang lưu...', () => call('rpc_update_receipt', { p_payload: { maCN: val('rMaCN'), slThucNhan: val('rSL'), ngayNhan: val('rNgay'), chungTu: val('rChungTu'), ghiChu: val('rGhiChu') } }));
-        setMsg('Đã cập nhật nhận hàng.');
-        toast('Đã cập nhật nhận hàng.', 'ok');
-        loadRecent('receipt');
+        await withBusy(btn, 'Đang lưu...', () => call('rpc_update_receipt', { p_payload: {
+          maCN, slThucNhan: moneyRaw('rSL'), ngayNhan: val('rNgay'),
+          chungTu: val('rChungTu'), hoSoDayDu: document.getElementById('rHoSo')?.checked || false,
+          ghiChu: val('rGhiChu')
+        } }));
+        toast(`Đã nghiệm thu & chốt ${maCN} về công nợ.`, 'ok');
+        state.currentReceipt = null;
+        renderReceipt();
       } catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
     }
 
@@ -1308,7 +1371,7 @@
       const manage = can('catalog:manage');
       if (state.catTab === 'mat') {
         const rows = state.catalog.materials;
-        const addBtn = manage ? `<button onclick="openMaterialForm()">＋ Thêm mặt hàng</button>` : '';
+        const addBtn = manage ? `<button class="secondary" onclick="openGroupManager()">Nhóm hàng</button><button onclick="openMaterialForm()">＋ Thêm mặt hàng</button>` : '';
         box.innerHTML = `
           <div class="cat-toolbar">
             <input id="catMatSearch" placeholder="Tìm theo mã / tên / nhóm..." oninput="drawCatalog._filter()">
@@ -1422,12 +1485,64 @@
         </div>
         <div class="field"><label>Tên mặt hàng *</label><input id="mfTen" value="${m ? esc(m.ten) : ''}"></div>
         <div class="grid">
-          <div class="field"><label>Nhóm hàng</label><select id="mfNhom">${groupOptions(m ? m.nhom : '')}</select></div>
+          <div class="field"><label>Nhóm hàng</label>
+            <div style="display:flex;gap:8px"><select id="mfNhom" style="flex:1">${groupOptions(m ? m.nhom : '')}</select>
+            <button type="button" class="secondary" style="width:auto;white-space:nowrap" onclick="addGroupPrompt('mfNhom')">＋ Nhóm</button></div>
+          </div>
           <div class="field"><label>Trạng thái</label><select id="mfStatus">
             <option ${m && m.trangThai === 'Ngừng' ? '' : 'selected'}>Hoạt động</option>
             <option ${m && m.trangThai === 'Ngừng' ? 'selected' : ''}>Ngừng</option>
           </select></div>
         </div>`, saveMaterial, m ? 'Lưu thay đổi' : 'Thêm mặt hàng');
+    }
+    async function addGroupPrompt(selectId) {
+      const name = (prompt('Tên nhóm hàng mới:', '') || '').trim();
+      if (!name) return;
+      try {
+        const res = await call('rpc_add_material_group', { p_ten: name });
+        state.catalog.groups = res.groups || state.catalog.groups;
+        const sel = document.getElementById(selectId);
+        if (sel) sel.innerHTML = groupOptions(name);
+        toast('Đã thêm nhóm hàng.', 'ok');
+      } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    function openGroupManager() {
+      const groups = state.catalog.groups || [];
+      openModal('Quản lý nhóm hàng', `
+        <p class="status">Đổi tên sẽ cập nhật cho tất cả mặt hàng đang thuộc nhóm đó.</p>
+        <div id="groupMgrList">
+          ${groups.map(g => `<div class="grid" style="margin-bottom:8px">
+            <input class="gm-old" type="hidden" value="${esc(g)}">
+            <input class="gm-new" value="${esc(g)}">
+            <button type="button" class="secondary" style="width:auto" onclick="renameGroup(this)">Lưu tên</button>
+          </div>`).join('')}
+        </div>
+        <div class="field" style="margin-top:12px"><label>Thêm nhóm mới</label>
+          <div style="display:flex;gap:8px"><input id="gmAddNew" style="flex:1" placeholder="Tên nhóm mới">
+          <button type="button" style="width:auto" onclick="addGroupFromMgr(this)">Thêm</button></div>
+        </div>`, null, null);
+    }
+    async function renameGroup(btn) {
+      const row = btn.closest('.grid');
+      const oldName = row.querySelector('.gm-old').value;
+      const newName = row.querySelector('.gm-new').value.trim();
+      if (!newName || newName === oldName) return;
+      try {
+        const res = await call('rpc_rename_material_group', { p_old: oldName, p_new: newName });
+        state.catalog.groups = res.groups || state.catalog.groups;
+        toast('Đã đổi tên nhóm.', 'ok');
+        closeModal(); await loadCatalog();
+      } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    async function addGroupFromMgr(btn) {
+      const name = (document.getElementById('gmAddNew')?.value || '').trim();
+      if (!name) return;
+      try {
+        const res = await call('rpc_add_material_group', { p_ten: name });
+        state.catalog.groups = res.groups || state.catalog.groups;
+        toast('Đã thêm nhóm.', 'ok');
+        openGroupManager();
+      } catch (err) { toast(err.message || String(err), 'err'); }
     }
     async function saveMaterial(btn) {
       const payload = {
@@ -1469,6 +1584,10 @@
           <div class="field"><label>Điều khoản TT mặc định</label><input id="sfDieuKhoan" value="${s ? esc(s.dieuKhoan || '') : ''}"></div>
           <div class="field"><label>MOQ (đặt tối thiểu)</label><input id="sfMoq" value="${s ? esc(s.moq || '') : ''}"></div>
         </div>
+        <div class="grid">
+          <div class="field"><label>Số tài khoản ngân hàng</label><input id="sfSoTk" value="${s ? esc(s.soTk || '') : ''}"></div>
+          <div class="field"><label>Chi nhánh ngân hàng</label><input id="sfChiNhanh" value="${s ? esc(s.chiNhanh || '') : ''}"></div>
+        </div>
         <div class="field"><label>Trạng thái</label><select id="sfStatus">
           <option ${s && s.trangThai === 'Ngừng' ? '' : 'selected'}>Hoạt động</option>
           <option ${s && s.trangThai === 'Ngừng' ? 'selected' : ''}>Ngừng</option>
@@ -1486,6 +1605,8 @@
         diaChi: val('sfDiaChi'),
         dieuKhoan: val('sfDieuKhoan'),
         moq: val('sfMoq'),
+        soTk: val('sfSoTk'),
+        chiNhanh: val('sfChiNhanh'),
         trangThai: val('sfStatus')
       };
       if (!payload.ten.trim()) { modalErr('Cần nhập tên nhà cung cấp.'); return; }
