@@ -302,17 +302,65 @@ This repo includes `.github/workflows/deploy-frontend.yml`, which publishes the 
 
 ---
 
-## 8. Create your first user (Admin)
+## 8. Create your first user (Admin) — detailed, step-by-step
 
-1. Supabase dashboard → **Authentication → Users → Add user**.
-   - Email: your work email
-   - Password: `tn-pin::` followed by whatever PIN you want to remember, e.g. `tn-pin::123456`
-   - Check **Auto Confirm User** so you don't need to click an email link.
-2. Open `supabase/after_setup_create_admin.sql` in this repo, and run it in the SQL Editor:
-   - First query shows you the `id` (a UUID) Supabase just gave your new user.
-   - Paste that id into the `insert into profiles (...)` statement, along with your email/name, and set `role` to `Admin`.
-   - Run it.
-3. Go to your live site (step 7), log in with your email and the PIN part only (e.g. `123456`, **not** the `tn-pin::` prefix — the app adds that automatically), and you should land on the "Báo giá NCC" screen with every menu item visible (Admin sees everything).
+This step has two parts: (A) create a login in Supabase's Auth system, then (B) tell the app "this login is an Admin" by adding a matching row in the `profiles` table. Both are required — doing only A means you can log in but the app will say you have no access; doing only B without A means there's no password to log in with.
+
+### 8A. Create the Auth login
+
+1. Open your Supabase project dashboard.
+2. Left sidebar → click **Authentication**.
+3. Along the top of that page, click the **Users** tab (it may just be the default view).
+4. Click the green **Add user** button (top right) → choose **Create new user** from the dropdown if it appears.
+5. Fill in the form:
+   - **Email**: your real work email, e.g. `admin@yourcompany.com`.
+   - **Password**: type exactly `tn-pin::` followed by any PIN you'll remember — e.g. if you want your PIN to be `123456`, type `tn-pin::123456` as the password. (This odd-looking prefix is intentional — see the box below.)
+   - **Auto Confirm User**: check this box. If you leave it unchecked, this account can't log in until you manually confirm its email later.
+6. Click **Create user** (or **Add user** — label varies slightly by Supabase version).
+7. You'll land back on the Users list and see your new email appear with a UUID next to it (a long string like `a1b2c3d4-...`). You don't need to copy it by hand — the next step does that for you.
+
+> **Why `tn-pin::` before the PIN?** Supabase's login system only understands "email + password," it has no concept of a short PIN. The app's frontend automatically adds the `tn-pin::` prefix behind the scenes before sending it to Supabase — so your staff only ever type their 4-6 digit PIN on the login screen, never the prefix. You (the admin) just need to remember to type the same prefix when *creating* the account here in the dashboard.
+
+### 8B. Link that login to an Admin profile
+
+1. In the left sidebar, click **SQL Editor** → **New query**.
+2. Open the file `supabase/after_setup_create_admin.sql` from your local project folder in any text editor (TextEdit, VS Code, etc.) — do **not** open it with Word/Pages.
+3. Copy the **first query only** (the `select id, email from auth.users order by created_at desc limit 5;` line) into the SQL Editor and click **Run**.
+4. You'll see a small results table. Find the row matching the email you just created in 8A, and copy its `id` value (the long UUID, e.g. `a1b2c3d4-5678-90ab-cdef-1234567890ab`).
+5. Back in the same file on your computer, find this block:
+
+   ```sql
+   insert into profiles (id, email, name, role, status)
+   values (
+     'PASTE-THE-AUTH-USER-UUID-HERE',
+     'admin@yourcompany.com',
+     'Admin',
+     'Admin',
+     'Hoạt động'
+   )
+   on conflict (id) do update set
+     email = excluded.email,
+     name = excluded.name,
+     role = excluded.role,
+     status = excluded.status;
+   ```
+
+6. Copy just this `insert into profiles ...` statement into a **new query** in the SQL Editor, and edit the placeholders:
+   - Replace `PASTE-THE-AUTH-USER-UUID-HERE` with the UUID you copied in step 4 (keep the quotes).
+   - Replace `admin@yourcompany.com` with the same email you used in 8A.
+   - Replace `'Admin'` (the name, 3rd value) with your actual name if you like, e.g. `'Nguyễn Văn A'`.
+   - Leave `role` as `'Admin'` and `status` as `'Hoạt động'`.
+7. Click **Run**. It should say "Success. 1 row" (or similar) — no error text.
+
+### 8C. Log in and confirm it worked
+
+1. Go to your live site URL (from section 7, e.g. `https://thiennhatgroup.github.io/thiennhat-supabase/`).
+2. Log in with your email and **only the PIN part** — e.g. `123456`, **not** `tn-pin::123456`. The page adds that prefix automatically; typing it yourself will fail the login.
+3. You should land on the "Báo giá NCC" screen with every menu item visible in the sidebar (Admin sees everything).
+
+If login fails, jump to section 11 (Troubleshooting) — the two most common causes at this stage are: the profiles row's `id` doesn't exactly match the Auth user's UUID (typo when copying), or "Auto Confirm User" wasn't checked in 8A.
+
+Add more staff the same way — repeat 8A with their own email + `tn-pin::<their PIN>`, then repeat 8B with their UUID and the appropriate role:
 
 Add more staff the same way — create their Auth user with `tn-pin::<their PIN>`, then add a `profiles` row with the appropriate role:
 
