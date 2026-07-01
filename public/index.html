@@ -1,0 +1,859 @@
+<!doctype html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thiên Nhật - Mua hàng &amp; Công nợ</title>
+  <style>
+    :root {
+      --bg: #F0EEE6;
+      --panel: #FAF8F1;
+      --ink: #141413;
+      --muted: #6E675E;
+      --line: #D8D1C4;
+      --accent: #D97757;
+      --accent-dark: #B85F43;
+      --input: #FBF3D2;
+      --ok: #2F7D57;
+      --danger: #B94A48;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(250, 248, 241, .92);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    h1 { margin: 0; font-size: 20px; }
+    h2 { margin: 0 0 12px; font-size: 18px; }
+    h3 { margin: 18px 0 8px; font-size: 14px; color: var(--muted); text-transform: uppercase; }
+    button, input, select, textarea {
+      font: inherit;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      min-height: 44px;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: var(--input);
+      padding: 10px 12px;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    button.secondary { background: transparent; color: var(--ink); border-color: var(--line); }
+    button.danger { background: var(--danger); border-color: var(--danger); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 73px);
+    }
+    nav {
+      border-right: 1px solid var(--line);
+      padding: 16px;
+      background: rgba(250, 248, 241, .56);
+    }
+    nav button {
+      width: 100%;
+      margin: 0 0 8px;
+      text-align: left;
+      background: transparent;
+      color: var(--ink);
+      border-color: transparent;
+    }
+    nav button.active { background: #E8DED1; border-color: #D8C7B7; }
+    main { padding: 18px; }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) minmax(360px, .95fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.03);
+    }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .field { margin-bottom: 12px; }
+    .combo-stack { display: grid; gap: 6px; }
+    .combo-stack input, .combo-stack select { min-height: 38px; }
+    label { display: block; margin-bottom: 5px; color: var(--muted); font-weight: 700; }
+    small { color: var(--muted); display: block; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { border-bottom: 1px solid #E6DFD2; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #141413; color: #fff; position: sticky; top: 0; z-index: 1; }
+    .table-wrap { overflow: auto; max-height: 520px; border: 1px solid var(--line); border-radius: 8px; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .notice { padding: 10px 12px; background: #FFF7E7; border: 1px solid #E8D3A6; border-radius: 8px; color: #5E4A1D; margin-bottom: 12px; }
+    .notice.ok { background: #EEF8F1; border-color: #BFDCC8; color: #245D42; }
+    .notice.err { background: #FFF0ED; border-color: #E6B8AC; color: #8D332D; }
+    .status { color: var(--muted); }
+    .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #ECE5D8; font-size: 12px; }
+    .pill.ok { background: #E2F2E8; color: #245D42; }
+    .pill.warn { background: #FFF0C9; color: #664B00; }
+    .pill.err { background: #F8D7D2; color: #8D332D; }
+    .totals { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 12px; }
+    .metric { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+    .metric strong { display: block; font-size: 18px; margin-top: 4px; }
+    .metric.best { border-color: #90C9A7; background: #F3FBF5; }
+    .quote-layout { display: grid; grid-template-columns: minmax(360px, 1.15fr) minmax(320px, .85fr); gap: 18px; align-items: start; }
+    .quote-best { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
+    .hint-list { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
+    .hint-list li { margin-bottom: 5px; }
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      min-width: 260px;
+      max-width: 460px;
+      padding: 13px 14px;
+      border-radius: 8px;
+      background: #141413;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: .18s ease;
+      z-index: 30;
+      font-weight: 700;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.ok { background: var(--ok); }
+    .toast.err { background: var(--danger); }
+    .loading-line { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+    .spin {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #D8D1C4;
+      border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .login {
+      max-width: 420px;
+      margin: 8vh auto;
+    }
+    .hidden { display: none !important; }
+    @media (max-width: 920px) {
+      .app { grid-template-columns: 1fr; }
+      nav { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav button { margin: 0; }
+      .workspace, .quote-layout { grid-template-columns: 1fr; }
+      .grid, .totals, .quote-best { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section id="loginView" class="login card">
+    <h1>Thiên Nhật - Mua hàng &amp; Công nợ</h1>
+    <p class="status">Đăng nhập bằng email và mã PIN được Admin cấp (bảng <code>profiles</code> trong Supabase).</p>
+    <div class="field">
+      <label>Email</label>
+      <input id="loginEmail" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Mã PIN</label>
+      <input id="loginPin" type="password" autocomplete="current-password">
+    </div>
+    <button onclick="login()">Đăng nhập</button>
+    <p id="loginMsg" class="status"></p>
+  </section>
+
+  <section id="appView" class="hidden">
+    <header>
+      <div>
+        <h1>Web App Mua hàng &amp; Công nợ</h1>
+        <div id="userBadge" class="status"></div>
+      </div>
+      <button class="secondary" onclick="logout()">Đăng xuất</button>
+    </header>
+    <div class="app">
+      <nav id="nav"></nav>
+      <main id="content"></main>
+    </div>
+  </section>
+
+  <datalist id="doiTuongList"></datalist>
+  <datalist id="vatTuList"></datalist>
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="./config.js"></script>
+  <script>
+    const APP = window.APP_CONFIG || {};
+    const sb = window.supabase.createClient(APP.supabaseUrl, APP.supabaseAnonKey, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+
+    const state = {
+      session: null,
+      user: null,
+      doiTuong: [],
+      vatTu: [],
+      permissions: [],
+      screen: 'quotes',
+      quote: null
+    };
+    // Moi man hinh gan voi 1 quyen; nav chi hien man hinh ma vai tro co quyen (server VAN chot chan lai qua require_permission()).
+    const allScreens = [
+      ['quotes', 'Báo giá NCC', 'quote:read'],
+      ['proposal', 'Tạo đề xuất', 'proposal:create'],
+      ['approve', 'Duyệt đề xuất', 'proposal:approve'],
+      ['receipt', 'Nhận hàng', 'receipt:update'],
+      ['payment', 'Thanh toán', 'payment:create'],
+      ['dashboard', 'Dashboard công nợ', 'dashboard:read'],
+      ['settlement', 'Tất toán', 'settlement:preview']
+    ];
+    function can(perm) {
+      return state.permissions.includes('*') || state.permissions.includes(perm);
+    }
+    function visibleScreens() {
+      return allScreens.filter(s => can(s[2]));
+    }
+
+    // Thin wrapper around supabase.rpc(...) that mirrors the old
+    // google.script.run withSuccessHandler/withFailureHandler + timeout
+    // pattern, so every screen below reads exactly like the GAS version.
+    function call(name, params) {
+      return new Promise((resolve, reject) => {
+        let settled = false;
+        const timer = setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          reject(new Error(`Tác vụ ${name} chạy quá lâu. Kiểm tra kết nối Supabase.`));
+        }, 45000);
+        sb.rpc(name, params || {}).then(({ data, error }) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          if (error) { reject(new Error(error.message || String(error))); return; }
+          if (data && data.ok === false) {
+            const e = data.error || {};
+            reject(new Error(e.message || data.message || `Tác vụ ${name} lỗi.`));
+            return;
+          }
+          resolve(data);
+        }).catch(err => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          reject(err instanceof Error ? err : new Error(String(err || `Tác vụ ${name} lỗi.`)));
+        });
+      });
+    }
+
+    function toast(message, type='ok') {
+      const el = document.getElementById('toast');
+      if (!el) return;
+      el.textContent = message || '';
+      el.className = `toast ${type} show`;
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => el.classList.remove('show'), 3600);
+    }
+    async function withBusy(btn, label, fn) {
+      const button = btn && btn.tagName ? btn : null;
+      const oldText = button ? button.textContent : '';
+      if (button) {
+        button.disabled = true;
+        button.textContent = label || 'Đang xử lý...';
+      }
+      try {
+        return await fn();
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = oldText;
+        }
+      }
+    }
+    function loadingText(text='Đang tải...') {
+      return `<div class="loading-line"><span class="spin"></span><span>${esc(text)}</span></div>`;
+    }
+    function todayStr() {
+      const d = new Date();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    }
+
+    function fmtMoney(v) {
+      const n = Number(v || 0);
+      return n.toLocaleString('vi-VN');
+    }
+    function fmtMaybeMoney(v) {
+      if (v === '' || v === null || v === undefined) return '';
+      const n = Number(v);
+      return Number.isFinite(n) ? n.toLocaleString('vi-VN') : esc(v);
+    }
+    function fmtPct(v) {
+      if (v === '' || v === null || v === undefined) return '';
+      const n = Number(v);
+      return Number.isFinite(n) ? `${(n * 100).toLocaleString('vi-VN', {maximumFractionDigits: 1})}%` : '';
+    }
+    function esc(v) {
+      return String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+    function val(id) { return document.getElementById(id)?.value || ''; }
+    function setMsg(text) { document.querySelectorAll('.js-msg').forEach(el => el.textContent = text || ''); }
+
+    // Login uses Supabase Auth directly: email + a PIN-derived password.
+    // The "tn-pin::" prefix guarantees the real password meets Supabase's
+    // minimum length even for a short numeric PIN; the PIN itself is never
+    // stored anywhere except inside that password hash.
+    async function login() {
+      const msg = document.getElementById('loginMsg');
+      msg.textContent = 'Đang đăng nhập...';
+      const email = val('loginEmail').trim();
+      const pin = val('loginPin').trim();
+      if (!email || !pin) { msg.textContent = 'Nhập email và mã PIN.'; return; }
+      try {
+        const { data, error } = await sb.auth.signInWithPassword({ email, password: 'tn-pin::' + pin });
+        if (error) throw error;
+        state.session = data.session;
+        await bootstrap();
+      } catch (err) {
+        msg.textContent = mapAuthError(err);
+      }
+    }
+    function mapAuthError(err) {
+      const msg = String(err && err.message || err || '');
+      if (/invalid login credentials/i.test(msg)) return 'Email hoặc mã PIN không đúng.';
+      if (/email not confirmed/i.test(msg)) return 'Tài khoản chưa xác nhận email. Hãy tắt "Confirm email" trong Supabase Auth settings hoặc xác nhận email trước.';
+      return msg || 'Đăng nhập thất bại.';
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      location.reload();
+    }
+
+    async function bootstrap() {
+      try {
+        const res = await call('rpc_bootstrap');
+        state.user = res.user;
+        state.doiTuong = res.doiTuong || [];
+        state.vatTu = res.vatTu || [];
+        state.permissions = res.permissions || [];
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('appView').classList.remove('hidden');
+        document.getElementById('userBadge').textContent = `${state.user.name} - ${state.user.role}`;
+        renderLists();
+        const allowed = visibleScreens();
+        if (!allowed.some(s => s[0] === state.screen)) state.screen = allowed.length ? allowed[0][0] : 'dashboard';
+        renderNav();
+        renderScreen(state.screen);
+      } catch (err) {
+        document.getElementById('loginView').classList.remove('hidden');
+        document.getElementById('appView').classList.add('hidden');
+        document.getElementById('loginMsg').textContent = err.message || 'Không tải được dữ liệu webapp. Hãy kiểm tra profiles/role_permissions trong Supabase.';
+      }
+    }
+
+    function renderLists() {
+      document.getElementById('doiTuongList').innerHTML = state.doiTuong.map(d => `<option value="${esc(d.MaDoiTuong)}">${esc(d.TenDoiTuong)}</option>`).join('');
+      document.getElementById('vatTuList').innerHTML = state.vatTu.map(x => `<option value="${esc(x)}"></option>`).join('');
+    }
+
+    function renderNav() {
+      document.getElementById('nav').innerHTML = visibleScreens().map(([id, label]) =>
+        `<button class="${state.screen === id ? 'active' : ''}" onclick="renderScreen('${id}')">${label}</button>`
+      ).join('');
+    }
+
+    function renderShell(title, formHtml, recentKind) {
+      document.getElementById('content').innerHTML = `
+        <div class="workspace">
+          <section class="card">
+            <h2>${title}</h2>
+            <div class="notice js-msg"></div>
+            ${formHtml}
+          </section>
+          <aside class="card">
+            <h2>Dữ liệu gần đây (Supabase)</h2>
+            <div class="grid">
+              <div class="field"><label>Số dòng</label><select id="recentLimit"><option>10</option><option selected>20</option><option>50</option><option>100</option></select></div>
+              <div class="field"><label>Mã đối tượng</label><select id="recentMa">${objectOptions()}</select></div>
+              <div class="field"><label>Từ ngày</label><input id="recentFrom" type="date"></div>
+              <div class="field"><label>Đến ngày</label><input id="recentTo" type="date"></div>
+            </div>
+            <button class="secondary" onclick="loadRecent('${recentKind}', this)">Generate dữ liệu tổng hợp</button>
+            <div id="recentBox" class="table-wrap" style="margin-top:12px"></div>
+          </aside>
+        </div>`;
+    }
+
+    function renderScreen(id) {
+      state.screen = id;
+      renderNav();
+      if (id === 'quotes') return renderQuotes();
+      if (id === 'proposal') return renderProposal();
+      if (id === 'approve') return renderApprove();
+      if (id === 'receipt') return renderReceipt();
+      if (id === 'payment') return renderPayment();
+      if (id === 'dashboard') return renderDashboard();
+      if (id === 'settlement') return renderSettlement();
+    }
+
+    function renderQuotes() {
+      document.getElementById('content').innerHTML = `
+        <div class="quote-layout">
+          <section class="card">
+            <h2>Dashboard báo giá NCC</h2>
+            <div class="notice ok">
+              Chọn hoặc nhập mới mặt hàng. Dashboard lấy giá mới nhất tại hoặc trước ngày so sánh, rồi xếp hạng NCC theo giá sau VAT.
+            </div>
+            <div class="grid">
+              <div class="field">
+                <label>Mặt hàng / vật tư</label>
+                <div class="combo-stack">
+                  <select id="qItem">${materialOptions(state.quote?.item || '')}</select>
+                  <input id="qItemNew" placeholder="Nhập mặt hàng mới nếu chưa có trong danh mục">
+                </div>
+                <small>Ô nhập mới được ưu tiên hơn dropdown.</small>
+              </div>
+              <div class="field">
+                <label>Ngày so sánh</label>
+                <input id="qAsOf" type="date">
+                <small>Để trống sẽ dùng ngày báo giá mới nhất đã lưu.</small>
+              </div>
+            </div>
+            <div class="actions">
+              <button onclick="loadQuoteDashboard(this)">Làm mới dashboard</button>
+            </div>
+            <div id="quoteBox" style="margin-top:12px">${loadingText('Đang tải dashboard báo giá...')}</div>
+          </section>
+          <aside class="card">
+            <h2>Nhập báo giá mới</h2>
+            <p class="status">Bản Supabase không còn AppSheet/Google Sheets — nhập báo giá thẳng vào đây, lưu ngay vào bảng <code>price_quotes</code> và dashboard bên trái sẽ thấy được ngay lần làm mới kế tiếp.</p>
+            <div class="field"><label>Ngày báo giá</label><input id="nqNgay" type="date" value="${todayStr()}"></div>
+            <div class="field"><label>Mặt hàng</label><div class="combo-stack"><select id="nqItem">${materialOptions('')}</select><input id="nqItemNew" placeholder="Nhập mặt hàng mới"></div></div>
+            <div class="field"><label>Nhà cung cấp</label><input id="nqNcc" placeholder="Tên NCC"></div>
+            <div class="grid">
+              <div class="field"><label>Giá gọi</label><input id="nqGia" inputmode="decimal"></div>
+              <div class="field"><label>VAT</label><select id="nqVat"><option>Chưa VAT</option><option>Đã gồm VAT</option></select></div>
+            </div>
+            <div class="field"><label>Ghi chú</label><input id="nqGhiChu"></div>
+            <button class="secondary" onclick="addPriceQuote(this)" ${can('quote:sync') ? '' : 'disabled'}>Lưu báo giá</button>
+            <p id="nqMsg" class="status" style="margin-top:8px"></p>
+          </aside>
+        </div>`;
+      loadQuoteDashboard();
+    }
+
+    async function loadQuoteDashboard(btn=null) {
+      const item = comboValue('qItem', 'qItemNew');
+      const payload = { p_item: item || null, p_as_of: val('qAsOf') || null, p_limit: 50 };
+      const box = document.getElementById('quoteBox');
+      if (box) box.innerHTML = loadingText('Đang tải dashboard báo giá...');
+      try {
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_get_quote_dashboard', payload));
+        state.quote = res;
+        if (!item && res.item) {
+          const qItemNew = document.getElementById('qItemNew');
+          if (qItemNew) qItemNew.value = res.item;
+        }
+        renderQuoteResult(res);
+        toast(res.message || 'Đã cập nhật dashboard báo giá.', 'ok');
+      } catch (err) {
+        const msg = err.message || String(err);
+        if (box) box.innerHTML = `<div class="notice err">${esc(msg)}</div>`;
+        toast(msg, 'err');
+      }
+    }
+
+    async function addPriceQuote(btn) {
+      const msg = document.getElementById('nqMsg');
+      msg.textContent = 'Đang lưu báo giá...';
+      try {
+        const payload = {
+          p_ngay: val('nqNgay') || null,
+          p_mat_hang: comboValue('nqItem', 'nqItemNew'),
+          p_ncc: val('nqNcc'),
+          p_gia: Number(val('nqGia')) || null,
+          p_vat_status: val('nqVat'),
+          p_ghi_chu: val('nqGhiChu')
+        };
+        await withBusy(btn, 'Đang lưu...', () => call('rpc_add_price_quote', payload));
+        msg.textContent = 'Đã lưu báo giá.';
+        toast('Đã lưu báo giá.', 'ok');
+        loadQuoteDashboard();
+      } catch (err) { msg.textContent = err.message || err; toast(err.message || String(err), 'err'); }
+    }
+
+    function renderQuoteResult(res) {
+      const box = document.getElementById('quoteBox');
+      if (!box) return;
+      const best = res.best || {};
+      const rows = res.rows || [];
+      const history = res.history || [];
+      box.innerHTML = `
+        <div class="quote-best">
+          <div class="metric best">Giá tốt nhất<strong>${best.priceAfterVat ? fmtMaybeMoney(best.priceAfterVat) : '-'}</strong><small>${esc(best.unit || '')}</small></div>
+          <div class="metric">NCC đề xuất<strong>${esc(best.supplier || '-')}</strong><small>${esc(best.date || res.asOf || '')}</small></div>
+          <div class="metric">Số NCC có giá<strong>${fmtMoney(res.supplierCount || 0)}</strong><small>Mặt hàng: ${esc(res.item || 'Chưa chọn')}</small></div>
+        </div>
+        <h3>Bảng so sánh NCC</h3>
+        ${quoteCandidateTable(rows)}
+        <h3>Lịch sử giá gần nhất</h3>
+        ${quoteHistoryTable(history)}
+      `;
+    }
+
+    function quoteCandidateTable(rows) {
+      if (!rows.length) return '<p class="status">Chưa có giá phù hợp cho mặt hàng/ngày đang chọn.</p>';
+      return `<div class="table-wrap"><table><thead><tr>
+        <th>Rank</th><th>NCC</th><th>Ngày giá</th><th>Giá sau VAT</th><th>+/- lần trước</th><th>%</th><th>Xu hướng</th><th>ĐVT</th><th>Đề xuất</th><th>Ghi chú</th>
+      </tr></thead><tbody>${rows.map(r => `<tr>
+        <td>${esc(r.rank)}</td>
+        <td>${esc(r.supplier)}</td>
+        <td>${esc(r.date)}</td>
+        <td>${fmtMaybeMoney(r.priceAfterVat)}</td>
+        <td>${fmtMaybeMoney(r.delta)}</td>
+        <td>${fmtPct(r.pct)}</td>
+        <td>${esc(r.trend)}</td>
+        <td>${esc(r.unit)}</td>
+        <td>${esc(r.recommended)}</td>
+        <td>${esc(r.note)}</td>
+      </tr>`).join('')}</tbody></table></div>`;
+    }
+
+    function quoteHistoryTable(rows) {
+      if (!rows.length) return '<p class="status">Chưa có lịch sử giá cho mặt hàng này.</p>';
+      return `<div class="table-wrap"><table><thead><tr>
+        <th>Ngày</th><th>NCC</th><th>Giá sau VAT</th><th>+/-</th><th>%</th><th>Xu hướng</th><th>VAT</th><th>ĐVT</th><th>Ghi chú</th>
+      </tr></thead><tbody>${rows.map(r => `<tr>
+        <td>${esc(r.date)}</td>
+        <td>${esc(r.supplier)}</td>
+        <td>${fmtMaybeMoney(r.priceAfterVat)}</td>
+        <td>${fmtMaybeMoney(r.delta)}</td>
+        <td>${fmtPct(r.pct)}</td>
+        <td>${esc(r.trend)}</td>
+        <td>${esc(r.vatStatus)}</td>
+        <td>${esc(r.unit)}</td>
+        <td>${esc(r.note)}</td>
+      </tr>`).join('')}</tbody></table></div>`;
+    }
+
+    function objectFields(prefix='') {
+      return `
+        <div class="grid">
+          <div class="field"><label>Mã đối tượng</label><div class="combo-stack"><select id="${prefix}maDoiTuong" onchange="fillObjectName('${prefix}')">${objectOptions()}</select><input id="${prefix}maDoiTuongMoi" placeholder="Nhập mã mới nếu chưa có trong danh mục"></div><small>Ô nhập mới sẽ được ưu tiên nếu có nội dung.</small></div>
+          <div class="field"><label>Tên đối tượng</label><input id="${prefix}tenDoiTuong"></div>
+        </div>`;
+    }
+    function objectOptions() {
+      return '<option value="">-- Chọn đối tượng / nhập mới --</option>' + state.doiTuong.map(d =>
+        `<option value="${esc(d.MaDoiTuong)}">${esc(d.MaDoiTuong)} - ${esc(d.TenDoiTuong)}</option>`
+      ).join('');
+    }
+
+    function materialOptions(selected) {
+      const current = String(selected || '').trim();
+      const items = Array.from(new Set([...(state.vatTu || []), current].filter(Boolean))).sort();
+      return '<option value="">-- Chọn mặt hàng --</option>' + items.map(name =>
+        `<option value="${esc(name)}" ${name === current ? 'selected' : ''}>${esc(name)}</option>`
+      ).join('');
+    }
+
+    function comboValue(selectOrId, inputOrId) {
+      const select = typeof selectOrId === 'string' ? document.getElementById(selectOrId) : selectOrId;
+      const input = typeof inputOrId === 'string' ? document.getElementById(inputOrId) : inputOrId;
+      const typed = String(input && input.value || '').trim();
+      return typed || String(select && select.value || '').trim();
+    }
+
+    function fillObjectName(prefix='') {
+      const ma = val(prefix + 'maDoiTuong');
+      const found = state.doiTuong.find(d => d.MaDoiTuong === ma);
+      if (found) {
+        const custom = document.getElementById(prefix + 'maDoiTuongMoi');
+        if (custom) custom.value = '';
+        document.getElementById(prefix + 'tenDoiTuong').value = found.TenDoiTuong || '';
+        const term = document.getElementById(prefix + 'dieuKhoanTT');
+        if (term && !term.value) term.value = found.DieuKhoanTT_MacDinh || '';
+      }
+    }
+
+    function renderProposal() {
+      renderShell('Tạo đề xuất thanh toán/mua hàng', `
+        <div class="grid">
+          <div class="field"><label>Ngày đề xuất</label><input id="pNgay" type="date" value="${todayStr()}"></div>
+          <div class="field"><label>Người đề nghị</label><input id="pNguoi" value="${esc(state.user?.name || '')}"></div>
+        </div>
+        ${objectFields('p')}
+        <div class="field"><label>Nội dung</label><textarea id="pNoiDung"></textarea></div>
+        <div class="field"><label>Điều khoản thanh toán</label><textarea id="pDieuKhoanTT"></textarea></div>
+        <h3>Dòng vật tư</h3>
+        <div class="table-wrap"><table id="lineTable"><thead><tr><th>Mặt hàng</th><th>SL đặt</th><th>Đơn giá</th><th>VAT</th><th>Ghi chú</th><th></th></tr></thead><tbody></tbody></table></div>
+        <div class="actions">
+          <button class="secondary" onclick="addLine()">+ Thêm dòng</button>
+          <button class="secondary" onclick="copyLastLine()">Chép dòng cuối</button>
+          <button onclick="saveProposal('Nháp', this)">Lưu nháp</button>
+          <button onclick="saveProposal('Chờ duyệt', this)">Gửi duyệt</button>
+        </div>`, 'proposal');
+      addLine();
+      loadRecent('proposal');
+    }
+
+    function lineRow(line={}) {
+      return `<tr>
+        <td><div class="combo-stack"><select class="js-mat-select">${materialOptions(line.matHang)}</select><input class="js-mat-new" placeholder="Nhập mặt hàng mới"></div></td>
+        <td><input inputmode="decimal" value="${esc(line.slDat || '')}"></td>
+        <td><input inputmode="decimal" value="${esc(line.donGia || '')}"></td>
+        <td><div class="combo-stack"><select class="js-vat-select"><option ${String(line.vat || '8%')==='0%'?'selected':''}>0%</option><option ${String(line.vat || '8%')==='8%'?'selected':''}>8%</option><option ${String(line.vat || '8%')==='10%'?'selected':''}>10%</option></select><input class="js-vat-new" placeholder="VAT khác, ví dụ 5%"></div></td>
+        <td><input value="${esc(line.ghiChu || '')}"></td>
+        <td><button class="secondary" onclick="this.closest('tr').remove()">Xóa</button></td>
+      </tr>`;
+    }
+    function addLine(line) { document.querySelector('#lineTable tbody').insertAdjacentHTML('beforeend', lineRow(line)); }
+    function copyLastLine() {
+      const rows = getProposalLines();
+      addLine(rows[rows.length - 1] || {});
+    }
+    function getProposalLines() {
+      return [...document.querySelectorAll('#lineTable tbody tr')].map(tr => {
+        const inputs = [...tr.querySelectorAll('input')].filter(x => !x.classList.contains('js-mat-new') && !x.classList.contains('js-vat-new'));
+        const vat = comboValue(tr.querySelector('.js-vat-select'), tr.querySelector('.js-vat-new'));
+        return {
+          matHang: comboValue(tr.querySelector('.js-mat-select'), tr.querySelector('.js-mat-new')),
+          slDat: inputs[0].value,
+          donGia: inputs[1].value,
+          vat,
+          ghiChu: inputs[2].value
+        };
+      });
+    }
+    async function saveProposal(status, btn) {
+      setMsg('Đang lưu đề xuất...');
+      try {
+        const payload = {
+          status,
+          ngayDeXuat: val('pNgay'),
+          nguoiDeNghi: val('pNguoi'),
+          doiTuong: { ma: comboValue('pmaDoiTuong', 'pmaDoiTuongMoi'), ten: val('ptenDoiTuong'), dieuKhoanTT: val('pDieuKhoanTT') },
+          noiDung: val('pNoiDung'),
+          dieuKhoanTT: val('pDieuKhoanTT'),
+          lines: getProposalLines()
+        };
+        const res = await withBusy(btn, 'Đang lưu...', () => call('rpc_create_proposal', { p_payload: payload }));
+        setMsg(`Đã lưu ${res.maDeXuat} ở trạng thái ${res.status}.`);
+        toast(`Đã lưu ${res.maDeXuat}.`, 'ok');
+        renderProposal();
+      } catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
+    }
+
+    function renderApprove() {
+      renderShell('Duyệt đề xuất', `
+        <button onclick="loadPending(this)">Tải danh sách chờ duyệt</button>
+        <div id="pendingBox" class="table-wrap" style="margin-top:12px"></div>`, 'approved');
+      loadPending();
+      loadRecent('approved');
+    }
+    async function loadPending(btn) {
+      const box = document.getElementById('pendingBox');
+      box.innerHTML = loadingText('Đang tải danh sách chờ duyệt...');
+      try {
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_get_pending_proposals', { p_limit: 50 }));
+        box.innerHTML = table(res.rows, ['MaDeXuat','NgayDeXuat','TenDoiTuong','NoiDung','DieuKhoanTT','NguoiDeNghi','TrangThai'], row =>
+          `<button onclick="approveProposal('${esc(row.MaDeXuat)}', this)">Duyệt</button> <button class="danger" onclick="rejectProposal('${esc(row.MaDeXuat)}', this)">Từ chối</button>`);
+      } catch (err) { box.innerHTML = esc(err.message || err); }
+    }
+    async function approveProposal(ma, btn) {
+      if (!confirm(`Duyệt đề xuất ${ma}?`)) return;
+      setMsg('Đang duyệt...');
+      try { const res = await withBusy(btn, 'Đang duyệt...', () => call('rpc_approve_proposal', { p_ma_de_xuat: ma })); setMsg(`Đã duyệt ${ma}, chuyển ${res.congNoRows} dòng sang công nợ.`); toast(`Đã duyệt ${ma}.`, 'ok'); loadPending(); loadRecent('approved'); }
+      catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
+    }
+    async function rejectProposal(ma, btn) {
+      const reason = prompt('Lý do từ chối', '') || '';
+      try { await withBusy(btn, 'Đang từ chối...', () => call('rpc_reject_proposal', { p_ma_de_xuat: ma, p_reason: reason })); toast(`Đã từ chối ${ma}.`, 'ok'); loadPending(); }
+      catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
+    }
+
+    function renderReceipt() {
+      renderShell('Cập nhật nhận hàng', `
+        <div class="field"><label>Mã CN/ĐX</label><input id="rMaCN"><small>Chọn từ dữ liệu gần đây bên phải hoặc nhập trực tiếp.</small></div>
+        <div class="grid">
+          <div class="field"><label>SL thực nhận</label><input id="rSL" inputmode="decimal"></div>
+          <div class="field"><label>Ngày nhận thực tế</label><input id="rNgay" type="date" value="${todayStr()}"></div>
+        </div>
+        <div class="field"><label>Phiếu cân/chứng từ</label><input id="rChungTu"></div>
+        <div class="field"><label>Ghi chú</label><textarea id="rGhiChu"></textarea></div>
+        <button onclick="saveReceipt(this)">Lưu nhận hàng</button>`, 'receipt');
+      loadRecent('receipt');
+    }
+    async function saveReceipt(btn) {
+      setMsg('Đang cập nhật nhận hàng...');
+      try {
+        await withBusy(btn, 'Đang lưu...', () => call('rpc_update_receipt', { p_payload: { maCN: val('rMaCN'), slThucNhan: val('rSL'), ngayNhan: val('rNgay'), chungTu: val('rChungTu'), ghiChu: val('rGhiChu') } }));
+        setMsg('Đã cập nhật nhận hàng.');
+        toast('Đã cập nhật nhận hàng.', 'ok');
+        loadRecent('receipt');
+      } catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
+    }
+
+    function renderPayment() {
+      renderShell('Cập nhật thanh toán', `
+        ${objectFields('t')}
+        <div class="grid">
+          <div class="field"><label>Ngày thanh toán</label><input id="tNgay" type="date" value="${todayStr()}"></div>
+          <div class="field"><label>Số tiền</label><input id="tSoTien" inputmode="decimal"></div>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Phân bổ</label><select id="tMode"><option value="FIFO">FIFO theo đối tượng</option><option value="MA_CN">Theo mã CN cụ thể</option></select></div>
+          <div class="field"><label>Mã CN nếu phân bổ cụ thể</label><input id="tMaCN"></div>
+        </div>
+        <div class="field"><label>Chứng từ</label><input id="tChungTu"></div>
+        <div class="field"><label>Ghi chú</label><textarea id="tGhiChu"></textarea></div>
+        <button onclick="savePayment(this)">Lưu thanh toán</button>`, 'payment');
+      loadRecent('payment');
+    }
+    async function savePayment(btn) {
+      setMsg('Đang lưu thanh toán...');
+      try {
+        const payload = {
+          doiTuong: { ma: comboValue('tmaDoiTuong', 'tmaDoiTuongMoi'), ten: val('ttenDoiTuong') },
+          ngayThanhToan: val('tNgay'),
+          soTien: val('tSoTien'),
+          phanBoMode: val('tMode'),
+          maCN: val('tMaCN'),
+          chungTu: val('tChungTu'),
+          ghiChu: val('tGhiChu')
+        };
+        const res = await withBusy(btn, 'Đang lưu...', () => call('rpc_create_payment', { p_payload: payload }));
+        setMsg(`Đã lưu thanh toán ${res.maThanhToan}.`);
+        toast(`Đã lưu thanh toán ${res.maThanhToan}.`, 'ok');
+        loadRecent('payment');
+      } catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
+    }
+
+    function renderDashboard() {
+      renderShell('Dashboard công nợ theo mã đối tượng', `
+        <div class="grid">
+          <div class="field"><label>Mã đối tượng</label><select id="dma">${objectOptions()}</select></div>
+          <div class="field"><label>Trạng thái</label><select id="dstatus"><option></option><option>Còn phải trả</option><option>Tạm ứng</option><option>Chờ SL thực nhận</option></select></div>
+          <div class="field"><label>Từ ngày</label><input id="dfrom" type="date"></div>
+          <div class="field"><label>Đến ngày</label><input id="dto" type="date"></div>
+        </div>
+        <button onclick="loadDashboard(this)">Generate dashboard</button>
+        <div id="dashBox" style="margin-top:12px"></div>`, 'debt');
+      loadDashboard();
+      loadRecent('debt');
+    }
+    async function loadDashboard(btn) {
+      const box = document.getElementById('dashBox');
+      box.innerHTML = loadingText('Đang tải dashboard công nợ...');
+      try {
+        const filter = { maDoiTuong: val('dma'), status: val('dstatus'), fromDate: val('dfrom'), toDate: val('dto') };
+        const res = await withBusy(btn, 'Đang generate...', () => call('rpc_get_debt_dashboard', { p_filter: filter }));
+        box.innerHTML = `
+          <div class="totals">
+            <div class="metric">AP<strong>${fmtMoney(res.totals.ap)}</strong></div>
+            <div class="metric">AR/tạm ứng<strong>${fmtMoney(res.totals.ar)}</strong></div>
+            <div class="metric">Net<strong>${fmtMoney(res.totals.net)}</strong></div>
+            <div class="metric">Số khoản<strong>${fmtMoney(res.totals.count)}</strong></div>
+          </div>
+          <div class="table-wrap">${table(res.summary, ['maDoiTuong','tenDoiTuong','actual','paid','ap','ar','net','count','status'])}</div>`;
+      } catch (err) { box.innerHTML = esc(err.message || err); toast(err.message || String(err), 'err'); }
+    }
+
+    function renderSettlement() {
+      renderShell('Lưu &amp; clear tất toán', `
+        <div class="field"><label>Mã đối tượng</label><select id="sma">${objectOptions()}</select><small>Để trống để preview toàn bộ.</small></div>
+        <div class="actions">
+          <button onclick="previewSettlement(this)">Preview tất toán</button>
+          <button class="danger" onclick="confirmSettlement(this)">Xác nhận archive &amp; clear</button>
+        </div>
+        <div id="settleBox" class="table-wrap" style="margin-top:12px"></div>`, 'debt');
+      loadRecent('debt');
+    }
+    async function previewSettlement(btn) {
+      const box = document.getElementById('settleBox');
+      box.innerHTML = loadingText('Đang tính preview tất toán...');
+      try {
+        const res = await withBusy(btn, 'Đang tính...', () => call('rpc_preview_settlement', { p_ma_doi_tuong: val('sma') || null }));
+        const plan = res.plan || {};
+        box.innerHTML = `<p class="status">Sẽ tất toán (archive): ${plan.archived ?? 0} dòng. Giữ lại: ${plan.kept ?? 0} dòng.</p>` + table(plan.preview, ['action','maCN','doiTuong','actual','allocated']);
+      } catch (err) { box.innerHTML = esc(err.message || err); toast(err.message || String(err), 'err'); }
+    }
+    async function confirmSettlement(btn) {
+      if (!confirm('Xác nhận archive trước rồi clear/compact công nợ?')) return;
+      try {
+        const res = await withBusy(btn, 'Đang clear...', () => call('rpc_confirm_settlement', { p_ma_doi_tuong: val('sma') || null }));
+        document.getElementById('settleBox').innerHTML = `Đã archive ${res.archived} dòng, giữ lại ${res.kept} dòng.`;
+        toast(`Đã archive ${res.archived} dòng.`, 'ok');
+        loadRecent('debt');
+      } catch (err) { document.getElementById('settleBox').innerHTML = esc(err.message || err); toast(err.message || String(err), 'err'); }
+    }
+
+    async function loadRecent(kind, btn) {
+      const box = document.getElementById('recentBox');
+      if (!box) return;
+      box.innerHTML = loadingText('Đang tải dữ liệu gần đây...');
+      try {
+        const filter = {
+          limit: Number(val('recentLimit') || 20),
+          maDoiTuong: val('recentMa'),
+          fromDate: val('recentFrom'),
+          toDate: val('recentTo')
+        };
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_get_recent', { p_kind: kind, p_filter: filter }));
+        const rows = res.rows || [];
+        const cols = res.columns || (rows[0] ? Object.keys(rows[0]).slice(0, 10) : []);
+        box.innerHTML = (rows.length ? table(rows, cols) : '<p class="status">Chưa có dữ liệu phù hợp.</p>');
+      } catch (err) { box.innerHTML = `<p class="status">Không tải được dữ liệu gần đây: ${esc(err.message || err)}</p>`; toast(err.message || String(err), 'err'); }
+    }
+
+    function table(rows, cols, actionFn) {
+      rows = rows || [];
+      if (!rows.length) return '<p class="status">Không có dữ liệu.</p>';
+      return `<table><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}${actionFn ? '<th>Thao tác</th>' : ''}</tr></thead><tbody>` +
+        rows.map(r => `<tr>${cols.map(c => `<td>${esc(formatCell(r[c]))}</td>`).join('')}${actionFn ? `<td>${actionFn(r)}</td>` : ''}</tr>`).join('') +
+        '</tbody></table>';
+    }
+    function formatCell(v) {
+      if (typeof v === 'number') return fmtMoney(v);
+      return v ?? '';
+    }
+
+    // Resume an existing Supabase session on page load/refresh, mirroring
+    // the old localStorage-token bootstrap.
+    (async function init() {
+      const { data } = await sb.auth.getSession();
+      if (data && data.session) {
+        state.session = data.session;
+        bootstrap();
+      }
+    })();
+    sb.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') location.reload();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+name: Deploy Supabase migrations
+
+# Optional, advanced path: pushes every file in supabase/migrations/ to your
+# live Supabase project whenever main changes. Only runs if you've added the
+# 3 repo secrets below (Settings -> Secrets and variables -> Actions).
+# If you don't add them, this workflow simply won't trigger anything harmful —
+# GitHub Actions requires the secrets to exist for the step to succeed, and
+# you can always fall back to pasting the SQL files by hand (see
+# SUPABASE_SETUP.md, "Option A").
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+
+      - name: Push migrations
+        run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
