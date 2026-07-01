@@ -13,6 +13,6 @@
 // REPLACE_ME values, commit, and push — that's the only per-deployment change
 // this project needs.
 window.APP_CONFIG = {
-  supabaseUrl: "https://supabase.com/dashboard/project/nsxvasvceslhhvgjkedh",
+  supabaseUrl: "https://nsxvasvceslhhvgjkedh.supabase.co",
   supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zeHZhc3ZjZXNsaGh2Z2prZWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NzY2MDgsImV4cCI6MjA5ODQ1MjYwOH0.PuGwDEVHu3n0V4X5uhx-X04swUjQfjZLuhN5Ug6K924",
 };
