@@ -1,0 +1,11 @@
+{
+  "name": "thiennhat-supabase-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "create-staff": "node bulk_create_staff.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

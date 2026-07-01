@@ -360,17 +360,125 @@ This step has two parts: (A) create a login in Supabase's Auth system, then (B) 
 
 If login fails, jump to section 11 (Troubleshooting) — the two most common causes at this stage are: the profiles row's `id` doesn't exactly match the Auth user's UUID (typo when copying), or "Auto Confirm User" wasn't checked in 8A.
 
-Add more staff the same way — repeat 8A with their own email + `tn-pin::<their PIN>`, then repeat 8B with their UUID and the appropriate role:
+### 8D-manual is the recommended path if you're not comfortable with a terminal — skip straight to it below. The script method further down is only worth it once you're onboarding staff regularly and want to save clicks.
 
-Add more staff the same way — create their Auth user with `tn-pin::<their PIN>`, then add a `profiles` row with the appropriate role:
+### 8D. Add more staff (any role) — the fast way (one script, no repeated clicking)
 
-| Role | Vietnamese meaning | Can do |
+Doing 8A+8B by hand for every single person is a lot of clicking. There's a script in this repo (`scripts/bulk_create_staff.mjs`) that does both steps — create the Auth login AND set their role — for your entire staff list in one command. You edit one local file, run one command, done. It never touches Supabase's dashboard UI at all.
+
+**One-time setup (only do this once, ever):**
+
+1. **Install Node.js**, if you don't already have it: download from [nodejs.org](https://nodejs.org) (choose the "LTS" version), run the installer with default options.
+2. Open a terminal (see 6.1 if you forgot how) and move into the `scripts` folder of this project:
+   ```bash
+   cd "/path/to/thiennhat-supabase/scripts"
+   ```
+   (Same trick as 6.4 — type `cd ` with a trailing space, then drag the `scripts` folder from Finder into the terminal window, then press Enter.)
+3. Install the one dependency this script needs:
+   ```bash
+   npm install
+   ```
+4. Get your **service role key** (different from the anon key you put in `config.js` — this one has full admin power, never put it in `config.js` or any file that gets pushed to GitHub):
+   - Supabase dashboard → **Project Settings → API**.
+   - Find **service_role** under "Project API keys" → click **Reveal** → copy it.
+   - Keep it somewhere private (a password manager, or a local `.env` file — never a file that gets committed).
+
+**Every time you want to add/update staff:**
+
+1. If it's your first time, copy the example file to your real one:
+   ```bash
+   cp staff.example.json staff.local.json
+   ```
+   (`staff.local.json` is in `.gitignore` — it will never be committed or pushed, so PINs never end up on GitHub.)
+2. Open `staff.local.json` in a plain-text editor and list everyone:
+   ```json
+   [
+     { "email": "a.nguyen@yourcompany.com", "pin": "4455", "name": "Nguyễn Văn A", "role": "NhanVienMuaHang" },
+     { "email": "b.tran@yourcompany.com",  "pin": "7788", "name": "Trần Thị B",   "role": "TruongPhong" }
+   ]
+   ```
+   One `{ ... }` entry per person. `role` must be exactly one of the 5 values in the table below.
+3. Run the script, with your Project URL and service role key from setup step 4:
+   ```bash
+   SUPABASE_URL="https://nsxvasvceslhhvgjkedh.supabase.co" \
+   SUPABASE_SERVICE_ROLE_KEY="paste-your-service-role-key-here" \
+   npm run create-staff
+   ```
+4. You'll see one line per person, e.g. `✔ a.nguyen@yourcompany.com — NhanVienMuaHang — done`, and a final count of successes/failures.
+5. Tell each person their login: their email + their PIN only (never the `tn-pin::` part).
+
+**Safe to re-run.** If you run it again later with more people added to `staff.local.json`, existing people are detected by email and just get their profile (name/role) refreshed — they won't be duplicated or get a new password.
+
+**Changing someone's role or PIN later**: just edit their line in `staff.local.json` and re-run the script — role changes apply immediately; to change a PIN you'd need to also reset it in Supabase dashboard → Authentication → Users → find them → the "..." menu → reset password to `tn-pin::<new pin>` (the script only ever creates new logins, it doesn't overwrite an existing password).
+
+If you'd rather not install Node.js at all, the manual per-person method (dashboard clicks only) still works — see below.
+
+### 8D-manual. Add one staff member by hand (dashboard only, no script)
+
+Same two-part pattern as 8A/8B, repeated per person: **create their login in Auth**, then **add their `profiles` row with the right role**. Do this once per staff member.
+
+**Roles available:**
+
+| Role (type exactly this) | Vietnamese meaning | Can do |
 | --- | --- | --- |
 | `NhanVienMuaHang` | Nhân viên mua hàng | Xem báo giá, tạo/gửi đề xuất, cập nhật nhận hàng |
 | `TruongPhong` | Trưởng phòng | Duyệt/từ chối đề xuất |
 | `KeToanCongNo` | Kế toán công nợ | Cập nhật nhận hàng, ghi thanh toán, preview/confirm tất toán |
 | `LanhDao` | Lãnh đạo | Chỉ xem báo giá + dashboard công nợ |
 | `Admin` | Quản trị | Mọi quyền |
+
+**Step-by-step for one new person** (example: a purchasing staff member, Nguyễn Văn A, email `a.nguyen@yourcompany.com`, PIN `4455`):
+
+1. **Create their Auth login** (same as 8A): Supabase dashboard → **Authentication → Users → Add user** → **Create new user**.
+   - Email: `a.nguyen@yourcompany.com`
+   - Password: `tn-pin::4455` (their chosen PIN, with the `tn-pin::` prefix — this is always the same prefix for everyone, only the digits after it change per person)
+   - Check **Auto Confirm User**.
+   - Click **Create user**.
+2. **Get their UUID**: SQL Editor → new query →
+   ```sql
+   select id, email from auth.users order by created_at desc limit 5;
+   ```
+   Run it, copy the `id` next to `a.nguyen@yourcompany.com`.
+3. **Add their profile row**: new query in SQL Editor —
+   ```sql
+   insert into profiles (id, email, name, role, status)
+   values (
+     'PASTE-THEIR-UUID-HERE',
+     'a.nguyen@yourcompany.com',
+     'Nguyễn Văn A',
+     'NhanVienMuaHang',
+     'Hoạt động'
+   )
+   on conflict (id) do update set
+     email = excluded.email,
+     name = excluded.name,
+     role = excluded.role,
+     status = excluded.status;
+   ```
+   Change only the UUID, email, name, and `role` (pick one from the table above) for each person. Click **Run** — should say "Success."
+4. Tell them their login: their email + their PIN only (e.g. `4455`) — they never type `tn-pin::`.
+
+**Adding several people faster:** if you're onboarding a handful of staff at once, you can create all their Auth users first (repeat step 1 for each), then run one combined query at the end instead of one insert per person:
+
+```sql
+insert into profiles (id, email, name, role, status) values
+  ('uuid-person-1', 'person1@yourcompany.com', 'Tên người 1', 'NhanVienMuaHang', 'Hoạt động'),
+  ('uuid-person-2', 'person2@yourcompany.com', 'Tên người 2', 'TruongPhong',     'Hoạt động'),
+  ('uuid-person-3', 'person3@yourcompany.com', 'Tên người 3', 'KeToanCongNo',    'Hoạt động'),
+  ('uuid-person-4', 'person4@yourcompany.com', 'Tên người 4', 'LanhDao',         'Hoạt động')
+on conflict (id) do update set
+  email = excluded.email, name = excluded.name, role = excluded.role, status = excluded.status;
+```
+
+(Get each UUID first via the `select id, email from auth.users ...` query — it lists your 5 most recently created users, so create them all in Auth first, then run that select once to grab every UUID before building this combined insert.)
+
+**Changing someone's role later**, or deactivating them, doesn't need Auth changes at all — just update their existing `profiles` row:
+
+```sql
+update profiles set role = 'TruongPhong' where email = 'a.nguyen@yourcompany.com';
+-- or to deactivate someone without deleting their history:
+update profiles set status = 'Ngừng' where email = 'a.nguyen@yourcompany.com';
+```
 
 ---
 

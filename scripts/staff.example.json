@@ -1,0 +1,6 @@
+[
+  { "email": "a.nguyen@yourcompany.com", "pin": "4455", "name": "Nguyễn Văn A", "role": "NhanVienMuaHang" },
+  { "email": "b.tran@yourcompany.com",  "pin": "7788", "name": "Trần Thị B",   "role": "TruongPhong" },
+  { "email": "c.le@yourcompany.com",    "pin": "1122", "name": "Lê Văn C",     "role": "KeToanCongNo" },
+  { "email": "d.pham@yourcompany.com",  "pin": "9900", "name": "Phạm Thị D",   "role": "LanhDao" }
+]

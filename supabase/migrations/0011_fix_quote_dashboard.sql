@@ -1,57 +1,16 @@
 -- ============================================================================
--- 0006_rpc_bootstrap_quotes.sql
--- rpc_bootstrap()            mirrors apiBootstrap()
--- rpc_get_quote_dashboard()  mirrors apiGetQuoteDashboard() / latestPriceRowsBySupplierAsOf_() /
---                            previousPriceRow_() / serializeQuoteCandidateForWeb_()
--- rpc_add_price_quote()      mirrors "luuNhapGia" (manual quote entry), the Supabase
---                            equivalent of typing a row into the NHAP sheet.
+-- 0011_fix_quote_dashboard.sql
+-- Bugfix: rpc_get_quote_dashboard() referenced the CTEs `base` / `with_prev`
+-- from a PREVIOUS, already-terminated SQL statement in the v_history and
+-- v_best queries. In PL/pgSQL each SQL statement is independent, so those CTEs
+-- were out of scope by then -> runtime error: relation "base" does not exist
+-- (surfaced as "Làm mới dashboard" failing on the frontend).
 --
--- Note: the original AppSheet <-> Google Sheets sync (syncAppSheetBaoGiaToDataGoc)
--- has no equivalent here because there is no spreadsheet in this stack. Any
--- external phone-entry tool (AppSheet, a form, etc.) should just call
--- rpc_add_price_quote() directly, or insert-and-call is not possible from the
--- client since price_quotes has no direct grants — use rpc_add_price_quote().
+-- Fix: repeat the required CTEs inside each of the three statements. This file
+-- redefines the function with create-or-replace so the already-deployed DB gets
+-- the corrected body without re-running earlier migrations. 0006 has also been
+-- corrected identically for fresh installs.
 -- ============================================================================
-
-create or replace function rpc_bootstrap() returns jsonb
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare
-  v_profile profiles;
-  v_perms jsonb;
-begin
-  select * into v_profile from profiles where id = auth.uid();
-  if v_profile is null then
-    raise exception 'Tài khoản chưa được cấp quyền truy cập hệ thống. Hãy liên hệ Admin để tạo hồ sơ trong bảng profiles.';
-  end if;
-  if v_profile.status <> 'Hoạt động' then
-    raise exception 'Tài khoản chưa ở trạng thái Hoạt động.';
-  end if;
-
-  if v_profile.role = 'Admin' then
-    v_perms := to_jsonb(array['*']::text[]);
-  else
-    select coalesce(jsonb_agg(permission), '[]'::jsonb) into v_perms
-    from role_permissions where role = v_profile.role;
-  end if;
-
-  return jsonb_build_object(
-    'ok', true,
-    'user', jsonb_build_object('email', v_profile.email, 'name', v_profile.name, 'role', v_profile.role),
-    'doiTuong', (
-      select coalesce(jsonb_agg(jsonb_build_object(
-        'MaDoiTuong', ma_doi_tuong,
-        'TenDoiTuong', ten_doi_tuong,
-        'DieuKhoanTT_MacDinh', dieu_khoan_tt_mac_dinh
-      ) order by ten_doi_tuong), '[]'::jsonb)
-      from doi_tuong where trang_thai = 'Hoạt động'
-    ),
-    'vatTu', (
-      select coalesce(jsonb_agg(ten order by ten), '[]'::jsonb) from materials
-    ),
-    'permissions', v_perms
-  );
-end;
-$$;
 
 create or replace function rpc_get_quote_dashboard(
   p_item text default null,
@@ -93,7 +52,6 @@ begin
     where (v_item is null or normalize_text(pq.mat_hang) = normalize_text(v_item))
       and pq.ngay <= v_as_of
   ),
-  -- Latest quote per supplier (mirrors latestPriceRowsBySupplierAsOf_ when an item is given).
   ranked as (
     select b.*, row_number() over (
       partition by normalize_text(b.ncc)
@@ -104,7 +62,6 @@ begin
   latest as (
     select * from ranked where rn = 1
   ),
-  -- Previous quote (any date strictly before this one) for the same item+supplier, for delta/trend.
   with_prev as (
     select
       l.*,
@@ -220,46 +177,4 @@ begin
 end;
 $$;
 
--- Manual quote entry, the Supabase equivalent of typing a row in the NHAP
--- sheet and running "1. Lưu giá từ NHAP".
-create or replace function rpc_add_price_quote(
-  p_ngay date,
-  p_mat_hang text,
-  p_ncc text,
-  p_gia numeric,
-  p_vat_status text default 'Chưa VAT',
-  p_dvt text default null,
-  p_de_xuat text default 'Không',
-  p_ghi_chu text default null
-) returns jsonb
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare
-  v_actor profiles;
-  v_row price_quotes;
-begin
-  v_actor := require_permission('quote:sync');
-  if p_mat_hang is null or trim(p_mat_hang) = '' then
-    raise exception 'Thiếu Mặt hàng.';
-  end if;
-  if p_ncc is null or trim(p_ncc) = '' then
-    raise exception 'Thiếu Nhà cung cấp.';
-  end if;
-  if p_gia is null or p_gia < 0 then
-    raise exception 'Thiếu Giá gọi hoặc giá không hợp lệ.';
-  end if;
-
-  perform ensure_material(p_mat_hang, p_dvt);
-
-  insert into price_quotes (ngay, mat_hang, ncc, gia, vat_status, dvt, de_xuat, ghi_chu, nguon, created_by)
-  values (coalesce(p_ngay, current_date), trim(p_mat_hang), trim(p_ncc), p_gia,
-          coalesce(p_vat_status, 'Chưa VAT'), p_dvt, coalesce(p_de_xuat, 'Không'), p_ghi_chu, 'WebApp', v_actor.id)
-  returning * into v_row;
-
-  perform write_audit(v_actor, 'ADD_PRICE_QUOTE', 'price_quotes', v_row.id::text, null, to_jsonb(v_row), 'OK', '');
-  return jsonb_build_object('ok', true, 'id', v_row.id);
-end;
-$$;
-
-grant execute on function rpc_bootstrap() to authenticated;
 grant execute on function rpc_get_quote_dashboard(text, date, int) to authenticated;
-grant execute on function rpc_add_price_quote(date, text, text, numeric, text, text, text, text) to authenticated;
