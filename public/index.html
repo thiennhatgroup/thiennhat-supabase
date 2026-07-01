@@ -300,9 +300,11 @@
     ];
     const ROLE_LABELS = {
       NhanVienMuaHang: 'Nhân viên mua hàng',
-      TruongPhong: 'Trưởng phòng',
       KeToanCongNo: 'Kế toán công nợ',
-      LanhDao: 'Lãnh đạo',
+      TongGiamDoc: 'Tổng giám đốc',
+      ChuTich: 'Chủ tịch',
+      TruongPhong: 'Trưởng phòng',
+      LanhDao: 'Lãnh đạo (cũ)',
       Admin: 'Admin'
     };
     function can(perm) {
@@ -969,7 +971,7 @@
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>Duyệt đề xuất mua hàng / tạm ứng</h2>
-          <div class="notice ok">Lãnh đạo duyệt từng khoản. Nhấp vào một phiếu để xem chi tiết, so sánh giá NCC theo từng mặt hàng, và cờ kế hoạch chi tuần trước khi quyết định.</div>
+          <div class="notice ok">Danh sách chỉ hiện phiếu đúng thẩm quyền của bạn: <b>≥ 10 triệu → Chủ tịch</b>, <b>&lt; 10 triệu → Tổng giám đốc</b>. Nhấp vào một phiếu để xem chi tiết, so sánh giá NCC, và cờ kế hoạch chi tuần trước khi quyết định.</div>
           <div class="actions"><button class="secondary" onclick="loadPending(this)">↻ Tải lại danh sách chờ duyệt</button></div>
           <div id="pendingBox" style="margin-top:14px">${loadingText('Đang tải danh sách chờ duyệt...')}</div>
         </section>
