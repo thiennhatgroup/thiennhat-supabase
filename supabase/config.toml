@@ -2,4 +2,4 @@
 # Used only if you install the Supabase CLI locally or run the GitHub Action
 # in .github/workflows/deploy-db.yml. Not required for the manual "paste into
 # SQL Editor" setup path described in SUPABASE_SETUP.md.
-project_id = "REPLACE_WITH_YOUR_PROJECT_REF"
+project_id = "nsxvasvceslhhvgjkedh"

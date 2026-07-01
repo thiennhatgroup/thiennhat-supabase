@@ -63,23 +63,71 @@ You have two options. **Do Option A first** — it always works and takes 10 min
 
 That's it — your database now has every table, security rule, and business-logic function the app needs.
 
-### Option B — automatic deploy from GitHub (do this after Option A works)
+### Option B — automatic deploy from GitHub Actions (detailed, step-by-step)
 
-This repo already includes `.github/workflows/deploy-db.yml`, which runs `supabase db push` every time you push a change under `supabase/migrations/` to your `main` branch.
+This repo includes `.github/workflows/deploy-db.yml`. Once set up, it runs `supabase db push` automatically every time you push a change under `supabase/migrations/` to `main` — no manual SQL Editor pasting needed. Setup is a one-time process:
 
-To turn it on:
+**B1. Confirm the repo is already on GitHub.** You've done this via GitHub Desktop (Published/Pushed). Skip to B2.
 
-1. Push this repo to GitHub (see section 6 below) if you haven't already.
-2. Get a Supabase **access token**: [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) → **Generate new token**.
-3. Find your **project ref**: it's the subdomain of your Project URL, e.g. if your URL is `https://abcdefgh.supabase.co`, the ref is `abcdefgh`.
-4. In your GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**. Add these three:
-   - `SUPABASE_ACCESS_TOKEN` = the token from step 2
-   - `SUPABASE_PROJECT_REF` = the ref from step 3
-   - `SUPABASE_DB_PASSWORD` = the database password you set in step 1
-5. Also edit `supabase/config.toml` and replace `REPLACE_WITH_YOUR_PROJECT_REF` with your real project ref, then commit.
-6. From now on, editing anything under `supabase/migrations/` and pushing to `main` will automatically apply it to your live database.
+**B2. Generate a Supabase access token**
 
-If you skip Option B entirely, that's fine — Option A works forever, you'll just paste future SQL changes by hand.
+1. Open [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) in your browser (make sure you're logged in).
+2. Click **Generate new token**.
+3. Give it any name, e.g. `github-actions`.
+4. Click **Generate token**.
+5. **Copy it immediately** — it starts with `sbp_...` and Supabase only shows it once. Paste it into a Notes app or similar temporarily; you'll need it in B5.
+
+**B3. Find your project ref**
+
+1. In your Supabase project dashboard → **Project Settings** (gear icon, bottom of left sidebar) → **General**.
+2. Look for **Reference ID** — a short string like `abcdefghijklmno`.
+3. (This is the same value as the subdomain of your Project URL: `https://abcdefghijklmno.supabase.co`.)
+
+**B4. Find or reset your database password**
+
+- This is the password you chose when you first created the project (section 1, step 3 of this guide).
+- Forgot it? **Project Settings → Database** → **Reset database password** → set a new one and save it somewhere safe (e.g. a password manager).
+
+**B5. Add 3 secrets to your GitHub repo**
+
+1. Go to `github.com` → open your repo (`thiennhatgroup/thiennhat-supabase`) → click the **Settings** tab (this is the repo's settings, near the top, not your account settings).
+2. Left sidebar → **Secrets and variables** → **Actions**.
+3. Click the green **New repository secret** button.
+4. Add the first one: **Name** = `SUPABASE_ACCESS_TOKEN`, **Secret** = the token from B2 → click **Add secret**.
+5. Click **New repository secret** again: **Name** = `SUPABASE_PROJECT_REF`, **Secret** = the ref from B3 → **Add secret**.
+6. Click **New repository secret** again: **Name** = `SUPABASE_DB_PASSWORD`, **Secret** = the password from B4 → **Add secret**.
+7. You should now see all three names listed under "Repository secrets" (the values themselves stay hidden — that's normal).
+
+**B6. Edit `supabase/config.toml` with your real project ref**
+
+1. In Finder, open your local project folder → `supabase` → `config.toml` (open with TextEdit, or any plain-text editor — not Word).
+2. Find the line: `project_id = "REPLACE_WITH_YOUR_PROJECT_REF"`.
+3. Replace `REPLACE_WITH_YOUR_PROJECT_REF` with your real project ref from B3, keeping the quotes, e.g. `project_id = "abcdefghijklmno"`.
+4. Save the file.
+
+**B7. Commit and push that change**
+
+1. Open GitHub Desktop — it should show `config.toml` under **Changes**.
+2. Type a commit summary, e.g. "Set Supabase project ref".
+3. Click **Commit to main**.
+4. Click **Push origin** (top right).
+
+**B8. Trigger the workflow for the first time**
+
+Since this push only touched `config.toml` (not a file inside `supabase/migrations/`), the workflow's automatic trigger won't fire yet. Run it manually once:
+
+1. On GitHub, open your repo → **Actions** tab (top of the repo page).
+2. Left sidebar → click **Deploy Supabase migrations**.
+3. Click the **Run workflow** dropdown (right side, above the run list) → make sure branch is `main` → click the green **Run workflow** button.
+4. Wait about 30–60 seconds, then refresh the page — a new run appears in the list. Click it to watch progress live.
+5. A green checkmark means all 10 migration files were applied successfully to your live database.
+6. A red X means something failed — click into the failed step (usually "Link project" or "Push migrations") to expand the error log, then paste that error text here and I'll debug it with you.
+
+**B9. From now on**
+
+Any time you edit a file under `supabase/migrations/` (or add a new `00XX_*.sql` file) and push to `main` via GitHub Desktop, this workflow re-runs automatically and applies it to your live database — no SQL Editor needed again.
+
+If you'd rather skip Option B entirely, that's fine — Option A works forever, you'll just paste future SQL changes into the SQL Editor by hand.
 
 ---
 
