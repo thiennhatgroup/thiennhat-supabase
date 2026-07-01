@@ -185,19 +185,19 @@ The `commit` command should print a summary line like `[main (root-commit) abc12
 2. Click the **+** icon top-right → **New repository**.
 3. Name it (e.g. `thiennhat-supabase`).
 4. **Do not** check "Add a README", "Add .gitignore", or "Choose a license" — leave the repo completely empty. (If any of those are checked, the push in 6.7 will fail with "fetch first" / non-fast-forward errors.)
-5. Click **Create repository**. GitHub shows you a page with a URL like `https://github.com/YOUR_USERNAME/thiennhat-supabase.git` — keep this page open.
+5. Click **Create repository**. GitHub shows you a page with a URL like `https://github.com/thiennhatgroup/thiennhat-supabase.git` — keep this page open.
 
 ### 6.7 Connect and push
 
 Back in the terminal (still inside the project folder):
 
 ```bash
-git remote add origin https://github.com/YOUR_USERNAME/thiennhat-supabase.git
+git remote add origin https://github.com/thiennhatgroup/thiennhat-supabase.git
 git branch -M main
 git push -u origin main
 ```
 
-(Replace the URL with the exact one GitHub showed you in 6.6.)
+(Use the exact URL GitHub showed you in 6.6 — it should match `https://github.com/thiennhatgroup/thiennhat-supabase.git` if you created the repo under the `thiennhatgroup` account/org.)
 
 **This is where it will likely ask you to log in — and this is the #1 beginner blocker**, because GitHub no longer accepts your regular account password here. You need a **Personal Access Token** instead:
 
