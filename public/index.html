@@ -275,8 +275,16 @@
       ['payment', 'Ghi nhận chi (lẻ)', 'payment:create'],
       ['dashboard', 'Dashboard công nợ', 'dashboard:read'],
       ['settlement', 'Tất toán', 'settlement:preview'],
-      ['catalog', 'Danh mục', 'catalog:read']
+      ['catalog', 'Danh mục', 'catalog:read'],
+      ['users', 'Tài khoản', 'user:manage']
     ];
+    const ROLE_LABELS = {
+      NhanVienMuaHang: 'Nhân viên mua hàng',
+      TruongPhong: 'Trưởng phòng',
+      KeToanCongNo: 'Kế toán công nợ',
+      LanhDao: 'Lãnh đạo',
+      Admin: 'Admin'
+    };
     function can(perm) {
       return state.permissions.includes('*') || state.permissions.includes(perm);
     }
@@ -499,6 +507,7 @@
       if (id === 'dashboard') return renderDashboard();
       if (id === 'settlement') return renderSettlement();
       if (id === 'catalog') return renderCatalog();
+      if (id === 'users') return renderUsers();
     }
 
     function renderQuotes() {
@@ -1814,6 +1823,86 @@
       if (!reason) { toast('Cần nhập lý do từ chối.', 'err'); return; }
       try { await withBusy(btn, 'Đang từ chối...', () => call('rpc_reject_payment_request', { p_ma: ma, p_reason: reason })); toast(`Đã từ chối ${ma}.`, 'ok'); closeModal(); loadPendingPayReq(); }
       catch (err) { toast(err.message || String(err), 'err'); }
+    }
+
+    // ===== Tài khoản (Admin) — tạo & phân quyền ngay trên webapp ============
+    function roleOptions(selected) {
+      return Object.keys(ROLE_LABELS).map(r => `<option value="${r}" ${r===selected?'selected':''}>${ROLE_LABELS[r]}</option>`).join('');
+    }
+    function renderUsers() {
+      document.getElementById('content').innerHTML = `
+        <section class="card">
+          <h2>Tài khoản &amp; phân quyền</h2>
+          <div class="notice ok">Tạo tài khoản và gán vai trò cho từng người ngay tại đây — không cần vào Supabase. Người dùng đăng nhập bằng email + mã PIN.</div>
+          <div class="actions"><button onclick="openUserForm()">＋ Thêm tài khoản</button><button class="secondary" onclick="loadUsers(this)">↻ Tải lại</button></div>
+          <div id="usersBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
+          <div class="notice" style="margin-top:12px">Vai trò &amp; quyền: <b>Nhân viên mua hàng</b> tạo đề xuất/nghiệm thu · <b>Lãnh đạo</b> duyệt đề xuất &amp; thanh toán · <b>Kế toán công nợ</b> đề xuất/đi tiền, dashboard · <b>Trưởng phòng</b> xem báo giá · <b>Admin</b> toàn quyền.</div>
+        </section>`;
+      loadUsers();
+    }
+    async function loadUsers(btn) {
+      const box = document.getElementById('usersBox');
+      if (box) box.innerHTML = loadingText('Đang tải...');
+      try {
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_admin_list_users'));
+        const rows = res.rows || [];
+        box.innerHTML = `<div class="table-wrap"><table><thead><tr>
+          <th>Email</th><th>Tên</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+          ${rows.map(u => `<tr>
+            <td>${esc(u.email)}</td><td>${esc(u.name||'')}</td>
+            <td>${esc(ROLE_LABELS[u.role]||u.role)}</td>
+            <td>${u.status==='Ngừng'?'<span class="pill err">Ngừng</span>':'<span class="pill ok">Hoạt động</span>'}</td>
+            <td><button class="secondary" onclick='openUserEdit(${JSON.stringify(u).replace(/'/g,"&#39;")})'>Sửa</button>
+                <button class="secondary" onclick="resetPin('${esc(u.id)}','${esc(u.email)}', this)">Đặt lại PIN</button></td>
+          </tr>`).join('')}</tbody></table></div>`;
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    function openUserForm() {
+      openModal('Thêm tài khoản', `
+        <div class="field"><label>Email *</label><input id="uEmail" placeholder="nguoidung@congty.com"></div>
+        <div class="field"><label>Họ tên *</label><input id="uName"></div>
+        <div class="grid">
+          <div class="field"><label>Vai trò</label><select id="uRole">${roleOptions('NhanVienMuaHang')}</select></div>
+          <div class="field"><label>Mã PIN (≥4 số)</label><input id="uPin" placeholder="VD: 1234"></div>
+        </div>
+        <small>Người dùng đăng nhập bằng email + PIN này. Có thể đổi PIN sau bằng “Đặt lại PIN”.</small>`,
+        saveNewUser, 'Tạo tài khoản');
+    }
+    async function saveNewUser(btn) {
+      const email = val('uEmail').trim(), name = val('uName').trim(), role = val('uRole'), pin = val('uPin').trim();
+      if (!email || !name) { modalErr('Cần nhập email và họ tên.'); return; }
+      if (pin.length < 4) { modalErr('PIN cần ít nhất 4 ký tự.'); return; }
+      try {
+        await withBusy(btn, 'Đang tạo...', () => call('rpc_admin_create_user', { p_email: email, p_name: name, p_role: role, p_pin: pin }));
+        closeModal(); toast('Đã tạo tài khoản.', 'ok'); loadUsers();
+      } catch (err) { modalErr(err.message || String(err)); }
+    }
+    function openUserEdit(u) {
+      openModal('Sửa tài khoản', `
+        <div class="field"><label>Email</label><input value="${esc(u.email)}" disabled></div>
+        <div class="field"><label>Họ tên</label><input id="ueName" value="${esc(u.name||'')}"></div>
+        <div class="grid">
+          <div class="field"><label>Vai trò</label><select id="ueRole">${roleOptions(u.role)}</select></div>
+          <div class="field"><label>Trạng thái</label><select id="ueStatus">
+            <option ${u.status==='Ngừng'?'':'selected'}>Hoạt động</option>
+            <option ${u.status==='Ngừng'?'selected':''}>Ngừng</option>
+          </select></div>
+        </div>`, () => saveUserEdit(u.id), 'Lưu thay đổi');
+    }
+    async function saveUserEdit(id, btn) {
+      try {
+        await call('rpc_admin_update_user', { p_id: id, p_role: val('ueRole'), p_status: val('ueStatus'), p_name: val('ueName') });
+        closeModal(); toast('Đã cập nhật.', 'ok'); loadUsers();
+      } catch (err) { modalErr(err.message || String(err)); }
+    }
+    async function resetPin(id, email, btn) {
+      const pin = (prompt(`Đặt lại PIN mới cho ${email} (≥4 số):`, '') || '').trim();
+      if (!pin) return;
+      if (pin.length < 4) { toast('PIN cần ít nhất 4 ký tự.', 'err'); return; }
+      try {
+        await withBusy(btn, 'Đang đặt lại...', () => call('rpc_admin_reset_pin', { p_id: id, p_pin: pin }));
+        toast('Đã đặt lại PIN.', 'ok');
+      } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
     // Resume an existing Supabase session on page load/refresh, mirroring
