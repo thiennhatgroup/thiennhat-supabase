@@ -184,6 +184,18 @@
     td code { background: #ECE5D8; padding: 2px 6px; border-radius: 6px; font-size: 12px; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(20,20,19,.45); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px; z-index: 40; overflow: auto; }
     .modal-card { width: 100%; max-width: 620px; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .bell-wrap { position: relative; }
+    .bell-btn { position: relative; font-size: 18px; padding: 8px 12px; min-height: 40px; }
+    .notif-badge { position: absolute; top: -6px; right: -6px; background: var(--danger); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 1px 6px; min-width: 18px; text-align: center; }
+    .notif-panel { position: absolute; right: 0; top: 48px; width: 360px; max-height: 460px; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 34px rgba(0,0,0,.18); z-index: 35; padding: 8px; }
+    .notif-item { padding: 10px; border-radius: 8px; cursor: pointer; border-bottom: 1px solid var(--line); }
+    .notif-item:hover { background: #F0EEE6; }
+    .notif-item.unread { background: #FFF7E7; }
+    .notif-item .nt-title { font-weight: 700; font-size: 13px; }
+    .notif-item .nt-body { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .notif-item .nt-time { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .notif-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; }
     .plan-box { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff; }
     .check-line { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--ink); margin: 0; }
     .check-line input { width: auto; min-height: auto; }
@@ -235,7 +247,13 @@
         <h1>Web App Mua hàng &amp; Công nợ</h1>
         <div id="userBadge" class="status"></div>
       </div>
-      <button class="secondary" onclick="logout()">Đăng xuất</button>
+      <div class="header-right">
+        <div class="bell-wrap">
+          <button class="secondary bell-btn" onclick="toggleNotif()" title="Thông báo">🔔<span id="notifBadge" class="notif-badge hidden">0</span></button>
+          <div id="notifPanel" class="notif-panel hidden"></div>
+        </div>
+        <button class="secondary" onclick="logout()">Đăng xuất</button>
+      </div>
     </header>
     <div class="app">
       <nav id="nav"></nav>
@@ -248,6 +266,7 @@
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <script src="./config.js"></script>
   <script>
     const APP = window.APP_CONFIG || {};
@@ -272,9 +291,10 @@
       ['receipt', 'Nhận hàng', 'receipt:update'],
       ['payreq', 'Đề xuất thanh toán', 'payment:request'],
       ['payapprove', 'Duyệt đề xuất thanh toán', 'payment:approve'],
-      ['payment', 'Ghi nhận chi (lẻ)', 'payment:create'],
       ['dashboard', 'Dashboard công nợ', 'dashboard:read'],
       ['settlement', 'Tất toán', 'settlement:preview'],
+      ['printpp', 'In đề xuất mua hàng', 'recent:read'],
+      ['printyctt', 'In phiếu yêu cầu TT', 'recent:read'],
       ['catalog', 'Danh mục', 'catalog:read'],
       ['users', 'Tài khoản', 'user:manage']
     ];
@@ -454,6 +474,8 @@
         if (!allowed.some(s => s[0] === state.screen)) state.screen = allowed.length ? allowed[0][0] : 'dashboard';
         renderNav();
         renderScreen(state.screen);
+        refreshNotif();
+        if (!state.notifTimer) state.notifTimer = setInterval(refreshNotif, 45000);
       } catch (err) {
         document.getElementById('loginView').classList.remove('hidden');
         document.getElementById('appView').classList.add('hidden');
@@ -508,6 +530,8 @@
       if (id === 'settlement') return renderSettlement();
       if (id === 'catalog') return renderCatalog();
       if (id === 'users') return renderUsers();
+      if (id === 'printpp') return renderPrintPP();
+      if (id === 'printyctt') return renderPrintYCTT();
     }
 
     function renderQuotes() {
@@ -726,10 +750,32 @@
           <aside class="card review-pane">
             <h2>Xem lại &amp; gửi duyệt</h2>
             <div id="proposalReview"><p class="status">Điền phiếu bên trái rồi bấm <b>“Xem lại phiếu →”</b>. Bản tóm tắt sẽ hiện ở đây để bạn kiểm tra lần cuối trước khi gửi lãnh đạo duyệt.</p></div>
+            <h3 style="margin-top:18px">Đề xuất của tôi</h3>
+            <div id="myProposalsBox">${loadingText('Đang tải...')}</div>
           </aside>
         </div>`;
       addLine();
       togglePlanJustify();
+      loadMyProposals();
+    }
+    async function loadMyProposals() {
+      const box = document.getElementById('myProposalsBox');
+      if (!box) return;
+      try {
+        const res = await call('rpc_get_my_proposals', { p_limit: 20 });
+        const rows = res.rows || [];
+        box.innerHTML = rows.length ? `<div class="table-wrap" style="max-height:340px"><table><thead><tr>
+          <th>Mã</th><th>NCC</th><th>Tổng</th><th>Trạng thái</th></tr></thead><tbody>
+          ${rows.map(r => `<tr><td><code>${esc(r.MaDeXuat)}</code></td><td>${esc(r.TenDoiTuong||'')}</td>
+            <td class="num-cell">${fmtMoney(r.TongTien)}</td><td>${proposalStatusPill(r.TrangThai)}</td></tr>`).join('')}
+          </tbody></table></div>` : '<p class="status">Bạn chưa có đề xuất nào.</p>';
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    function proposalStatusPill(s) {
+      if (s === 'Đã duyệt') return '<span class="pill ok">Đã duyệt</span>';
+      if (s === 'Từ chối') return '<span class="pill err">Từ chối</span>';
+      if (s === 'Nháp') return '<span class="pill warn">Nháp</span>';
+      return '<span class="pill warn">Chờ duyệt</span>';
     }
     function togglePlanJustify() {
       const inPlan = document.getElementById('pInPlan')?.checked;
@@ -1824,6 +1870,226 @@
       try { await withBusy(btn, 'Đang từ chối...', () => call('rpc_reject_payment_request', { p_ma: ma, p_reason: reason })); toast(`Đã từ chối ${ma}.`, 'ok'); closeModal(); loadPendingPayReq(); }
       catch (err) { toast(err.message || String(err), 'err'); }
     }
+
+    // ===== In / xuất Excel =================================================
+    const COMPANY = 'CÔNG TY CỔ PHẦN ĐẦU TƯ XÂY DỰNG VÀ TM THIÊN NHẬT';
+    const COMPANY_ADDR = 'Địa chỉ: Thôn Quán Trắng, xã Liên Sơn, tỉnh Phú Thọ';
+    function xlsxDownload(wb, filename) {
+      XLSX.writeFile(wb, filename, { bookType: 'xlsx' });
+    }
+    const B_THIN = { style: 'thin', color: { rgb: '000000' } };
+    const BORDER = { top: B_THIN, bottom: B_THIN, left: B_THIN, right: B_THIN };
+    function styleCell(ws, addr, s) { if (ws[addr]) ws[addr].s = Object.assign(ws[addr].s || {}, s); else ws[addr] = { v: '', t: 's', s }; }
+    function styleRange(ws, r1, c1, r2, c2, s) {
+      for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) styleCell(ws, XLSX.utils.encode_cell({ r, c }), s);
+    }
+
+    async function loadPrintable(cb) {
+      try {
+        const res = await call('rpc_get_printable_proposals', { p_only_accepted: true });
+        cb(res.rows || []);
+      } catch (err) { toast(err.message || String(err), 'err'); cb([]); }
+    }
+
+    // ---- In đề xuất mua hàng (ghép nhiều phiếu) ----
+    function renderPrintPP() {
+      document.getElementById('content').innerHTML = `
+        <section class="card">
+          <h2>In / xuất đề xuất mua hàng</h2>
+          <div class="notice ok">Chọn các phiếu đã duyệt &amp; đã nghiệm thu để ghép vào một bản đề xuất chung rồi xuất Excel theo mẫu.</div>
+          <div class="actions"><button class="secondary" onclick="renderPrintPP()">↻ Tải lại</button><button onclick="exportPP(this)">⬇ Xuất Excel (đã chọn)</button></div>
+          <div id="ppBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
+        </section>`;
+      loadPrintable(rows => {
+        state.printable = rows;
+        const box = document.getElementById('ppBox');
+        box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>
+          <th><input type="checkbox" onchange="ppToggleAll(this)"></th><th>Mã ĐX</th><th>Loại</th><th>NCC</th><th>Ngày duyệt</th><th>Nội dung</th></tr></thead><tbody>
+          ${rows.map((r,i)=>`<tr><td><input type="checkbox" class="pp-chk" data-i="${i}"></td>
+            <td><code>${esc(r.MaDeXuat)}</code></td><td>${r.LoaiDeXuat==='TamUng'?'Tạm ứng':'Mua hàng'}</td>
+            <td>${esc(r.TenDoiTuong||'')}</td><td>${esc(r.NgayDuyet||'')}</td><td>${esc(r.NoiDung||'')}</td></tr>`).join('')}
+          </tbody></table></div>` : '<p class="status">Không có phiếu đã duyệt &amp; nghiệm thu.</p>';
+      });
+    }
+    function ppToggleAll(el) { document.querySelectorAll('.pp-chk').forEach(c => c.checked = el.checked); }
+    function exportPP(btn) {
+      const idxs = [...document.querySelectorAll('.pp-chk:checked')].map(c => Number(c.dataset.i));
+      if (!idxs.length) { toast('Chọn ít nhất một phiếu.', 'err'); return; }
+      const aoa = []; const merges = []; let R = 0;
+      const push = row => { aoa.push(row); R++; };
+      idxs.forEach((idx, bi) => {
+        const p = state.printable[idx];
+        const start = R;
+        push([COMPANY]); merges.push({ s: { r: R-1, c: 0 }, e: { r: R-1, c: 5 } });
+        push(['ĐỀ XUẤT MUA HÀNG']); merges.push({ s: { r: R-1, c: 0 }, e: { r: R-1, c: 5 } });
+        push([`Ngày đề xuất: ${p.NgayDeXuat||''}`]);
+        push([`Nội dung: ${p.NoiDung||''}`]);
+        push([`Giải trình: ${p.GiaiTrinh||''}`]);
+        push([`Đơn vị cung cấp: ${p.TenDoiTuong||''}`]);
+        const headR = R;
+        push(['TT','Tên vật tư hàng hoá','Số lượng','Thành tiền sau VAT (vnđ)','Điều khoản thanh toán','Đơn vị cung cấp']);
+        let tong = 0;
+        (p.lines||[]).forEach((l, i) => {
+          const tt = Number(l.ThanhTienSauVAT||0); tong += tt;
+          push([i+1, l.MatHang||'', Number(l.SLThucNhan ?? l.SLDat ?? 0), tt, p.DieuKhoanTT||'', p.TenDoiTuong||'']);
+        });
+        push(['', 'Tổng', '', tong, '', '']);
+        push(['Tổng giám đốc','','Trưởng BP','','Người đề xuất', p.NguoiDeNghi||'']);
+        push([]); push([]);
+        // remember block table range for styling
+        merges._blocks = merges._blocks || [];
+        merges._blocks.push({ headR, endR: R-3 });
+      });
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = [{wch:6},{wch:44},{wch:12},{wch:20},{wch:22},{wch:26}];
+      ws['!merges'] = merges;
+      (merges._blocks||[]).forEach(b => {
+        styleRange(ws, b.headR, 0, b.headR, 5, { font: { bold: true }, fill: { fgColor: { rgb: 'ECE5D8' } }, border: BORDER, alignment: { wrapText: true, vertical: 'center' } });
+        styleRange(ws, b.headR, 0, b.endR, 5, { border: BORDER });
+      });
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Đề xuất mua hàng');
+      xlsxDownload(wb, `De_xuat_mua_hang_${todayStr()}.xlsx`);
+      toast(`Đã xuất ${idxs.length} phiếu.`, 'ok');
+    }
+
+    // ---- In phiếu yêu cầu thanh toán (YCTT / BM-03TH) — 1 phiếu ----
+    function renderPrintYCTT() {
+      document.getElementById('content').innerHTML = `
+        <section class="card">
+          <h2>In / xuất phiếu yêu cầu thanh toán (BM-03TH)</h2>
+          <div class="notice ok">Chọn một phiếu đã nghiệm thu. Số tài khoản &amp; ngân hàng NCC hệ thống tự lấy. Số hóa đơn/chứng từ bạn nhập tay bên dưới rồi bấm Generate.</div>
+          <div class="field"><label>Chọn phiếu (đã nghiệm thu)</label><select id="ycttSel" onchange="ycttPick()"><option value="">— Chọn —</option></select></div>
+          <div id="ycttForm"></div>
+        </section>`;
+      loadPrintable(rows => {
+        state.printable = rows;
+        const sel = document.getElementById('ycttSel');
+        sel.innerHTML = '<option value="">— Chọn —</option>' + rows.map((r,i)=>`<option value="${i}">${esc(r.MaDeXuat)} · ${esc(r.TenDoiTuong||'')}</option>`).join('');
+      });
+    }
+    function ycttPick() {
+      const i = document.getElementById('ycttSel').value;
+      const box = document.getElementById('ycttForm');
+      if (i === '') { box.innerHTML = ''; return; }
+      const p = state.printable[Number(i)];
+      box.innerHTML = `
+        <div class="grid">
+          <div class="field"><label>Đơn vị thụ hưởng</label><input value="${esc(p.TenDoiTuong||'')}" disabled></div>
+          <div class="field"><label>Người đề nghị</label><input id="yNguoi" value="${esc(p.NguoiDeNghi||'')}"></div>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Số tài khoản (tự lấy)</label><input value="${esc(p.SoTk||'(chưa có — bổ sung ở Danh mục)')}" disabled></div>
+          <div class="field"><label>Ngân hàng / chi nhánh (tự lấy)</label><input value="${esc(p.ChiNhanh||'')}" disabled></div>
+        </div>
+        <h3>Chứng từ — nhập số hóa đơn tay</h3>
+        <div class="table-wrap"><table class="line-table"><thead><tr><th>STT</th><th>Số chứng từ / hóa đơn</th><th>Diễn giải</th><th>SL</th><th>Thành tiền</th></tr></thead><tbody>
+          ${(p.lines||[]).map((l,li)=>`<tr>
+            <td>${li+1}</td>
+            <td><input class="yctt-inv" data-li="${li}" placeholder="VD: 00000411"></td>
+            <td>${esc(l.MatHang||'')}</td>
+            <td class="num-cell">${fmtMaybeMoney(l.SLThucNhan ?? l.SLDat)}</td>
+            <td class="num-cell">${fmtMoney(l.ThanhTienSauVAT)}</td>
+          </tr>`).join('')}
+        </tbody></table></div>
+        <div class="grid">
+          <div class="field"><label>Trừ tạm ứng / trả trước</label><input id="yTruTamUng" class="js-money" inputmode="decimal" value="0"></div>
+          <div class="field"><label>Diễn giải chung (tùy chọn)</label><input id="yDienGiai" value="${esc(p.NoiDung||'')}"></div>
+        </div>
+        <button onclick="exportYCTT(${Number(i)}, this)">⬇ Generate &amp; tải phiếu YCTT</button>`;
+    }
+    function exportYCTT(idx, btn) {
+      const p = state.printable[idx];
+      const invs = {};
+      document.querySelectorAll('.yctt-inv').forEach(el => invs[el.dataset.li] = el.value);
+      const truTU = moneyNum('yTruTamUng');
+      const aoa = [];
+      aoa.push([COMPANY]);                                   // 0
+      aoa.push([COMPANY_ADDR]);                              // 1
+      aoa.push(['PHIẾU ĐỀ NGHỊ THANH TOÁN', '', '', '', '', '', '', '', '', 'BM-03TH']); // 2
+      aoa.push([]);                                          // 3
+      aoa.push(['Người đề nghị:', val('yNguoi')||p.NguoiDeNghi||'']);
+      aoa.push(['Bộ phận:', 'Kế hoạch-Vật tư', '', 'Nội dung:', 'Thanh toán']);
+      aoa.push(['Loại tiền:', 'VND', '', 'Phương thức:', 'Chuyển khoản']);
+      aoa.push(['Đơn vị thụ hưởng:', p.TenDoiTuong||'']);
+      aoa.push(['Số tài khoản:', p.SoTk||'']);
+      aoa.push(['Ngân hàng:', p.ChiNhanh||'']);
+      aoa.push([]);
+      const headR = aoa.length;
+      aoa.push(['STT','Số chứng từ','Ngày chứng từ','Diễn giải','SL','Đơn Giá','Thành Tiền']);
+      let tong = 0;
+      (p.lines||[]).forEach((l, li) => {
+        const tt = Number(l.ThanhTienSauVAT||0); tong += tt;
+        const sl = Number(l.SLThucNhan ?? l.SLDat ?? 0);
+        aoa.push([li+1, invs[li]||'', p.NgayDeXuat||'', l.MatHang||'', sl, sl? Math.round(tt/sl):'', tt]);
+      });
+      const endR = aoa.length - 1;
+      aoa.push(['', '', '', 'TỔNG CỘNG', '', '', tong]);
+      aoa.push(['', '', '', 'Trừ tạm ứng / trả trước', '', '', truTU]);
+      aoa.push(['', '', '', 'Nhận từ công ty', '', '', tong - truTU]);
+      aoa.push([]);
+      aoa.push(['', '', '', '', '', `Liên Sơn, ngày ${new Date().toLocaleDateString('vi-VN')}`]);
+      aoa.push(['Tổng Giám Đốc', '', 'Kế toán trưởng', '', 'Cán bộ theo dõi', 'Người đề nghị']);
+      aoa.push(['', '', '', '', '', val('yNguoi')||p.NguoiDeNghi||'']);
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = [{wch:6},{wch:14},{wch:14},{wch:40},{wch:8},{wch:14},{wch:16}];
+      ws['!merges'] = [
+        {s:{r:0,c:0},e:{r:0,c:6}}, {s:{r:1,c:0},e:{r:1,c:6}}, {s:{r:2,c:0},e:{r:2,c:6}}
+      ];
+      styleCell(ws, 'A1', { font: { bold: true } });
+      styleCell(ws, 'A3', { font: { bold: true, sz: 14 }, alignment: { horizontal: 'center' } });
+      styleRange(ws, headR, 0, headR, 6, { font: { bold: true }, fill: { fgColor: { rgb: 'ECE5D8' } }, border: BORDER, alignment: { horizontal: 'center' } });
+      styleRange(ws, headR, 0, endR, 6, { border: BORDER });
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'YCTT');
+      xlsxDownload(wb, `YCTT_${p.MaDeXuat}.xlsx`);
+      toast('Đã tạo phiếu YCTT.', 'ok');
+    }
+
+    // ===== Thông báo (bell) ================================================
+    async function refreshNotif() {
+      try {
+        const res = await call('rpc_get_notifications', { p_limit: 30 });
+        state.notif = res.rows || [];
+        const badge = document.getElementById('notifBadge');
+        if (badge) {
+          badge.textContent = res.unread || 0;
+          badge.classList.toggle('hidden', !res.unread);
+        }
+        if (!document.getElementById('notifPanel')?.classList.contains('hidden')) drawNotif();
+      } catch (e) { /* im lặng: không chặn app nếu thông báo lỗi */ }
+    }
+    function toggleNotif() {
+      const panel = document.getElementById('notifPanel');
+      if (!panel) return;
+      panel.classList.toggle('hidden');
+      if (!panel.classList.contains('hidden')) { drawNotif(); }
+    }
+    function drawNotif() {
+      const panel = document.getElementById('notifPanel');
+      const rows = state.notif || [];
+      panel.innerHTML = `
+        <div class="notif-head"><b>Thông báo</b>${rows.some(n=>!n.daDoc) ? '<button class="secondary" style="width:auto;min-height:32px;padding:4px 10px" onclick="markAllNotif()">Đánh dấu đã đọc</button>' : ''}</div>
+        ${rows.length ? rows.map(n => `<div class="notif-item ${n.daDoc?'':'unread'}" onclick="openNotif('${esc(n.id)}','${esc(n.manHinh||'')}')">
+          <div class="nt-title">${esc(n.tieuDe)}</div>
+          <div class="nt-body">${esc(n.noiDung||'')}</div>
+          <div class="nt-time">${esc(n.thoiGian)}</div>
+        </div>`).join('') : '<p class="status" style="padding:10px">Chưa có thông báo.</p>'}`;
+    }
+    async function openNotif(id, screen) {
+      try { await call('rpc_mark_notification_read', { p_id: id }); } catch (e) {}
+      document.getElementById('notifPanel')?.classList.add('hidden');
+      refreshNotif();
+      if (screen && visibleScreens().some(s => s[0] === screen)) renderScreen(screen);
+    }
+    async function markAllNotif() {
+      try { await call('rpc_mark_all_notifications_read'); } catch (e) {}
+      refreshNotif();
+    }
+    document.addEventListener('click', e => {
+      const panel = document.getElementById('notifPanel');
+      if (panel && !panel.classList.contains('hidden') && !e.target.closest('.bell-wrap')) panel.classList.add('hidden');
+    });
 
     // ===== Tài khoản (Admin) — tạo & phân quyền ngay trên webapp ============
     function roleOptions(selected) {
