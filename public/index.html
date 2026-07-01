@@ -50,8 +50,10 @@
     input, select, textarea {
       width: 100%;
       background: var(--input);
-      padding: 10px 12px;
+      padding: 11px 13px;
+      font-size: 15px;
     }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
     textarea { min-height: 90px; resize: vertical; }
     button {
       background: var(--accent);
@@ -101,7 +103,15 @@
     .field { margin-bottom: 12px; }
     .combo-stack { display: grid; gap: 6px; }
     .combo-stack input, .combo-stack select { min-height: 38px; }
-    label { display: block; margin-bottom: 5px; color: var(--muted); font-weight: 700; }
+    label { display: block; margin-bottom: 6px; color: var(--muted); font-weight: 700; font-size: 13px; }
+    .line-table input, .line-table select { min-height: 40px; font-size: 14px; padding: 8px 10px; }
+    .line-table th, .line-table td { padding: 8px 8px; vertical-align: middle; }
+    .num-cell { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+    .total-bar { margin: 10px 0 4px; padding: 12px 14px; background: #EEF8F1; border: 1px solid #BFDCC8; border-radius: 8px; text-align: right; font-size: 15px; color: #245D42; }
+    .total-bar strong { font-size: 18px; margin: 0 4px; }
+    .js-price-hint { margin-top: 5px; font-size: 11.5px; }
+    .js-price-hint.over { color: var(--danger); font-weight: 700; }
+    .js-price-hint.over::after { content: " — cao hơn giá tốt nhất!"; }
     small { color: var(--muted); display: block; margin-top: 4px; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
     th, td { border-bottom: 1px solid #E6DFD2; padding: 8px; text-align: left; vertical-align: top; }
@@ -333,13 +343,44 @@
 
     function fmtMoney(v) {
       const n = Number(v || 0);
-      return n.toLocaleString('vi-VN');
+      return n.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
     }
     function fmtMaybeMoney(v) {
       if (v === '' || v === null || v === undefined) return '';
       const n = Number(v);
-      return Number.isFinite(n) ? n.toLocaleString('vi-VN') : esc(v);
+      return Number.isFinite(n) ? n.toLocaleString('vi-VN', { maximumFractionDigits: 2 }) : esc(v);
     }
+    // ---- Currency inputs (VN format 1.234.567,89) --------------------------
+    // Store nothing special in the DOM; format on blur, unformat on focus so
+    // the caret never jumps while typing. moneyRaw() returns a clean numeric
+    // string for submission (backend parse_number also understands VN format).
+    function moneyRaw(elOrId) {
+      const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+      const s = String(el && el.value || '').trim();
+      if (!s) return '';
+      return s.replace(/\./g, '').replace(',', '.').replace(/[^\d.\-]/g, '');
+    }
+    function moneyNum(elOrId) {
+      const r = moneyRaw(elOrId);
+      const n = Number(r);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function moneyFormat(raw) {
+      if (raw === '' || raw === null || raw === undefined) return '';
+      const n = Number(String(raw).replace(/\./g, '').replace(',', '.'));
+      return Number.isFinite(n) ? n.toLocaleString('vi-VN', { maximumFractionDigits: 2 }) : String(raw);
+    }
+    // Delegated: any input.js-money formats on blur, shows raw on focus.
+    document.addEventListener('focusout', e => {
+      if (e.target && e.target.classList && e.target.classList.contains('js-money')) {
+        e.target.value = moneyFormat(moneyRaw(e.target));
+      }
+    });
+    document.addEventListener('focusin', e => {
+      if (e.target && e.target.classList && e.target.classList.contains('js-money')) {
+        e.target.value = moneyRaw(e.target);
+      }
+    });
     function fmtPct(v) {
       if (v === '' || v === null || v === undefined) return '';
       const n = Number(v);
@@ -485,7 +526,7 @@
             <div class="field"><label>Mặt hàng</label><div class="combo-stack"><select id="nqItem">${materialOptions('')}</select><input id="nqItemNew" placeholder="Nhập mặt hàng mới"></div></div>
             <div class="field"><label>Nhà cung cấp</label><input id="nqNcc" placeholder="Tên NCC"></div>
             <div class="grid">
-              <div class="field"><label>Giá gọi</label><input id="nqGia" inputmode="decimal"></div>
+              <div class="field"><label>Giá gọi</label><input id="nqGia" class="js-money" inputmode="decimal"></div>
               <div class="field"><label>VAT</label><select id="nqVat"><option>Chưa VAT</option><option>Đã gồm VAT</option></select></div>
             </div>
             <div class="field"><label>Ghi chú</label><input id="nqGhiChu"></div>
@@ -525,7 +566,7 @@
           p_ngay: val('nqNgay') || null,
           p_mat_hang: comboValue('nqItem', 'nqItemNew'),
           p_ncc: val('nqNcc'),
-          p_gia: Number(val('nqGia')) || null,
+          p_gia: moneyNum('nqGia') || null,
           p_vat_status: val('nqVat'),
           p_ghi_chu: val('nqGhiChu')
         };
@@ -651,7 +692,8 @@
           </div>
         </div>
         <h3>Dòng vật tư</h3>
-        <div class="table-wrap"><table id="lineTable"><thead><tr><th>Mặt hàng</th><th>SL đặt</th><th>Đơn giá</th><th>VAT</th><th>Ghi chú</th><th></th></tr></thead><tbody></tbody></table></div>
+        <div class="table-wrap"><table id="lineTable" class="line-table"><thead><tr><th>Mặt hàng</th><th style="width:110px">SL đặt</th><th style="width:150px">Đơn giá</th><th style="width:120px">VAT</th><th style="width:150px">Thành tiền (sau VAT)</th><th>Ghi chú</th><th style="width:60px"></th></tr></thead><tbody></tbody></table></div>
+        <div class="total-bar">Trước VAT: <strong id="totalPre">0</strong> · Tiền VAT: <strong id="totalVat">0</strong> · Tổng sau VAT: <strong id="proposalTotal">0 đ</strong></div>
         <div class="actions">
           <button class="secondary" onclick="addLine()">+ Thêm dòng</button>
           <button class="secondary" onclick="copyLastLine()">Chép dòng cuối</button>
@@ -670,31 +712,97 @@
 
     function lineRow(line={}) {
       return `<tr>
-        <td><div class="combo-stack"><select class="js-mat-select">${materialOptions(line.matHang)}</select><input class="js-mat-new" placeholder="Nhập mặt hàng mới"></div></td>
-        <td><input inputmode="decimal" value="${esc(line.slDat || '')}"></td>
-        <td><input inputmode="decimal" value="${esc(line.donGia || '')}"></td>
-        <td><div class="combo-stack"><select class="js-vat-select"><option ${String(line.vat || '8%')==='0%'?'selected':''}>0%</option><option ${String(line.vat || '8%')==='8%'?'selected':''}>8%</option><option ${String(line.vat || '8%')==='10%'?'selected':''}>10%</option></select><input class="js-vat-new" placeholder="VAT khác, ví dụ 5%"></div></td>
-        <td><input value="${esc(line.ghiChu || '')}"></td>
-        <td><button class="secondary" onclick="this.closest('tr').remove()">Xóa</button></td>
+        <td><div class="combo-stack"><select class="js-mat-select" onchange="onLineMaterialChange(this)">${materialOptions(line.matHang)}</select><input class="js-mat-new" placeholder="Nhập mặt hàng mới" onchange="onLineMaterialChange(this)"></div><small class="js-price-hint status"></small></td>
+        <td><input class="js-sl" inputmode="decimal" value="${esc(line.slDat || '')}" oninput="recalcLine(this)"></td>
+        <td><input class="js-dongia js-money" inputmode="decimal" value="${line.donGia ? esc(moneyFormat(line.donGia)) : ''}" oninput="recalcLine(this)"></td>
+        <td><div class="combo-stack"><select class="js-vat-select" onchange="recalcLine(this)"><option ${String(line.vat || '8%')==='0%'?'selected':''}>0%</option><option ${String(line.vat || '8%')==='8%'?'selected':''}>8%</option><option ${String(line.vat || '8%')==='10%'?'selected':''}>10%</option></select><input class="js-vat-new" placeholder="VAT khác, ví dụ 5%" oninput="recalcLine(this)"></div></td>
+        <td class="js-thanhtien num-cell">0</td>
+        <td><input class="js-ghichu" value="${esc(line.ghiChu || '')}"></td>
+        <td><button class="secondary" onclick="this.closest('tr').remove(); recalcProposalTotal();">Xóa</button></td>
       </tr>`;
     }
-    function addLine(line) { document.querySelector('#lineTable tbody').insertAdjacentHTML('beforeend', lineRow(line)); }
+    function addLine(line) {
+      document.querySelector('#lineTable tbody').insertAdjacentHTML('beforeend', lineRow(line));
+      const tr = document.querySelector('#lineTable tbody tr:last-child');
+      if (tr) recalcLine(tr.querySelector('.js-sl'));
+    }
     function copyLastLine() {
       const rows = getProposalLines();
       addLine(rows[rows.length - 1] || {});
     }
-    function getProposalLines() {
-      return [...document.querySelectorAll('#lineTable tbody tr')].map(tr => {
-        const inputs = [...tr.querySelectorAll('input')].filter(x => !x.classList.contains('js-mat-new') && !x.classList.contains('js-vat-new'));
-        const vat = comboValue(tr.querySelector('.js-vat-select'), tr.querySelector('.js-vat-new'));
-        return {
-          matHang: comboValue(tr.querySelector('.js-mat-select'), tr.querySelector('.js-mat-new')),
-          slDat: inputs[0].value,
-          donGia: inputs[1].value,
-          vat,
-          ghiChu: inputs[2].value
-        };
+    function vatFromCombo(tr) {
+      const raw = comboValue(tr.querySelector('.js-vat-select'), tr.querySelector('.js-vat-new'));
+      const n = parseFloat(String(raw).replace('%', '').replace(',', '.'));
+      if (!Number.isFinite(n)) return 0;
+      return n >= 1 ? n / 100 : n;
+    }
+    function lineTotal(tr) {
+      const sl = Number(String(tr.querySelector('.js-sl')?.value || '').replace(/\./g, '').replace(',', '.')) || 0;
+      const gia = moneyNum(tr.querySelector('.js-dongia'));
+      return Math.round(sl * gia * (1 + vatFromCombo(tr)) * 100) / 100;
+    }
+    function recalcLine(el) {
+      const tr = el.closest('tr');
+      if (!tr) return;
+      const cell = tr.querySelector('.js-thanhtien');
+      if (cell) cell.textContent = fmtMoney(lineTotal(tr));
+      // Warn if this line's unit price (after VAT) is above the best known quote.
+      const best = Number(tr.dataset.bestAfter || '');
+      const hint = tr.querySelector('.js-price-hint');
+      if (hint && Number.isFinite(best) && best > 0) {
+        const unitAfter = moneyNum(tr.querySelector('.js-dongia')) * (1 + vatFromCombo(tr));
+        hint.classList.toggle('over', unitAfter > best * 1.001);
+      }
+      recalcProposalTotal();
+    }
+    function recalcProposalTotal() {
+      const trs = [...document.querySelectorAll('#lineTable tbody tr')];
+      let pre = 0, after = 0;
+      trs.forEach(tr => {
+        const sl = Number(String(tr.querySelector('.js-sl')?.value || '').replace(/\./g, '').replace(',', '.')) || 0;
+        const gia = moneyNum(tr.querySelector('.js-dongia'));
+        pre += sl * gia;
+        after += lineTotal(tr);
       });
+      const setT = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = fmtMoney(v); };
+      setT('totalPre', pre);
+      setT('totalVat', Math.round((after - pre) * 100) / 100);
+      const box = document.getElementById('proposalTotal');
+      if (box) box.textContent = fmtMoney(after) + ' đ';
+    }
+    // When a material is chosen on a proposal line, pull the best known quote
+    // and auto-fill the unit price (only if empty) + show a price hint.
+    async function onLineMaterialChange(el) {
+      const tr = el.closest('tr');
+      if (!tr) return;
+      const mat = comboValue(tr.querySelector('.js-mat-select'), tr.querySelector('.js-mat-new'));
+      const hint = tr.querySelector('.js-price-hint');
+      tr.dataset.bestAfter = '';
+      if (hint) hint.classList.remove('over');
+      if (!mat) { if (hint) hint.textContent = ''; return; }
+      if (hint) hint.textContent = 'Đang lấy giá tốt nhất…';
+      try {
+        const res = await call('rpc_get_quote_dashboard', { p_item: mat, p_limit: 5 });
+        const rows = res.rows || [];
+        if (!rows.length) { if (hint) hint.textContent = 'Chưa có báo giá NCC cho mặt hàng này.'; return; }
+        const b = rows[0]; // rank 1 = giá tốt nhất (sau VAT)
+        tr.dataset.bestAfter = b.priceAfterVat;
+        const gia = tr.querySelector('.js-dongia');
+        if (gia && !moneyRaw(gia) && b.priceBeforeVat != null) {
+          gia.value = moneyFormat(b.priceBeforeVat);
+          recalcLine(gia);
+        }
+        if (hint) hint.innerHTML = `Giá tốt nhất: <b>${fmtMoney(b.priceAfterVat)} đ</b> sau VAT · ${esc(b.supplier)} (${esc(b.date)})`;
+      } catch (e) { if (hint) hint.textContent = ''; }
+    }
+    function getProposalLines() {
+      return [...document.querySelectorAll('#lineTable tbody tr')].map(tr => ({
+        matHang: comboValue(tr.querySelector('.js-mat-select'), tr.querySelector('.js-mat-new')),
+        slDat: (tr.querySelector('.js-sl')?.value || '').trim(),
+        donGia: moneyRaw(tr.querySelector('.js-dongia')),
+        vat: comboValue(tr.querySelector('.js-vat-select'), tr.querySelector('.js-vat-new')),
+        ghiChu: tr.querySelector('.js-ghichu')?.value || ''
+      }));
     }
     async function saveProposal(status, btn) {
       setMsg('Đang lưu đề xuất...');
@@ -885,7 +993,7 @@
         ${objectFields('t')}
         <div class="grid">
           <div class="field"><label>Ngày thanh toán</label><input id="tNgay" type="date" value="${todayStr()}"></div>
-          <div class="field"><label>Số tiền</label><input id="tSoTien" inputmode="decimal"></div>
+          <div class="field"><label>Số tiền</label><input id="tSoTien" class="js-money" inputmode="decimal"></div>
         </div>
         <div class="grid">
           <div class="field"><label>Phân bổ</label><select id="tMode"><option value="FIFO">FIFO theo đối tượng</option><option value="MA_CN">Theo mã CN cụ thể</option></select></div>
@@ -902,7 +1010,7 @@
         const payload = {
           doiTuong: { ma: comboValue('tmaDoiTuong', 'tmaDoiTuongMoi'), ten: val('ttenDoiTuong') },
           ngayThanhToan: val('tNgay'),
-          soTien: val('tSoTien'),
+          soTien: moneyRaw('tSoTien'),
           phanBoMode: val('tMode'),
           maCN: val('tMaCN'),
           chungTu: val('tChungTu'),
