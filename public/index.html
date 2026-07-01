@@ -160,6 +160,14 @@
       margin: 8vh auto;
     }
     .hidden { display: none !important; }
+    .cat-tabs { display: flex; gap: 8px; }
+    .cat-tabs button { width: auto; }
+    .cat-toolbar { display: flex; gap: 10px; align-items: center; }
+    .cat-toolbar input { flex: 1; }
+    .cat-toolbar button { width: auto; white-space: nowrap; }
+    td code { background: #ECE5D8; padding: 2px 6px; border-radius: 6px; font-size: 12px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(20,20,19,.45); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px; z-index: 40; overflow: auto; }
+    .modal-card { width: 100%; max-width: 560px; }
     @media (max-width: 920px) {
       .app { grid-template-columns: 1fr; }
       nav { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; border-right: 0; border-bottom: 1px solid var(--line); }
@@ -228,7 +236,8 @@
       ['receipt', 'Nhận hàng', 'receipt:update'],
       ['payment', 'Thanh toán', 'payment:create'],
       ['dashboard', 'Dashboard công nợ', 'dashboard:read'],
-      ['settlement', 'Tất toán', 'settlement:preview']
+      ['settlement', 'Tất toán', 'settlement:preview'],
+      ['catalog', 'Danh mục', 'catalog:read']
     ];
     function can(perm) {
       return state.permissions.includes('*') || state.permissions.includes(perm);
@@ -418,6 +427,7 @@
       if (id === 'payment') return renderPayment();
       if (id === 'dashboard') return renderDashboard();
       if (id === 'settlement') return renderSettlement();
+      if (id === 'catalog') return renderCatalog();
     }
 
     function renderQuotes() {
@@ -840,6 +850,236 @@
     function formatCell(v) {
       if (typeof v === 'number') return fmtMoney(v);
       return v ?? '';
+    }
+
+    // ---- Danh mục (master data) -------------------------------------------
+    // In-app management of materials (mã hoá vật tư + nhóm hàng) and suppliers.
+    // Reads via rpc_list_catalog; writes via rpc_upsert_material /
+    // rpc_upsert_doi_tuong. Add/edit buttons only show for catalog:manage.
+    function renderCatalog() {
+      document.getElementById('content').innerHTML = `
+        <section class="card">
+          <h2>Danh mục — Mã hoá vật tư &amp; nhà cung cấp</h2>
+          <div class="notice ok">Mã cố định giúp thống kê chính xác kể cả khi tên gõ khác nhau. Mỗi mặt hàng nên có 1 nhóm hàng để dashboard lãnh đạo gom đúng.</div>
+          <div class="cat-tabs">
+            <button id="catTabMat" class="active" onclick="switchCatTab('mat')">Mặt hàng (NVL)</button>
+            <button id="catTabNcc" class="secondary" onclick="switchCatTab('ncc')">Nhà cung cấp</button>
+          </div>
+          <div id="catBody" style="margin-top:14px">${loadingText('Đang tải danh mục...')}</div>
+        </section>`;
+      state.catTab = state.catTab || 'mat';
+      loadCatalog();
+    }
+
+    async function loadCatalog() {
+      try {
+        const res = await call('rpc_list_catalog');
+        state.catalog = { materials: res.materials || [], suppliers: res.suppliers || [], groups: res.groups || [] };
+        drawCatalog();
+      } catch (err) {
+        document.getElementById('catBody').innerHTML = `<p class="status">Không tải được danh mục: ${esc(err.message || err)}</p>`;
+        toast(err.message || String(err), 'err');
+      }
+    }
+    function switchCatTab(tab) {
+      state.catTab = tab;
+      document.getElementById('catTabMat').className = tab === 'mat' ? 'active' : 'secondary';
+      document.getElementById('catTabNcc').className = tab === 'ncc' ? 'active' : 'secondary';
+      drawCatalog();
+    }
+    function statusPill(s) {
+      return s === 'Ngừng' ? '<span class="pill err">Ngừng</span>' : '<span class="pill ok">Hoạt động</span>';
+    }
+    function drawCatalog() {
+      const box = document.getElementById('catBody');
+      if (!box) return;
+      const manage = can('catalog:manage');
+      if (state.catTab === 'mat') {
+        const rows = state.catalog.materials;
+        const addBtn = manage ? `<button onclick="openMaterialForm()">＋ Thêm mặt hàng</button>` : '';
+        box.innerHTML = `
+          <div class="cat-toolbar">
+            <input id="catMatSearch" placeholder="Tìm theo mã / tên / nhóm..." oninput="drawCatalog._filter()">
+            ${addBtn}
+          </div>
+          <div class="table-wrap" style="margin-top:12px">
+            <table><thead><tr>
+              <th>Mã VT</th><th>Tên mặt hàng</th><th>Nhóm hàng</th><th>ĐVT</th><th>Trạng thái</th>${manage ? '<th>Thao tác</th>' : ''}
+            </tr></thead><tbody id="catMatRows">
+              ${rows.map(m => matRow(m, manage)).join('')}
+            </tbody></table>
+          </div>
+          <small>${rows.length} mặt hàng.</small>`;
+      } else {
+        const rows = state.catalog.suppliers;
+        const addBtn = manage ? `<button onclick="openSupplierForm()">＋ Thêm nhà cung cấp</button>` : '';
+        box.innerHTML = `
+          <div class="cat-toolbar">
+            <input id="catNccSearch" placeholder="Tìm theo mã / tên / MST..." oninput="drawCatalog._filter()">
+            ${addBtn}
+          </div>
+          <div class="table-wrap" style="margin-top:12px">
+            <table><thead><tr>
+              <th>Mã ĐT</th><th>Tên đối tượng</th><th>Loại</th><th>Liên hệ</th><th>Điều khoản TT</th><th>Trạng thái</th>${manage ? '<th>Thao tác</th>' : ''}
+            </tr></thead><tbody id="catNccRows">
+              ${rows.map(s => nccRow(s, manage)).join('')}
+            </tbody></table>
+          </div>
+          <small>${rows.length} đối tượng.</small>`;
+      }
+    }
+    function matRow(m, manage) {
+      return `<tr>
+        <td><code>${esc(m.ma || '')}</code></td>
+        <td>${esc(m.ten || '')}</td>
+        <td>${m.nhom ? esc(m.nhom) : '<span class="pill warn">Chưa gán</span>'}</td>
+        <td>${esc(m.dvt || '')}</td>
+        <td>${statusPill(m.trangThai)}</td>
+        ${manage ? `<td><button class="secondary" onclick="openMaterialForm('${m.id}')">Sửa</button></td>` : ''}
+      </tr>`;
+    }
+    function nccRow(s, manage) {
+      return `<tr>
+        <td><code>${esc(s.ma || '')}</code></td>
+        <td>${esc(s.ten || '')}</td>
+        <td>${esc(s.loai || '')}</td>
+        <td>${esc(s.contact || s.sdt || '')}</td>
+        <td>${esc(s.dieuKhoan || '')}</td>
+        <td>${statusPill(s.trangThai)}</td>
+        ${manage ? `<td><button class="secondary" onclick="openSupplierForm('${s.id}')">Sửa</button></td>` : ''}
+      </tr>`;
+    }
+    drawCatalog._filter = function () {
+      if (state.catTab === 'mat') {
+        const q = normLower(val('catMatSearch'));
+        const body = document.getElementById('catMatRows');
+        body.innerHTML = state.catalog.materials
+          .filter(m => !q || normLower(`${m.ma} ${m.ten} ${m.nhom} ${m.dvt}`).includes(q))
+          .map(m => matRow(m, can('catalog:manage'))).join('');
+      } else {
+        const q = normLower(val('catNccSearch'));
+        const body = document.getElementById('catNccRows');
+        body.innerHTML = state.catalog.suppliers
+          .filter(s => !q || normLower(`${s.ma} ${s.ten} ${s.mst} ${s.contact}`).includes(q))
+          .map(s => nccRow(s, can('catalog:manage'))).join('');
+      }
+    };
+    function normLower(s) { return String(s ?? '').toLowerCase(); }
+
+    // ---- modal + forms -----------------------------------------------------
+    function openModal(title, bodyHtml, onSave, saveLabel) {
+      closeModal();
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.id = 'catModal';
+      overlay.innerHTML = `
+        <div class="modal-card card">
+          <h2>${esc(title)}</h2>
+          <div class="notice err js-modal-msg hidden"></div>
+          ${bodyHtml}
+          <div class="actions">
+            <button id="catSaveBtn">${esc(saveLabel || 'Lưu')}</button>
+            <button class="secondary" onclick="closeModal()">Huỷ</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+      document.getElementById('catSaveBtn').onclick = function () { onSave(this); };
+    }
+    function closeModal() { const m = document.getElementById('catModal'); if (m) m.remove(); }
+    function modalErr(text) {
+      const el = document.querySelector('#catModal .js-modal-msg');
+      if (el) { el.textContent = text || ''; el.classList.toggle('hidden', !text); }
+    }
+    function groupOptions(selected) {
+      return ['<option value="">— Chưa gán —</option>']
+        .concat((state.catalog.groups || []).map(g => `<option value="${esc(g)}" ${g === selected ? 'selected' : ''}>${esc(g)}</option>`))
+        .join('');
+    }
+
+    function openMaterialForm(id) {
+      const m = id ? state.catalog.materials.find(x => x.id === id) : null;
+      openModal(m ? 'Sửa mặt hàng' : 'Thêm mặt hàng', `
+        <input type="hidden" id="mfId" value="${m ? esc(m.id) : ''}">
+        <div class="grid">
+          <div class="field"><label>Mã vật tư</label><input id="mfMa" value="${m ? esc(m.ma) : ''}" placeholder="Để trống = tự sinh VT-000x"></div>
+          <div class="field"><label>ĐVT</label><input id="mfDvt" value="${m ? esc(m.dvt || '') : ''}" placeholder="vnđ/kg, vnđ/lít..."></div>
+        </div>
+        <div class="field"><label>Tên mặt hàng *</label><input id="mfTen" value="${m ? esc(m.ten) : ''}"></div>
+        <div class="grid">
+          <div class="field"><label>Nhóm hàng</label><select id="mfNhom">${groupOptions(m ? m.nhom : '')}</select></div>
+          <div class="field"><label>Trạng thái</label><select id="mfStatus">
+            <option ${m && m.trangThai === 'Ngừng' ? '' : 'selected'}>Hoạt động</option>
+            <option ${m && m.trangThai === 'Ngừng' ? 'selected' : ''}>Ngừng</option>
+          </select></div>
+        </div>`, saveMaterial, m ? 'Lưu thay đổi' : 'Thêm mặt hàng');
+    }
+    async function saveMaterial(btn) {
+      const payload = {
+        id: val('mfId') || null,
+        maVatTu: val('mfMa'),
+        ten: val('mfTen'),
+        dvt: val('mfDvt'),
+        nhom: val('mfNhom'),
+        trangThai: val('mfStatus')
+      };
+      if (!payload.ten.trim()) { modalErr('Cần nhập tên mặt hàng.'); return; }
+      try {
+        await withBusy(btn, 'Đang lưu...', () => call('rpc_upsert_material', { p_payload: payload }));
+        closeModal();
+        toast('Đã lưu mặt hàng.', 'ok');
+        await loadCatalog();
+      } catch (err) { modalErr(err.message || String(err)); }
+    }
+
+    function openSupplierForm(id) {
+      const s = id ? state.catalog.suppliers.find(x => x.id === id) : null;
+      openModal(s ? 'Sửa nhà cung cấp' : 'Thêm nhà cung cấp', `
+        <input type="hidden" id="sfId" value="${s ? esc(s.id) : ''}">
+        <div class="grid">
+          <div class="field"><label>Mã đối tượng</label><input id="sfMa" value="${s ? esc(s.ma) : ''}" placeholder="Để trống = tự sinh DT-xxxx"></div>
+          <div class="field"><label>Loại</label><select id="sfLoai">
+            <option ${s && s.loai === 'KH' ? '' : 'selected'} value="NCC">NCC (nhà cung cấp)</option>
+            <option ${s && s.loai === 'KH' ? 'selected' : ''} value="KH">KH (khách hàng)</option>
+          </select></div>
+        </div>
+        <div class="field"><label>Tên đối tượng *</label><input id="sfTen" value="${s ? esc(s.ten) : ''}"></div>
+        <div class="grid">
+          <div class="field"><label>MST</label><input id="sfMst" value="${s ? esc(s.mst || '') : ''}"></div>
+          <div class="field"><label>SĐT</label><input id="sfSdt" value="${s ? esc(s.sdt || '') : ''}"></div>
+        </div>
+        <div class="field"><label>Người liên hệ / contact</label><input id="sfContact" value="${s ? esc(s.contact || '') : ''}"></div>
+        <div class="field"><label>Địa chỉ / khu vực</label><input id="sfDiaChi" value="${s ? esc(s.diaChi || '') : ''}"></div>
+        <div class="grid">
+          <div class="field"><label>Điều khoản TT mặc định</label><input id="sfDieuKhoan" value="${s ? esc(s.dieuKhoan || '') : ''}"></div>
+          <div class="field"><label>MOQ (đặt tối thiểu)</label><input id="sfMoq" value="${s ? esc(s.moq || '') : ''}"></div>
+        </div>
+        <div class="field"><label>Trạng thái</label><select id="sfStatus">
+          <option ${s && s.trangThai === 'Ngừng' ? '' : 'selected'}>Hoạt động</option>
+          <option ${s && s.trangThai === 'Ngừng' ? 'selected' : ''}>Ngừng</option>
+        </select></div>`, saveSupplier, s ? 'Lưu thay đổi' : 'Thêm NCC');
+    }
+    async function saveSupplier(btn) {
+      const payload = {
+        id: val('sfId') || null,
+        maDoiTuong: val('sfMa'),
+        ten: val('sfTen'),
+        loai: val('sfLoai'),
+        mst: val('sfMst'),
+        sdt: val('sfSdt'),
+        contact: val('sfContact'),
+        diaChi: val('sfDiaChi'),
+        dieuKhoan: val('sfDieuKhoan'),
+        moq: val('sfMoq'),
+        trangThai: val('sfStatus')
+      };
+      if (!payload.ten.trim()) { modalErr('Cần nhập tên nhà cung cấp.'); return; }
+      try {
+        await withBusy(btn, 'Đang lưu...', () => call('rpc_upsert_doi_tuong', { p_payload: payload }));
+        closeModal();
+        toast('Đã lưu nhà cung cấp.', 'ok');
+        await loadCatalog();
+      } catch (err) { modalErr(err.message || String(err)); }
     }
 
     // Resume an existing Supabase session on page load/refresh, mirroring
