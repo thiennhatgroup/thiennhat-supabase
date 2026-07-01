@@ -183,8 +183,16 @@ create index if not exists idx_debts_archived on debts (is_archived);
 create index if not exists idx_debts_ma_cn on debts (ma_cn);
 comment on table debts is 'Mirrors 05_CONG_NO_NCC. is_archived=true is the equivalent of a row having been cut into DU_LIEU_CONG_NO.';
 
-alter table proposal_lines
-  add constraint fk_proposal_lines_debt foreign key (debt_id) references debts (id);
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'fk_proposal_lines_debt'
+  ) then
+    alter table proposal_lines
+      add constraint fk_proposal_lines_debt foreign key (debt_id) references debts (id);
+  end if;
+end;
+$$;
 
 -- ----------------------------------------------------------------------------
 -- Payments (DB_THANH_TOAN)
@@ -284,6 +292,6 @@ begin
 end;
 $$;
 
-create trigger trg_profiles_updated before update on profiles for each row execute function set_updated_at();
-create trigger trg_doi_tuong_updated before update on doi_tuong for each row execute function set_updated_at();
-create trigger trg_debts_updated before update on debts for each row execute function set_updated_at();
+create or replace trigger trg_profiles_updated before update on profiles for each row execute function set_updated_at();
+create or replace trigger trg_doi_tuong_updated before update on doi_tuong for each row execute function set_updated_at();
+create or replace trigger trg_debts_updated before update on debts for each row execute function set_updated_at();
