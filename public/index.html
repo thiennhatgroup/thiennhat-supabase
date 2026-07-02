@@ -5,6 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Thiên Nhật - Mua hàng &amp; Công nợ</title>
+  <link rel="icon" type="image/png" href="./logo.png">
+  <link rel="apple-touch-icon" href="./logo.png">
   <style>
     :root {
       --bg: #F4F6FA;
@@ -387,6 +389,8 @@
       ['receipt', 'Nhận hàng', 'receipt:update'],
       ['payreq', 'Đề xuất thanh toán', 'payment:request'],
       ['payapprove', 'Duyệt đề xuất thanh toán', 'payment:approve'],
+      ['debtpay', 'Cập nhật thanh toán', 'payment:create'],
+      ['oversight', 'Theo dõi & rà soát', 'oversight:read'],
       ['dashboard', 'Theo dõi công nợ', 'dashboard:read'],
       ['settlement', 'Tất toán', 'settlement:preview'],
       ['printpp', 'In đề xuất mua hàng', 'print:purchasing'],
@@ -664,6 +668,8 @@
       if (id === 'payment') return renderPayment();
       if (id === 'payreq') return renderPayReq();
       if (id === 'payapprove') return renderPayApprove();
+      if (id === 'oversight') return renderOversight();
+      if (id === 'debtpay') return renderDebtPay();
       if (id === 'dashboard') return renderDashboard();
       if (id === 'settlement') return renderSettlement();
       if (id === 'catalog') return renderCatalog();
@@ -1529,6 +1535,78 @@
       } catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
     }
 
+    // ===== Cập nhật thanh toán theo từng khoản công nợ =====================
+    function renderDebtPay() {
+      document.getElementById('content').innerHTML = `
+        <section class="card">
+          <h2>Cập nhật thanh toán công nợ</h2>
+          <div class="notice ok">Nhập số tiền đã thanh toán cho từng khoản. Sau khi ghi nhận, <b>số dư công nợ tự cập nhật</b>. Chọn nhà cung cấp để lọc (để trống = tất cả khoản còn nợ).</div>
+          <div class="actions" style="align-items:flex-end">
+            <div class="field" style="margin:0;min-width:280px"><label>Nhà cung cấp</label><select id="dpMa">${objectOptions()}</select></div>
+            <button onclick="loadOpenDebts(this)">Xem khoản còn nợ</button>
+          </div>
+          <div id="debtPayBox" style="margin-top:14px">${loadingText('Đang tải...')}</div>
+        </section>
+        <section class="card" style="margin-top:16px">
+          <h2>Lịch sử thanh toán đã ghi</h2>
+          <div class="notice">Nếu ghi nhầm, bấm <b>Hủy</b> để hoàn lại — số dư công nợ sẽ tự cộng lại.</div>
+          <div id="payHistBox">${loadingText('Đang tải...')}</div>
+        </section>`;
+      loadOpenDebts();
+      loadPaymentHistory();
+    }
+    async function loadPaymentHistory() {
+      const box = document.getElementById('payHistBox'); if (!box) return;
+      try {
+        const res = await call('rpc_list_payments', { p_ma_doi_tuong: val('dpMa') || null, p_limit: 50 });
+        const rows = res.rows || [];
+        box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>
+          <th>Mã TT</th><th>Ngày</th><th>Nhà cung cấp</th><th>Mã CN</th><th class="num-cell">Số tiền</th><th>Người ghi</th><th></th></tr></thead><tbody>
+          ${rows.map(r => `<tr><td><code>${esc(r.maThanhToan)}</code></td><td>${esc(r.ngay||'')}</td><td>${esc(r.tenDoiTuong||'')}</td>
+            <td>${esc(r.maCN||'')}</td><td class="num-cell">${fmtMoney(r.soTien)}</td><td>${esc(r.nguoi||'')}</td>
+            <td><button class="danger" style="min-height:32px;padding:3px 10px" onclick="undoPayment('${esc(r.maThanhToan)}', this)">Hủy</button></td></tr>`).join('')}
+          </tbody></table></div>` : '<p class="status">Chưa có lần thanh toán nào.</p>';
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
+    }
+    async function undoPayment(ma, btn) {
+      if (!confirm('Hủy lần thanh toán ' + ma + '? Số dư công nợ sẽ được cộng lại.')) return;
+      try {
+        await withBusy(btn, 'Đang hủy...', () => call('rpc_delete_payment', { p_ma_thanh_toan: ma }));
+        toast(`Đã hủy ${ma}, hoàn lại công nợ.`, 'ok');
+        loadOpenDebts(); loadPaymentHistory();
+      } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    async function loadOpenDebts(btn) {
+      const box = document.getElementById('debtPayBox'); if (!box) return;
+      box.innerHTML = loadingText('Đang tải...');
+      try {
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_list_open_debts', { p_ma_doi_tuong: val('dpMa') || null }));
+        const rows = res.rows || [];
+        box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>
+          <th>Mã công nợ</th><th>Nhà cung cấp</th><th>Mặt hàng</th><th>Hạn TT</th><th class="num-cell">Giá trị thực nhận</th><th class="num-cell">Đã trả</th><th class="num-cell">Còn phải trả</th><th style="min-width:220px">Ghi nhận đã trả</th></tr></thead><tbody>
+          ${rows.map(r => `<tr>
+            <td><code>${esc(r.maCN)}</code></td><td>${esc(r.tenDoiTuong||'')}</td><td>${esc(r.matHang||'')}</td><td>${esc(r.hanThanhToan||'—')}</td>
+            <td class="num-cell">${fmtMoney(r.thanhTienThucNhan)}</td><td class="num-cell">${fmtMoney(r.daThanhToan)}</td>
+            <td class="num-cell"><b>${fmtMoney(r.soDuConLai)}</b></td>
+            <td><div style="display:flex;gap:6px"><input class="js-money dp-amt" data-macn="${esc(r.maCN)}" data-dumax="${r.soDuConLai}" inputmode="decimal" placeholder="Số tiền" style="min-height:36px">
+            <button style="min-height:36px;padding:4px 12px" onclick="recordDebtPay('${esc(r.maCN)}', this)">Ghi</button></div></td>
+          </tr>`).join('')}</tbody></table></div>
+          <small>Ghi nhận đúng số tiền thực trả cho từng khoản; có thể trả nhiều lần (trả từng phần).</small>` : '<p class="status">Không có khoản nào còn phải trả.</p>';
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    async function recordDebtPay(maCN, btn) {
+      const input = btn.closest('td').querySelector('.dp-amt');
+      const so = moneyNum(input);
+      if (!so || so <= 0) { toast('Nhập số tiền đã trả.', 'err'); return; }
+      const du = Number(input.dataset.dumax || 0);
+      if (so > du && !confirm(`Số tiền (${fmtMoney(so)}) lớn hơn số còn phải trả (${fmtMoney(du)}). Phần dư sẽ tính là trả trước. Tiếp tục?`)) return;
+      try {
+        await withBusy(btn, 'Đang ghi...', () => call('rpc_record_debt_payment', { p_ma_cn: maCN, p_so_tien: so, p_ngay: todayStr() }));
+        toast(`Đã ghi nhận thanh toán cho ${maCN}.`, 'ok');
+        loadOpenDebts();
+      } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+
     function renderDashboard() {
       renderShell('Theo dõi công nợ theo đối tượng', `
         <div class="grid">
@@ -1550,9 +1628,9 @@
         const res = await withBusy(btn, 'Đang generate...', () => call('rpc_get_debt_dashboard', { p_filter: filter }));
         box.innerHTML = `
           <div class="totals">
-            <div class="metric">AP<strong>${fmtMoney(res.totals.ap)}</strong></div>
-            <div class="metric">AR/tạm ứng<strong>${fmtMoney(res.totals.ar)}</strong></div>
-            <div class="metric">Net<strong>${fmtMoney(res.totals.net)}</strong></div>
+            <div class="metric">Còn phải trả<strong>${fmtMoney(res.totals.ap)} đ</strong></div>
+            <div class="metric">Trả trước/tạm ứng<strong>${fmtMoney(res.totals.ar)} đ</strong></div>
+            <div class="metric">Chênh lệch ròng<strong>${fmtMoney(res.totals.net)} đ</strong></div>
             <div class="metric">Số khoản<strong>${fmtMoney(res.totals.count)}</strong></div>
           </div>
           <div class="table-wrap">${table(res.summary, ['maDoiTuong','tenDoiTuong','actual','paid','ap','ar','net','count','status'])}</div>`;
@@ -1606,10 +1684,20 @@
       } catch (err) { box.innerHTML = `<p class="status">Không tải được dữ liệu gần đây: ${esc(err.message || err)}</p>`; toast(err.message || String(err), 'err'); }
     }
 
+    const COL_VI = {
+      maDoiTuong:'Mã đối tượng', tenDoiTuong:'Tên đối tượng', actual:'Giá trị thực nhận', paid:'Đã thanh toán',
+      ap:'Còn phải trả', ar:'Trả trước/tạm ứng', net:'Chênh lệch', count:'Số khoản', status:'Trạng thái',
+      MaCN:'Mã công nợ', MaDoiTuong:'Mã ĐT', TenDoiTuong:'Tên đối tượng', MatHang:'Mặt hàng', SLDat:'SL đặt',
+      SLThucNhan:'SL thực nhận', ThanhTienThucNhan:'Thành tiền thực nhận', DaThanhToan:'Đã thanh toán', TrangThai:'Trạng thái',
+      MaThanhToan:'Mã thanh toán', NgayThanhToan:'Ngày thanh toán', SoTien:'Số tiền', PhanBoMode:'Cách phân bổ', ChungTu:'Chứng từ',
+      MaDeXuat:'Mã đề xuất', NgayDeXuat:'Ngày đề xuất', NoiDung:'Nội dung', DieuKhoanTT:'Điều khoản TT', NguoiTao:'Người tạo',
+      action:'Thao tác', maCN:'Mã công nợ', doiTuong:'Đối tượng', allocated:'Phân bổ'
+    };
+    function colLabel(c){ return COL_VI[c] || c; }
     function table(rows, cols, actionFn) {
       rows = rows || [];
       if (!rows.length) return '<p class="status">Không có dữ liệu.</p>';
-      return `<table><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}${actionFn ? '<th>Thao tác</th>' : ''}</tr></thead><tbody>` +
+      return `<table><thead><tr>${cols.map(c => `<th>${esc(colLabel(c))}</th>`).join('')}${actionFn ? '<th>Thao tác</th>' : ''}</tr></thead><tbody>` +
         rows.map(r => `<tr>${cols.map(c => `<td>${esc(formatCell(r[c]))}</td>`).join('')}${actionFn ? `<td>${actionFn(r)}</td>` : ''}</tr>`).join('') +
         '</tbody></table>';
     }
@@ -2032,8 +2120,8 @@
     async function executePayReq(ma, btn) {
       if (!confirm(`Xác nhận đã đi tiền theo đề xuất ${ma}? Thao tác này ghi nhận thanh toán vào công nợ.`)) return;
       try {
-        const res = await withBusy(btn, 'Đang ghi nhận...', () => call('rpc_execute_payment_request', { p_ma: ma }));
-        toast(`Đã ghi nhận ${res.payments} khoản chi cho ${ma}.`, 'ok');
+        await withBusy(btn, 'Đang xử lý...', () => call('rpc_execute_payment_request', { p_ma: ma }));
+        toast(`Đã đánh dấu ${ma} là ĐÃ CHI. Vào "Cập nhật thanh toán" để ghi số thực trả từng khoản.`, 'ok');
         loadMyPayReq();
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
@@ -2356,6 +2444,68 @@
         });
         toast('Đã tạo phiếu YCTT.', 'ok');
       } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+
+    // ===== Theo dõi & rà soát (Kế toán / Trưởng bộ phận) ===================
+    function osStatusPill(s) {
+      if (s === 'Đã duyệt') return '<span class="pill ok">Đã duyệt</span>';
+      if (s === 'Từ chối') return '<span class="pill err">Từ chối/Hủy</span>';
+      if (s === 'Đã chi') return '<span class="pill ok">Đã chi</span>';
+      if (s === 'Nháp') return '<span class="pill warn">Nháp</span>';
+      return '<span class="pill warn">Chờ duyệt</span>';
+    }
+    function renderOversight() {
+      const today = todayStr();
+      document.getElementById('content').innerHTML = `
+        <section class="card">
+          <h2>Theo dõi &amp; rà soát</h2>
+          <div class="notice ok">Xem mọi khoản đang trình + đã duyệt/nghiệm thu/thanh toán. Phiếu <b>đang chờ duyệt</b> có thể <b>Hủy</b> (kèm lý do) trước khi lên sếp. Trưởng bộ phận chỉ thấy phiếu bộ phận mình.</div>
+          <div class="actions" style="align-items:flex-end">
+            <div class="field" style="margin:0"><label>Từ ngày</label><input id="osFrom" type="date"></div>
+            <div class="field" style="margin:0"><label>Đến ngày</label><input id="osTo" type="date" value="${today}"></div>
+            <button onclick="loadOversight(this)">Cập nhật</button>
+          </div>
+          <div id="osBox" style="margin-top:14px">${loadingText('Đang tải...')}</div>
+        </section>`;
+      loadOversight();
+    }
+    async function loadOversight(btn) {
+      const box = document.getElementById('osBox'); if (!box) return;
+      box.innerHTML = loadingText('Đang tải...');
+      try {
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_oversight', { p_from: val('osFrom') || null, p_to: val('osTo') || null }));
+        const props = res.proposals || [], pays = res.paymentRequests || [];
+        const canCancel = res.role === 'KeToanCongNo' || res.role === 'TruongPhong' || res.role === 'Admin';
+        const propRows = props.length ? `<div class="table-wrap"><table><thead><tr>
+          <th>Mã ĐX</th><th>Loại</th><th>Ngày</th><th>Người/Bộ phận</th><th>NCC</th><th>Tổng tiền</th><th>Trạng thái</th><th>NT/TT</th><th></th></tr></thead><tbody>
+          ${props.map(p => `<tr>
+            <td><code>${esc(p.MaDeXuat)}</code></td><td>${esc(p.Loai)}</td><td>${esc(p.Ngay)}</td>
+            <td>${esc(p.NguoiDeNghi||'')}${p.BoPhan?' · '+esc(p.BoPhan):''}</td><td>${esc(p.TenDoiTuong||'')}</td>
+            <td class="num-cell">${fmtMoney(p.TongTien)}</td><td>${osStatusPill(p.TrangThai)}</td>
+            <td>${p.DaNghiemThu?'<span class="pill ok">NT</span> ':''}${p.DaPhatSinhTT?'<span class="pill ok">TT</span>':''}</td>
+            <td>${p.TrangThai==='Chờ duyệt' && canCancel ? `<button class="danger" onclick="cancelProposalOs('${esc(p.MaDeXuat)}', this)">Hủy</button>` : ''}</td>
+          </tr>`).join('')}</tbody></table></div>` : '<p class="status">Không có đề xuất mua hàng trong khoảng đã chọn.</p>';
+        const payRows = pays.length ? `<div class="table-wrap"><table><thead><tr>
+          <th>Mã ĐXTT</th><th>Ngày</th><th>Người lập</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+          ${pays.map(p => `<tr><td><code>${esc(p.MaDeXuatTT)}</code></td><td>${esc(p.Ngay)}</td><td>${esc(p.NguoiLap||'')}</td>
+            <td class="num-cell">${fmtMoney(p.TongTien)}</td><td>${osStatusPill(p.TrangThai)}</td>
+            <td>${p.TrangThai==='Chờ duyệt' && canCancel ? `<button class="danger" onclick="cancelPayReqOs('${esc(p.MaDeXuatTT)}', this)">Hủy</button>` : ''}</td>
+          </tr>`).join('')}</tbody></table></div>` : '<p class="status">Không có đề xuất thanh toán.</p>';
+        box.innerHTML = `<h3>Đề xuất mua hàng / tạm ứng (${props.length})</h3>${propRows}
+          ${res.role !== 'TruongPhong' ? `<h3 style="margin-top:16px">Đề xuất thanh toán (${pays.length})</h3>${payRows}` : ''}`;
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    async function cancelProposalOs(ma, btn) {
+      const r = (prompt('Lý do hủy đề xuất ' + ma + ' (gửi người lập):', '') || '').trim();
+      if (!r) return;
+      try { await withBusy(btn, 'Đang hủy...', () => call('rpc_cancel_proposal', { p_ma_de_xuat: ma, p_reason: r })); toast(`Đã hủy ${ma}.`, 'ok'); loadOversight(); }
+      catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    async function cancelPayReqOs(ma, btn) {
+      const r = (prompt('Lý do hủy đề xuất thanh toán ' + ma + ':', '') || '').trim();
+      if (!r) return;
+      try { await withBusy(btn, 'Đang hủy...', () => call('rpc_cancel_payment_request', { p_ma: ma, p_reason: r })); toast(`Đã hủy ${ma}.`, 'ok'); loadOversight(); }
+      catch (err) { toast(err.message || String(err), 'err'); }
     }
 
     // ===== Hướng dẫn (tập trung 1 chỗ) =====================================
@@ -2704,11 +2854,12 @@
             <option ${u.status==='Ngừng'?'':'selected'}>Hoạt động</option>
             <option ${u.status==='Ngừng'?'selected':''}>Ngừng</option>
           </select></div>
-        </div>`, () => saveUserEdit(u.id), 'Lưu thay đổi');
+        </div>
+        <div class="field"><label>Bộ phận (dùng cho Trưởng bộ phận rà soát)</label><input id="ueBoPhan" value="${esc(u.boPhan||'')}" placeholder="VD: Vật tư, Kỹ thuật..."></div>`, () => saveUserEdit(u.id), 'Lưu thay đổi');
     }
     async function saveUserEdit(id, btn) {
       try {
-        await call('rpc_admin_update_user', { p_id: id, p_role: val('ueRole'), p_status: val('ueStatus'), p_name: val('ueName') });
+        await call('rpc_admin_update_user', { p_id: id, p_role: val('ueRole'), p_status: val('ueStatus'), p_name: val('ueName'), p_bo_phan: val('ueBoPhan') });
         closeModal(); toast('Đã cập nhật.', 'ok'); loadUsers();
       } catch (err) { modalErr(err.message || String(err)); }
     }
