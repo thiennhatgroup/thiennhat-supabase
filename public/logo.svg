@@ -1,11 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 372 92" role="img" aria-label="Thiên Nhật">
-  <!-- Mark: hai đỉnh chữ M (xanh + cam) -->
-  <path d="M14,80 L40,14 L58,14 L34,80 Z" fill="#0E5AA7"/>
-  <path d="M40,14 L58,14 L74,52 L61,52 Z" fill="#0E5AA7"/>
-  <path d="M52,14 L70,14 L96,80 L82,80 Z" fill="#EE5A1C"/>
-  <path d="M70,14 L88,14 L64,80 L52,80 Z" fill="#EE5A1C" opacity="0.92"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 96" role="img" aria-label="Thiên Nhật Group">
+  <!-- M ribbon: nửa trái xanh, nửa phải cam -->
+  <path d="M8,82 L34,14 L50,14 L26,82 Z" fill="#0E5AA7"/>
+  <path d="M34,14 L50,14 L70,66 L57,66 Z" fill="#0E5AA7"/>
+  <path d="M50,14 L66,14 L92,82 L79,82 Z" fill="#0E5AA7" opacity="0"/>
+  <path d="M52,14 L68,14 L44,82 L52,82 Z" fill="#EE5A1C"/>
+  <path d="M68,14 L84,14 L104,82 L88,82 Z" fill="#EE5A1C"/>
+  <path d="M68,14 L84,14 L94,40 L80,40 Z" fill="#F5763F"/>
   <!-- TN -->
-  <text x="98" y="60" font-family="Arial, sans-serif" font-size="52" font-weight="800" fill="#0E5AA7">TN</text>
+  <text x="112" y="64" font-family="Arial, sans-serif" font-size="56" font-weight="800" fill="#0E5AA7">TN</text>
   <!-- Wordmark -->
-  <text x="100" y="86" font-family="Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="0.5" fill="#3C4552">Thiên Nhật Group</text>
+  <text x="114" y="90" font-family="Georgia, 'Times New Roman', serif" font-size="20" font-weight="700" fill="#333A44">ThienNhat Group</text>
 </svg>

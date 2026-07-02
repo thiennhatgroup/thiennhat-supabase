@@ -105,7 +105,33 @@
     }
     nav button:hover { background: #F1F5FA; }
     nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
-    main { padding: 22px; }
+    main { padding: 22px; max-width: 1260px; margin: 0 auto; }
+    .menu-toggle { display: inline-flex; flex-direction: column; justify-content: center; gap: 4px; width: 42px; height: 42px; padding: 0 11px; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: none; }
+    .menu-toggle span { display: block; height: 2px; background: var(--ink); border-radius: 2px; transition: .2s; }
+    .menu-toggle:hover { background: #F1F5FA; }
+    .drawer {
+      position: fixed; top: 0; left: 0; height: 100dvh; width: 286px; max-width: 84vw;
+      background: var(--panel); border-right: 1px solid var(--line);
+      transform: translateX(-100%); transition: transform .24s ease;
+      z-index: 60; overflow-y: auto; padding: 14px 12px 20px;
+      box-shadow: 0 20px 50px rgba(16,40,70,.18);
+      display: flex; flex-direction: column;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-backdrop { position: fixed; inset: 0; background: rgba(16,28,45,.4); z-index: 55; }
+    .drawer-brand { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 12px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+    .drawer-brand img { height: 34px; }
+    .drawer-x { width: 34px; height: 34px; padding: 0; background: transparent; color: var(--muted); border: none; box-shadow: none; font-size: 20px; }
+    .drawer-item { width: 100%; text-align: left; background: transparent; color: var(--ink); border: none; box-shadow: none; font-weight: 500; padding: 11px 12px; border-radius: 10px; margin-bottom: 2px; }
+    .drawer-item:hover { background: #F1F5FA; }
+    .drawer-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+    .drawer-group { margin: 4px 0; }
+    .drawer-group-h { width: 100%; text-align: left; background: transparent; color: var(--muted); border: none; box-shadow: none; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; padding: 10px 12px 6px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .drawer-group.collapsed .drawer-group-body { display: none; }
+    .drawer-group.collapsed .drawer-group-h span { transform: rotate(-90deg); }
+    .drawer-group-h span { transition: transform .2s; }
+    .drawer-note { margin-top: auto; padding: 14px 12px 4px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .drawer-note b { color: var(--accent); }
     .workspace {
       display: grid;
       grid-template-columns: minmax(320px, 1fr) minmax(360px, .95fr);
@@ -242,22 +268,17 @@
     .best-row td { background: #EEF8F1; font-weight: 700; }
     @media (max-width: 920px) {
       main { padding: 14px; }
-      header { padding: 10px 14px; }
-      .brand img { height: 32px; }
-      .app { grid-template-columns: 1fr; }
-      nav {
-        display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch;
-        border-right: 0; border-bottom: 1px solid var(--line); padding: 8px 12px;
-        position: sticky; top: 62px; background: rgba(255,255,255,.9); backdrop-filter: blur(10px); z-index: 15;
-      }
-      nav button { width: auto; white-space: nowrap; margin: 0; flex: 0 0 auto; font-size: 13.5px; padding: 8px 14px; }
+      header { padding: 10px 12px; }
+      .brand img { height: 30px; }
       .card { padding: 16px; border-radius: 14px; }
       .workspace, .quote-layout, .proposal-layout { grid-template-columns: 1fr; }
       .grid, .quote-best { grid-template-columns: 1fr; }
       .totals { grid-template-columns: repeat(2, 1fr); }
-      .notif-panel { position: fixed; left: 10px; right: 10px; top: 116px; width: auto; }
+      .notif-panel { position: fixed; left: 10px; right: 10px; top: 66px; width: auto; }
       .modal-overlay { padding: 3vh 10px; }
       .approve-grid { grid-template-columns: 1fr; }
+      /* Hạn chế scroll ngang: bảng nhiều cột cho phép cuộn trong khung, còn lại co về 1 cột */
+      .detail-head { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -276,16 +297,16 @@
     </div>
     <button onclick="login()" style="width:100%">Đăng nhập</button>
     <p id="loginMsg" class="status" style="text-align:center"></p>
+    <p class="status" style="text-align:center;font-size:12px;margin-top:14px">Yêu cầu cụ thể liên hệ tới email <b>ahuyle.work@gmail.com</b></p>
   </section>
 
   <section id="appView" class="hidden">
     <header>
       <div class="brand">
+        <button class="menu-toggle" onclick="toggleDrawer()" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
         <img src="./logo.svg" alt="Thiên Nhật">
-        <div>
-          <h1>Mua hàng &amp; Công nợ</h1>
-          <div id="userBadge" class="status" style="font-size:12px"></div>
-        </div>
       </div>
       <div class="header-right">
         <div class="bell-wrap">
@@ -295,10 +316,9 @@
         <button class="secondary" onclick="logout()">Đăng xuất</button>
       </div>
     </header>
-    <div class="app">
-      <nav id="nav"></nav>
-      <main id="content"></main>
-    </div>
+    <div id="drawerBackdrop" class="drawer-backdrop hidden" onclick="closeDrawer()"></div>
+    <aside id="drawer" class="drawer"></aside>
+    <main id="content"></main>
   </section>
 
   <datalist id="doiTuongList"></datalist>
@@ -513,8 +533,8 @@
         document.getElementById('userBadge').textContent = `${state.user.name} - ${state.user.role}`;
         renderLists();
         const allowed = visibleScreens();
-        if (!allowed.some(s => s[0] === state.screen)) state.screen = allowed.length ? allowed[0][0] : 'dashboard';
-        renderNav();
+        if (!allowed.some(s => s[0] === state.screen)) state.screen = allowed.length ? allowed[0][0] : 'quotes';
+        renderDrawer();
         renderScreen(state.screen);
         refreshNotif();
         if (!state.notifTimer) state.notifTimer = setInterval(refreshNotif, 45000);
@@ -530,10 +550,41 @@
       document.getElementById('vatTuList').innerHTML = state.vatTu.map(x => `<option value="${esc(x)}"></option>`).join('');
     }
 
-    function renderNav() {
-      document.getElementById('nav').innerHTML = visibleScreens().map(([id, label]) =>
-        `<button class="${state.screen === id ? 'active' : ''}" onclick="renderScreen('${id}')">${label}</button>`
-      ).join('');
+    // Menu "Tải dữ liệu" — xuất raw data phục vụ phân tích.
+    const EXPORT_SCREENS = [
+      ['exp_pp', 'Dữ liệu đề xuất mua hàng', 'recent:read'],
+      ['exp_tt', 'Dữ liệu đề xuất thanh toán', 'recent:read'],
+      ['exp_bg', 'Dữ liệu báo giá NCC', 'recent:read']
+    ];
+    function toggleDrawer() {
+      const d = document.getElementById('drawer'); const b = document.getElementById('drawerBackdrop');
+      const open = !d.classList.contains('open');
+      d.classList.toggle('open', open); b.classList.toggle('hidden', !open);
+      if (open) renderDrawer();
+    }
+    function closeDrawer() {
+      document.getElementById('drawer').classList.remove('open');
+      document.getElementById('drawerBackdrop').classList.add('hidden');
+    }
+    function toggleGroup(el) { el.closest('.drawer-group').classList.toggle('collapsed'); }
+    function navTo(id) { closeDrawer(); renderScreen(id); }
+    function renderDrawer() {
+      const features = visibleScreens(); // các màn thao tác theo quyền
+      const exps = EXPORT_SCREENS.filter(s => can(s[2]));
+      const item = (id, label) => `<button class="drawer-item ${state.screen === id ? 'active' : ''}" onclick="navTo('${id}')">${label}</button>`;
+      document.getElementById('drawer').innerHTML = `
+        <div class="drawer-brand"><img src="./logo.svg" alt="Thiên Nhật"><button class="drawer-x" onclick="closeDrawer()">✕</button></div>
+        ${item('account', '👤 Tài khoản')}
+        <div class="drawer-group">
+          <button class="drawer-group-h" onclick="toggleGroup(this)">Thao tác <span>▾</span></button>
+          <div class="drawer-group-body">${features.map(([id, label]) => item(id, label)).join('')}</div>
+        </div>
+        ${exps.length ? `<div class="drawer-group">
+          <button class="drawer-group-h" onclick="toggleGroup(this)">Tải dữ liệu <span>▾</span></button>
+          <div class="drawer-group-body">${exps.map(([id, label]) => item(id, label)).join('')}</div>
+        </div>` : ''}
+        ${item('improve', '💡 Đề xuất cải tiến')}
+        <div class="drawer-note">Yêu cầu cụ thể liên hệ tới email <b>ahuyle.work@gmail.com</b></div>`;
     }
 
     function renderShell(title, formHtml, recentKind) {
@@ -560,7 +611,12 @@
 
     function renderScreen(id) {
       state.screen = id;
-      renderNav();
+      renderDrawer();
+      if (id === 'account') return renderAccount();
+      if (id === 'improve') return renderImprove();
+      if (id === 'exp_pp') return renderExport('pp');
+      if (id === 'exp_tt') return renderExport('tt');
+      if (id === 'exp_bg') return renderExport('bg');
       if (id === 'quotes') return renderQuotes();
       if (id === 'proposal') return renderProposal();
       if (id === 'approve') return renderApprove();
@@ -1948,8 +2004,8 @@
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>In / xuất đề xuất mua hàng</h2>
-          <div class="notice ok">Chọn các phiếu đã duyệt &amp; đã nghiệm thu để ghép vào một bản đề xuất chung rồi xuất Excel theo mẫu.</div>
-          <div class="actions"><button class="secondary" onclick="renderPrintPP()">↻ Tải lại</button><button onclick="exportPP(this)">⬇ Xuất Excel (đã chọn)</button></div>
+          <div class="notice ok">Chọn các phiếu đã duyệt &amp; đã nghiệm thu — tất cả sẽ được gộp vào <b>một file / một sheet</b> để lãnh đạo in &amp; ký một lần.</div>
+          <div class="actions"><button class="secondary" onclick="renderPrintPP()">↻ Tải lại</button><button onclick="exportPP(this)">⬇ Xuất Excel gộp (đã chọn)</button></div>
           <div id="ppBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
         </section>`;
       loadPrintable(rows => {
@@ -1969,50 +2025,48 @@
       if (!idxs.length) { toast('Chọn ít nhất một phiếu.', 'err'); return; }
       try {
         await withBusy(btn, 'Đang tạo Excel...', async () => {
-          // Nạp mẫu để lấy nguyên style/độ rộng cột, rồi dựng 1 sheet/phiếu.
+          // Nạp mẫu để lấy nguyên style/độ rộng cột (clone), rồi GỘP TẤT CẢ vào 1 sheet
+          // để lãnh đạo in & ký một lần.
           const tpl = await loadTemplateWb('./templates/dxmh_template.xlsx');
           const t = tpl.worksheets[0];
           const st = {
-            company: t.getCell('A1').style, title: t.getCell('A3').style,
-            lbl: t.getCell('A5').style, valB: t.getCell('B5').style,
-            head: t.getCell('A8').style, dataC: t.getCell('A9').style,
-            dataL: t.getCell('B9').style, total: t.getCell('A13').style, sign: t.getCell('B16').style
+            company: clone(t.getCell('A1').style), title: clone(t.getCell('A3').style),
+            lbl: clone(t.getCell('A5').style), valB: clone(t.getCell('B5').style),
+            head: clone(t.getCell('A8').style), dataC: clone(t.getCell('A9').style),
+            dataL: clone(t.getCell('B9').style), total: clone(t.getCell('A13').style), sign: clone(t.getCell('B16').style)
           };
           const widths = [ t.getColumn(1).width||6, t.getColumn(2).width||46, t.getColumn(3).width||14,
                            t.getColumn(4).width||25, t.getColumn(5).width||20, t.getColumn(6).width||22 ];
           const out = new ExcelJS.Workbook();
-          idxs.forEach((idx, si) => {
+          const ws = out.addWorksheet('Đề xuất mua hàng');
+          widths.forEach((w, i) => ws.getColumn(i+1).width = w);
+          ws.mergeCells('A1:F1'); ws.getCell('A1').value = COMPANY_FULL; applySt(ws.getCell('A1'), st.company);
+          ws.mergeCells('A3:F3'); ws.getCell('A3').value = 'ĐỀ XUẤT MUA HÀNG'; applySt(ws.getCell('A3'), st.title);
+          ws.getCell('A5').value = 'Ngày đề xuất:'; applySt(ws.getCell('A5'), st.lbl);
+          ws.getCell('B5').value = new Date().toLocaleDateString('vi-VN'); applySt(ws.getCell('B5'), st.valB);
+          ws.getCell('A6').value = 'Nội dung:'; applySt(ws.getCell('A6'), st.lbl);
+          ws.getCell('B6').value = `Tổng hợp ${idxs.length} đề xuất mua hàng đã duyệt & nghiệm thu`; applySt(ws.getCell('B6'), st.valB);
+          const head = ['TT','Tên vật tư hàng hoá','Số lượng','Thành tiền sau VAT (vnđ)','Điều khoản thanh toán','Đơn vị cung cấp'];
+          head.forEach((h, c) => { const cell = ws.getCell(8, c+1); cell.value = h; applySt(cell, st.head); });
+          let r = 9, tong = 0, stt = 1;
+          idxs.forEach(idx => {
             const p = state.printable[idx];
-            const ws = out.addWorksheet((p.MaDeXuat || ('Phieu' + (si+1))).slice(0, 28));
-            widths.forEach((w, i) => ws.getColumn(i+1).width = w);
-            ws.mergeCells('A1:F1'); ws.getCell('A1').value = COMPANY_FULL; applySt(ws.getCell('A1'), st.company);
-            ws.mergeCells('A3:F3'); ws.getCell('A3').value = 'ĐỀ XUẤT MUA HÀNG'; applySt(ws.getCell('A3'), st.title);
-            ws.getCell('A5').value = 'Ngày đề xuất:'; applySt(ws.getCell('A5'), st.lbl);
-            ws.getCell('B5').value = p.NgayDeXuat || ''; applySt(ws.getCell('B5'), st.valB);
-            ws.getCell('A6').value = 'Nội dung:'; applySt(ws.getCell('A6'), st.lbl);
-            ws.getCell('B6').value = p.NoiDung || ''; applySt(ws.getCell('B6'), st.valB);
-            ws.getCell('A7').value = 'Giải trình:'; applySt(ws.getCell('A7'), st.lbl);
-            ws.getCell('B7').value = p.GiaiTrinh || ''; applySt(ws.getCell('B7'), st.valB);
-            const head = ['TT','Tên vật tư hàng hoá','Số lượng','Thành tiền sau VAT (vnđ)','Điều khoản thanh toán','Đơn vị cung cấp'];
-            head.forEach((h, c) => { const cell = ws.getCell(8, c+1); cell.value = h; applySt(cell, st.head); });
-            let r = 9, tong = 0;
-            (p.lines||[]).forEach((l, i) => {
+            (p.lines||[]).forEach(l => {
               const tt = Number(l.ThanhTienSauVAT || 0); tong += tt;
-              const vals = [i+1, l.MatHang||'', Number(l.SLDat||0), tt, p.DieuKhoanTT||'', p.TenDoiTuong||''];
+              const vals = [stt++, l.MatHang||'', Number(l.SLDat||0), tt, p.DieuKhoanTT||'', p.TenDoiTuong||''];
               vals.forEach((v, c) => { const cell = ws.getCell(r, c+1); cell.value = v; applySt(cell, c===1 ? st.dataL : st.dataC); });
               r++;
             });
-            ws.mergeCells(`A${r}:C${r}`); ws.getCell(r, 1).value = 'Tổng'; applySt(ws.getCell(r,1), st.total);
-            ws.getCell(r, 4).value = tong; applySt(ws.getCell(r,4), st.total);
-            const sr = r + 3;
-            ws.getCell(sr, 2).value = 'Tổng giám đốc'; applySt(ws.getCell(sr,2), st.sign);
-            ws.getCell(sr, 4).value = 'Trưởng BP'; applySt(ws.getCell(sr,4), st.sign);
-            ws.getCell(sr, 5).value = 'Người đề xuất'; applySt(ws.getCell(sr,5), st.sign);
-            ws.getCell(sr+3, 5).value = p.NguoiDeNghi || '';
           });
-          await saveWb(out, `De_xuat_mua_hang_${todayStr()}.xlsx`);
+          ws.mergeCells(`A${r}:C${r}`); ws.getCell(r, 1).value = 'Tổng'; applySt(ws.getCell(r,1), st.total);
+          ws.getCell(r, 4).value = tong; applySt(ws.getCell(r,4), st.total);
+          const sr = r + 3;
+          ws.getCell(sr, 2).value = 'Tổng giám đốc'; applySt(ws.getCell(sr,2), st.sign);
+          ws.getCell(sr, 4).value = 'Trưởng BP'; applySt(ws.getCell(sr,4), st.sign);
+          ws.getCell(sr, 5).value = 'Người đề xuất'; applySt(ws.getCell(sr,5), st.sign);
+          await saveWb(out, `De_xuat_mua_hang_tong_hop_${todayStr()}.xlsx`);
         });
-        toast(`Đã xuất ${idxs.length} phiếu.`, 'ok');
+        toast(`Đã gộp ${idxs.length} phiếu vào 1 file.`, 'ok');
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
@@ -2078,16 +2132,17 @@
           ws.getCell('D13').value = p.SoTk || '';
           ws.getCell('D15').value = p.ChiNhanh || '';
           ws.getColumn(9).width = 13; // cột Đơn Giá (mẫu để 0.5 nên ẩn)
-          // Lấy style mẫu của vùng bảng + tổng + chữ ký
+          // Lấy style mẫu (clone) của vùng bảng + tổng + chữ ký TRƯỚC khi xóa
           const st = {
-            a: ws.getCell('A18').style, b: ws.getCell('B18').style, d: ws.getCell('D18').style,
-            e: ws.getCell('E18').style, h: ws.getCell('H18').style, i: ws.getCell('I18').style, j: ws.getCell('J18').style,
-            totL: ws.getCell('E20').style, totV: ws.getCell('J20').style,
-            date: ws.getCell('G26').style, signT: ws.getCell('A27').style, signN: ws.getCell('A32').style
+            a: clone(ws.getCell('A18').style), b: clone(ws.getCell('B18').style), d: clone(ws.getCell('D18').style),
+            e: clone(ws.getCell('E18').style), h: clone(ws.getCell('H18').style), i: clone(ws.getCell('I18').style), j: clone(ws.getCell('J18').style),
+            totL: clone(ws.getCell('E20').style), totV: clone(ws.getCell('J20').style),
+            date: clone(ws.getCell('G26').style), signT: clone(ws.getCell('A27').style), signN: clone(ws.getCell('A32').style)
           };
           ['B18:C18','E18:G18','E19:G19','E20:G20','A27:C27','D27:E27','G26:J26','G27:J27','G32:J32','G33:J33']
             .forEach(m => { try { ws.unMergeCells(m); } catch (e) {} });
-          for (let r = 18; r <= 40; r++) ws.getRow(r).eachCell({ includeEmpty: true }, c => { c.value = null; });
+          // Xóa GIÁ TRỊ + FILL + VIỀN của vùng 18–45 để không còn ô vàng/viền thừa của mẫu
+          for (let r = 18; r <= 45; r++) { const row = ws.getRow(r); for (let c = 1; c <= 10; c++) { const cell = row.getCell(c); cell.value = null; cell.fill = { type: 'pattern', pattern: 'none' }; cell.border = {}; cell.font = {}; cell.alignment = {}; } }
 
           let r = 18, tong = 0;
           lines.forEach((l, li) => {
@@ -2123,6 +2178,109 @@
           await saveWb(wb, `YCTT_${p.MaDeXuat}.xlsx`);
         });
         toast('Đã tạo phiếu YCTT.', 'ok');
+      } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+
+    // ===== Tài khoản cá nhân (chỉ xem) =====================================
+    const PERM_LABELS = {
+      'quote:read': 'Xem báo giá', 'quote:sync': 'Nhập báo giá',
+      'proposal:create': 'Tạo đề xuất', 'proposal:submit': 'Gửi duyệt đề xuất',
+      'proposal:approve': 'Duyệt đề xuất mua hàng', 'proposal:reject': 'Từ chối đề xuất',
+      'receipt:update': 'Nghiệm thu nhận hàng',
+      'payment:request': 'Lập đề xuất thanh toán', 'payment:approve': 'Duyệt đề xuất thanh toán',
+      'payment:execute': 'Đi tiền theo đề xuất', 'payment:create': 'Ghi nhận chi',
+      'settlement:preview': 'Xem tất toán', 'settlement:confirm': 'Xác nhận tất toán',
+      'dashboard:read': 'Theo dõi công nợ', 'recent:read': 'Xem & tải dữ liệu tổng hợp',
+      'catalog:read': 'Xem danh mục', 'catalog:manage': 'Quản lý danh mục',
+      'user:manage': 'Quản lý tài khoản', 'print:purchasing': 'In phiếu mua hàng'
+    };
+    const DATA_ACCESS = {
+      NhanVienMuaHang: 'Báo giá NCC, đề xuất mua hàng của bạn, nghiệm thu, in phiếu.',
+      KeToanCongNo: 'Công nợ, đề xuất thanh toán, dữ liệu tổng hợp.',
+      ChuTich: 'Đề xuất mua hàng ≥ 10 triệu, đề xuất thanh toán, theo dõi công nợ.',
+      TongGiamDoc: 'Đề xuất mua hàng < 10 triệu, theo dõi công nợ.',
+      TruongPhong: 'Báo giá, dữ liệu tổng hợp.',
+      LanhDao: 'Theo dõi & báo giá.',
+      Admin: 'Toàn bộ dữ liệu và cấu hình hệ thống.'
+    };
+    function renderAccount() {
+      const u = state.user || {}; const perms = state.permissions || [];
+      const isAdmin = perms.includes('*');
+      const permHtml = isAdmin
+        ? '<span class="pill ok">Toàn quyền (Admin)</span>'
+        : (perms.length ? perms.map(p => `<span class="pill" style="margin:0 6px 6px 0">${esc(PERM_LABELS[p] || p)}</span>`).join('') : '<span class="status">Chưa có quyền.</span>');
+      document.getElementById('content').innerHTML = `
+        <section class="card" style="max-width:640px">
+          <h2>Tài khoản của tôi</h2>
+          <div class="notice ok">Thông tin chỉ để xem. Cần thay đổi vai trò / mã PIN, vui lòng liên hệ quản trị viên.</div>
+          <div class="field"><label>Họ tên</label><input value="${esc(u.name || '')}" disabled></div>
+          <div class="field"><label>Email</label><input value="${esc(u.email || '')}" disabled></div>
+          <div class="field"><label>Vai trò</label><input value="${esc(ROLE_LABELS[u.role] || u.role || '')}" disabled></div>
+          <h3>Quyền của bạn</h3>
+          <div>${permHtml}</div>
+          <h3>Dữ liệu được tiếp cận</h3>
+          <div class="status">${esc(DATA_ACCESS[u.role] || '—')}</div>
+        </section>`;
+    }
+
+    // ===== Đề xuất cải tiến =================================================
+    function renderImprove() {
+      document.getElementById('content').innerHTML = `
+        <section class="card" style="max-width:640px">
+          <h2>Đề xuất cải tiến</h2>
+          <div class="notice ok">Góp ý của bạn sẽ được gửi thẳng tới quản trị viên để xem xét. Cảm ơn bạn đã giúp phần mềm tốt hơn!</div>
+          <div class="field"><label>Nội dung đề xuất</label><textarea id="impND" style="min-height:140px" placeholder="Mô tả tính năng/cải tiến bạn mong muốn..."></textarea></div>
+          <button onclick="submitImprove(this)">Gửi đề xuất</button>
+        </section>`;
+    }
+    async function submitImprove(btn) {
+      const nd = val('impND').trim();
+      if (!nd) { toast('Nhập nội dung đề xuất.', 'err'); return; }
+      try {
+        await withBusy(btn, 'Đang gửi...', () => call('rpc_submit_improvement', { p_noi_dung: nd }));
+        toast('Đã gửi đề xuất cải tiến. Cảm ơn bạn!', 'ok');
+        renderImprove();
+      } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+
+    // ===== Tải dữ liệu (raw) sang Excel =====================================
+    const EXPORT_CFG = {
+      pp: { title: 'Tải dữ liệu đề xuất mua hàng', rpc: 'rpc_export_proposals', file: 'DuLieu_DeXuatMuaHang', sheet: 'Đề xuất mua hàng' },
+      tt: { title: 'Tải dữ liệu đề xuất thanh toán', rpc: 'rpc_export_payment_requests', file: 'DuLieu_DeXuatThanhToan', sheet: 'Đề xuất thanh toán' },
+      bg: { title: 'Tải dữ liệu báo giá NCC', rpc: 'rpc_export_quotes', file: 'DuLieu_BaoGia', sheet: 'Báo giá NCC' }
+    };
+    function renderExport(kind) {
+      const c = EXPORT_CFG[kind];
+      document.getElementById('content').innerHTML = `
+        <section class="card" style="max-width:640px">
+          <h2>${c.title}</h2>
+          <div class="notice ok">Chọn khoảng thời gian rồi tải toàn bộ dữ liệu gốc ra Excel để phân tích. Để trống = lấy tất cả.</div>
+          <div class="grid">
+            <div class="field"><label>Từ ngày</label><input id="expFrom" type="date"></div>
+            <div class="field"><label>Đến ngày</label><input id="expTo" type="date"></div>
+          </div>
+          <button onclick="doExport('${kind}', this)">⬇ Tải Excel</button>
+        </section>`;
+    }
+    async function doExport(kind, btn) {
+      const c = EXPORT_CFG[kind];
+      try {
+        await withBusy(btn, 'Đang tải...', async () => {
+          const res = await call(c.rpc, { p_from: val('expFrom') || null, p_to: val('expTo') || null });
+          const rows = res.rows || [];
+          if (!rows.length) { toast('Không có dữ liệu trong khoảng đã chọn.', 'err'); return; }
+          const wb = new ExcelJS.Workbook();
+          const ws = wb.addWorksheet(c.sheet);
+          const headers = Object.keys(rows[0]);
+          ws.addRow(headers);
+          ws.getRow(1).font = { bold: true };
+          ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { rgb: 'E7F0FA' } };
+          rows.forEach(r => ws.addRow(headers.map(h => r[h])));
+          ws.columns.forEach(col => { col.width = 20; });
+          ws.views = [{ state: 'frozen', ySplit: 1 }];
+          await saveWb(wb, `${c.file}_${todayStr()}.xlsx`);
+          toast(`Đã tải ${rows.length} dòng.`, 'ok');
+        });
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
