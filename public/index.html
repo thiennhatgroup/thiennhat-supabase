@@ -6,7 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Thiên Nhật - Mua hàng &amp; Công nợ</title>
   <link rel="icon" type="image/png" href="./logo.png">
-  <link rel="apple-touch-icon" href="./logo.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0E5AA7">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="TN Mua hàng">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    }
+  </script>
   <style>
     :root {
       --bg: #F4F6FA;
@@ -2565,11 +2576,11 @@
         const propRows = props.length ? `<div class="table-wrap"><table><thead><tr>
           <th>Mã ĐX</th><th>Loại</th><th>Ngày</th><th>Người/Bộ phận</th><th>NCC</th><th>Tổng tiền</th><th>Trạng thái</th><th>NT/TT</th><th></th></tr></thead><tbody>
           ${props.map(p => `<tr>
-            <td><code>${esc(p.MaDeXuat)}</code></td><td>${esc(p.Loai)}</td><td>${esc(p.Ngay)}</td>
+            <td><a href="#" onclick="openOversightDetail('${esc(p.MaDeXuat)}',event)"><code>${esc(p.MaDeXuat)}</code></a></td><td>${esc(p.Loai)}</td><td>${esc(p.Ngay)}</td>
             <td>${esc(p.NguoiDeNghi||'')}${p.BoPhan?' · '+esc(p.BoPhan):''}</td><td>${esc(p.TenDoiTuong||'')}</td>
             <td class="num-cell">${fmtMoney(p.TongTien)}</td><td>${osStatusPill(p.TrangThai)}</td>
             <td>${p.DaNghiemThu?'<span class="pill ok">NT</span> ':''}${p.DaPhatSinhTT?'<span class="pill ok">TT</span>':''}</td>
-            <td>${canCancel && (p.TrangThai==='Chờ duyệt' || (p.TrangThai==='Đã duyệt' && !p.DaPhatSinhTT)) ? `<button class="danger" onclick="bounceProposalOs('${esc(p.MaDeXuat)}', this)">Trả lại</button>` : ''}</td>
+            <td><button class="secondary" onclick="openOversightDetail('${esc(p.MaDeXuat)}',event)">Xem</button> ${canCancel && (p.TrangThai==='Chờ duyệt' || (p.TrangThai==='Đã duyệt' && !p.DaPhatSinhTT)) ? `<button class="danger" onclick="bounceProposalOs('${esc(p.MaDeXuat)}', this)">Trả lại</button>` : ''}</td>
           </tr>`).join('')}</tbody></table></div>` : '<p class="status">Không có đề xuất mua hàng trong khoảng đã chọn.</p>';
         const payRows = pays.length ? `<div class="table-wrap"><table><thead><tr>
           <th>Mã ĐXTT</th><th>Ngày</th><th>Người lập</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
@@ -2590,8 +2601,54 @@
     async function bounceProposalOs(ma, btn) {
       const r = (prompt('Lý do TRẢ LẠI đề xuất ' + ma + ' để người lập giải trình và tạo lại:', '') || '').trim();
       if (!r) return;
-      try { await withBusy(btn, 'Đang trả lại...', () => call('rpc_bounce_proposal', { p_ma_de_xuat: ma, p_reason: r })); toast(`Đã trả lại ${ma} cho người lập.`, 'ok'); loadOversight(); }
+      try { await withBusy(btn, 'Đang trả lại...', () => call('rpc_bounce_proposal', { p_ma_de_xuat: ma, p_reason: r })); toast(`Đã trả lại ${ma} cho người lập.`, 'ok'); closeModal(); loadOversight(); }
       catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    async function openOversightDetail(ma, e) {
+      if (e) e.preventDefault();
+      try {
+        const res = await call('rpc_oversight_proposal_detail', { p_ma_de_xuat: ma });
+        const p = res.proposal; if (!p) return;
+        const loai = p.LoaiDeXuat === 'TamUng' ? 'Tạm ứng' : 'Mua hàng';
+        const planBlock = p.TrongKeHoachTuan
+          ? '<div class="notice ok" style="margin:0">✔ Đã có trong kế hoạch chi tuần.</div>'
+          : `<div class="notice">⚠ Ngoài kế hoạch chi tuần. Giải trình:<br><b>${esc(p.GiaiTrinhNgoaiKeHoach || '(chưa nhập)')}</b></div>`;
+        const lineRows = (p.lines || []).map(l => `<tr>
+          <td>${esc(l.MatHang)}</td><td>${fmtMaybeMoney(l.SLDat)}</td>
+          <td>${fmtMaybeMoney(l.DonGiaChuaVAT)}</td><td>${fmtPct(l.VATRate)}</td>
+          <td>${fmtMoney(l.ThanhTienSauVAT)}</td></tr>`).join('');
+        const canBounce = (p.TrangThai === 'Chờ duyệt') || (p.TrangThai === 'Đã duyệt' && !p.DaPhatSinhTT);
+        openModal(`Phiếu ${esc(ma)} — ${loai}`, `
+          <div class="detail-head">
+            <div><label>Trạng thái</label><div>${osStatusPill(p.TrangThai)}</div></div>
+            <div><label>Bộ phận đề xuất</label><div>${esc(p.BoPhan || '—')}</div></div>
+            <div><label>Người đề nghị</label><div>${esc(p.NguoiDeNghi || '')}</div></div>
+            <div><label>Người tạo phiếu</label><div>${esc(p.NguoiTao || '—')}</div></div>
+            <div><label>Đối tượng / NCC</label><div>${esc(p.TenDoiTuong || '')}</div></div>
+            <div><label>Tổng tiền (sau VAT)</label><div><b>${fmtMoney(p.TongTien)} đ</b></div></div>
+            <div><label>Thời gian đề xuất</label><div>${esc(p.ThoiGianTao || '—')}</div></div>
+            <div><label>Thời gian duyệt</label><div>${esc(p.ThoiGianDuyet || '—')}</div></div>
+            <div><label>Người duyệt</label><div>${esc(p.NguoiDuyet || '—')}</div></div>
+            <div><label>Điều khoản TT</label><div>${esc(p.DieuKhoanTT || '')}</div></div>
+            <div><label>Hạn thanh toán</label><div>${esc(p.HanThanhToan || '—')}</div></div>
+            <div><label>Trưởng BP đã duyệt</label><div>${p.TruongBpDuyet ? '<span class="pill ok">Đã duyệt</span>' : '<span class="pill warn">Chưa</span>'}</div></div>
+            <div><label>Trả trước khi nhận hàng</label><div>${p.Prepay ? '<span class="pill ok">Có</span>' : 'Không'}</div></div>
+            ${p.TonKho != null ? `<div><label>Tồn kho hiện tại</label><div>${fmtMaybeMoney(p.TonKho)}</div></div>` : ''}
+          </div>
+          <div class="field"><label>Báo giá đính kèm (bản gốc)</label><div>${attachLinks(p.Attachments)}</div></div>
+          ${p.NoiDung ? `<div class="field"><label>Nội dung</label><div>${esc(p.NoiDung)}</div></div>` : ''}
+          ${p.LyDoTraLai ? `<div class="notice err">↩ Lý do đã trả lại trước đó: ${esc(p.LyDoTraLai)}</div>` : ''}
+          ${planBlock}
+          <h3>Dòng vật tư</h3>
+          <div class="table-wrap" style="max-height:none">
+            <table><thead><tr><th>Mặt hàng</th><th>SL đặt</th><th>Đơn giá chưa VAT</th><th>VAT</th><th>Thành tiền sau VAT</th></tr></thead>
+            <tbody>${lineRows}</tbody></table>
+          </div>
+          ${p.GhiChu ? `<div class="field" style="margin-top:10px"><label>Ghi chú / lịch sử</label><div class="status">${esc(p.GhiChu)}</div></div>` : ''}
+          ${canBounce ? `<div class="actions" style="margin-top:14px"><button class="danger" onclick="bounceProposalOs('${esc(ma)}', this)">↩ Trả lại kèm lý do</button></div>`
+            : `<div class="notice" style="margin-top:14px">Phiếu này không ở trạng thái có thể trả lại (chỉ trả lại được phiếu Chờ duyệt hoặc Đã duyệt chưa phát sinh thanh toán).</div>`}
+        `, null, null);
+      } catch (err) { toast(err.message || String(err), 'err'); }
     }
     async function cancelPayReqOs(ma, btn) {
       const r = (prompt('Lý do hủy đề xuất thanh toán ' + ma + ':', '') || '').trim();
