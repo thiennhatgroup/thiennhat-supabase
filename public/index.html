@@ -1290,27 +1290,6 @@
         </div>
       </div>`;
     }
-    function openApprovedDetail(ma) {
-      const p = (state.approved || []).find(x => x.MaDeXuat === ma);
-      if (!p) return;
-      const lineRows = (p.lines || []).map(l => `<tr>
-        <td>${esc(l.MatHang)}</td><td class="num-cell">${fmtMaybeMoney(l.SLDat)}</td>
-        <td class="num-cell">${fmtMaybeMoney(l.DonGiaChuaVAT)}</td><td>${fmtPct(l.VATRate)}</td>
-        <td class="num-cell">${fmtMoney(l.ThanhTienSauVAT)}</td></tr>`).join('');
-      openModal(`Phiếu ${ma} (đã duyệt)`, `
-        <div class="detail-head">
-          <div><label>Đối tượng</label><div>${esc(p.TenDoiTuong||'')}</div></div>
-          <div><label>Ngày duyệt</label><div>${esc(p.NgayDuyet||'')}</div></div>
-          <div><label>Người duyệt</label><div>${esc(p.NguoiDuyet||'')}</div></div>
-          <div><label>Tổng tiền</label><div><b>${fmtMoney(p.TongTien)} đ</b></div></div>
-        </div>
-        ${p.NoiDung ? `<div class="field"><label>Nội dung</label><div>${esc(p.NoiDung)}</div></div>` : ''}
-        <div class="table-wrap" style="max-height:none"><table><thead><tr><th>Mặt hàng</th><th>SL</th><th>Đơn giá</th><th>VAT</th><th>Thành tiền</th></tr></thead><tbody>${lineRows}</tbody></table></div>
-        ${p.DaPhatSinhTT ? '<div class="notice">Đã phát sinh thanh toán — không thể hủy duyệt.</div>' : `
-        <div class="field" style="margin-top:12px"><label>Lý do hủy duyệt (gửi bộ phận mua hàng)</label><textarea id="undoNote"></textarea></div>
-        <div class="actions"><button class="danger" onclick="unapproveProposal('${esc(ma)}', this)">Hủy duyệt phiếu này</button></div>`}
-      `, null, null);
-    }
     async function unapproveProposal(ma, btn) {
       let reason = document.getElementById('undoNote')?.value || '';
       if (!reason.trim()) reason = prompt('Lý do hủy duyệt (bắt buộc, gửi bộ phận mua hàng):', '') || '';
@@ -1388,6 +1367,46 @@
         <thead><tr><th>Mặt hàng</th><th>ĐVT</th><th>SL đặt</th><th>Đơn giá (chưa VAT)</th><th>%VAT</th><th>Thành tiền (sau VAT)</th></tr></thead>
         <tbody>${body}</tbody></table></div>
         <div class="detail-total">Tổng cộng (sau VAT): <b>${fmtMoney(tong)} đ</b></div>`;
+    }
+    function proposalRichBody(p) {
+      const planBlock = p.TrongKeHoachTuan
+        ? '<div class="notice ok" style="margin:0">✔ Đã có trong kế hoạch chi tuần.</div>'
+        : `<div class="notice">⚠ Ngoài kế hoạch chi tuần. Giải trình của mua hàng:<br><b>${esc(p.GiaiTrinhNgoaiKeHoach || '(chưa nhập)')}</b></div>`;
+      return `
+        <div class="detail-head">
+          <div><label>Trạng thái</label><div>${osStatusPill(p.TrangThai)}</div></div>
+          <div><label>Bộ phận đề xuất</label><div>${esc(p.BoPhan || '—')}</div></div>
+          <div><label>Người đề nghị</label><div>${esc(p.NguoiDeNghi || '')}</div></div>
+          <div><label>Người tạo phiếu</label><div>${esc(p.NguoiTao || '—')}</div></div>
+          <div><label>Đối tượng / NCC</label><div>${esc(p.TenDoiTuong || '')}</div></div>
+          <div><label>Tổng tiền (sau VAT)</label><div><b>${fmtMoney(p.TongTien)} đ</b></div></div>
+          <div><label>Thời gian đề xuất</label><div>${esc(p.ThoiGianTao || '—')}</div></div>
+          <div><label>Thời gian duyệt</label><div>${esc(p.ThoiGianDuyet || '—')}</div></div>
+          <div><label>Người duyệt</label><div>${esc(p.NguoiDuyet || '—')}</div></div>
+          <div><label>Điều khoản TT</label><div>${esc(p.DieuKhoanTT || '')}</div></div>
+          <div><label>Hạn thanh toán</label><div>${esc(p.HanThanhToan || '—')}</div></div>
+          <div><label>Trưởng BP đã duyệt</label><div>${p.TruongBpDuyet ? '<span class="pill ok">Đã duyệt</span>' : '<span class="pill warn">Chưa</span>'}</div></div>
+          <div><label>Trả trước khi nhận hàng</label><div>${p.Prepay ? '<span class="pill ok">Có</span>' : 'Không'}</div></div>
+          ${p.TonKho != null ? `<div><label>Tồn kho hiện tại</label><div>${fmtMaybeMoney(p.TonKho)}</div></div>` : ''}
+        </div>
+        <div class="field"><label>Báo giá đính kèm (bản gốc)</label><div>${attachLinks(p.Attachments)}</div></div>
+        ${p.NoiDung ? `<div class="field"><label>Nội dung</label><div>${esc(p.NoiDung)}</div></div>` : ''}
+        ${p.LyDoTraLai ? `<div class="notice err">↩ Lý do đã trả lại trước đó: ${esc(p.LyDoTraLai)}</div>` : ''}
+        ${planBlock}
+        <h3>Dòng vật tư</h3>
+        ${linesDetailTable(p.lines, {})}
+        ${p.GhiChu ? `<div class="field" style="margin-top:10px"><label>Ghi chú / lịch sử</label><div class="status">${esc(p.GhiChu)}</div></div>` : ''}`;
+    }
+    async function openApprovedDetail(ma) {
+      try {
+        const res = await call('rpc_proposal_detail', { p_ma_de_xuat: ma });
+        const p = res.proposal; if (!p) return;
+        const action = p.DaPhatSinhTT
+          ? '<div class="notice" style="margin-top:14px">Đã phát sinh thanh toán — không thể hủy duyệt.</div>'
+          : `<div class="field" style="margin-top:14px"><label>Lý do hủy duyệt (gửi bộ phận mua hàng)</label><textarea id="undoNote" rows="2"></textarea></div>
+             <div class="actions"><button class="danger" onclick="unapproveProposal('${esc(ma)}', this)">Hủy duyệt phiếu này</button></div>`;
+        openModal(`Phiếu ${esc(ma)} — chi tiết`, proposalRichBody(p) + action, null, null);
+      } catch (err) { toast(err.message || String(err), 'err'); }
     }
     function openProposalDetail(ma) {
       const p = (state.pending || []).find(x => x.MaDeXuat === ma);
@@ -2291,9 +2310,10 @@
       try {
         const res = await call('rpc_get_payment_request_history', { p_limit: 40 });
         const rows = res.rows || [];
-        box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Người lập</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead><tbody>
-          ${rows.map(r => `<tr><td><code>${esc(r.MaDeXuatTT)}</code></td><td>${esc(r.Ngay)}</td><td>${esc(r.NguoiLap||'')}</td>
-            <td class="num-cell">${fmtMoney(r.TongTien)}</td><td>${payReqPill(r.TrangThai)}${r.LyDoTuChoi?' <small class="status">'+esc(r.LyDoTuChoi)+'</small>':''}</td></tr>`).join('')}
+        box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Người lập</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+          ${rows.map(r => `<tr><td><a href="#" onclick="openPayReqDetail('${esc(r.MaDeXuatTT)}');return false;"><code>${esc(r.MaDeXuatTT)}</code></a></td><td>${esc(r.Ngay)}</td><td>${esc(r.NguoiLap||'')}</td>
+            <td class="num-cell">${fmtMoney(r.TongTien)}</td><td>${payReqPill(r.TrangThai)}${r.LyDoTuChoi?' <small class="status">'+esc(r.LyDoTuChoi)+'</small>':''}</td>
+            <td><button class="secondary" onclick="openPayReqDetail('${esc(r.MaDeXuatTT)}')">Xem</button></td></tr>`).join('')}
           </tbody></table></div>` : '<p class="status">Chưa có đề xuất thanh toán nào được xử lý.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
     }
@@ -2370,11 +2390,12 @@
           ${anyUnaccepted ? '<div class="notice err">⚠ Có dòng gắn công nợ nhưng CHƯA nghiệm thu (chưa có SL thực nhận). Cân nhắc trước khi duyệt chi.</div>' : ''}
           <h3>Các khoản đề nghị chi (${(r.lines || []).length})</h3>
           ${blocks || '<p class="status">Không có dòng nào.</p>'}
+          ${r.TrangThai === 'Chờ duyệt' ? `
           <div class="field" style="margin-top:14px"><label>Ghi chú khi duyệt / lý do từ chối</label><textarea id="payApproveNote" placeholder="Bắt buộc khi từ chối."></textarea></div>
           <div class="actions">
             <button onclick="approvePayReq('${esc(ma)}', this)">✔ Duyệt chi</button>
             <button class="danger" onclick="rejectPayReq('${esc(ma)}', this)">✘ Từ chối</button>
-          </div>`, null, null);
+          </div>` : `<div class="notice" style="margin-top:14px">Phiếu đã ở trạng thái <b>${esc(r.TrangThai)}</b>${r.GhiChu ? ' · ' + esc(r.GhiChu) : ''} — chỉ xem.</div>`}`, null, null);
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
     async function approvePayReq(ma, btn) {
