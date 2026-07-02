@@ -611,6 +611,7 @@
       document.getElementById('drawer').innerHTML = `
         <div class="drawer-brand"><img src="./logo.png" onerror="this.onerror=null;this.src='./logo.svg'" alt="Thiên Nhật"><button class="drawer-x" onclick="closeDrawer()">✕</button></div>
         ${item('account', '👤 Tài khoản')}
+        ${item('guide', '📘 Hướng dẫn')}
         ${item('chat', '💬 Tin nhắn')}
         <div class="drawer-group">
           <button class="drawer-group-h" onclick="toggleGroup(this)">Thao tác <span>▾</span></button>
@@ -650,6 +651,7 @@
       state.screen = id;
       renderDrawer();
       if (id === 'account') return renderAccount();
+      if (id === 'guide') return renderGuide();
       if (id === 'chat') return renderChat();
       if (id === 'improve') return renderImprove();
       if (id === 'exp_pp') return renderExport('pp');
@@ -1196,6 +1198,7 @@
         <div class="ac-obj">${esc(p.TenDoiTuong || '')}</div>
         <div class="ac-money">${fmtMoney(p.TongTien)} <small>đ</small></div>
         <div class="ac-meta">Duyệt: ${esc(p.NgayDuyet || '')} · ${esc(p.NguoiDuyet || '')}</div>
+        <div class="ac-meta">${p.DaNghiemThu ? '<span class="pill ok">Đã nghiệm thu</span>' : '<span class="pill warn">Chưa nghiệm thu</span>'} ${p.DaPhatSinhTT ? '<span class="pill ok">Đã thanh toán</span>' : ''}</div>
         <div class="actions" style="margin-top:10px">
           <button class="secondary" onclick="openApprovedDetail('${esc(p.MaDeXuat)}')">Xem chi tiết</button>
           ${canUndo
@@ -1410,8 +1413,25 @@
             <div class="actions"><button class="secondary" onclick="loadReceiptItems(this)">↻ Tải lại</button></div>
             <div id="receiptItems" style="margin-top:12px">${loadingText('Đang tải...')}</div>
           </aside>
-        </div>`;
+        </div>
+        <section class="card" style="margin-top:16px">
+          <h2>Đã nghiệm thu gần đây</h2>
+          <div id="receiptHistoryBox">${loadingText('Đang tải...')}</div>
+        </section>`;
       loadReceiptItems();
+      loadReceiptHistory();
+    }
+    async function loadReceiptHistory() {
+      const box = document.getElementById('receiptHistoryBox'); if (!box) return;
+      try {
+        const res = await call('rpc_get_receipt_history', { p_limit: 40 });
+        const rows = res.rows || [];
+        box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>Mã CN</th><th>NCC</th><th>Mặt hàng</th><th>SL thực nhận</th><th>Ngày nhận</th><th>Hồ sơ</th><th>Hạn TT</th></tr></thead><tbody>
+          ${rows.map(r => `<tr><td><code>${esc(r.MaCN)}</code></td><td>${esc(r.TenDoiTuong||'')}</td><td>${esc(r.MatHang||'')}</td>
+            <td class="num-cell">${fmtMaybeMoney(r.SLThucNhan)}</td><td>${esc(r.NgayNhan||'')}</td>
+            <td>${r.HoSoDayDu?'<span class="pill ok">Đủ</span>':'<span class="pill warn">Thiếu</span>'}</td><td>${esc(r.HanThanhToan||'—')}</td></tr>`).join('')}
+          </tbody></table></div>` : '<p class="status">Chưa có khoản nào được nghiệm thu.</p>';
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
     }
     async function loadReceiptItems(btn) {
       const box = document.getElementById('receiptItems');
@@ -2026,8 +2046,24 @@
           <div class="notice ok">Kế toán trình các khoản đến hạn. Nhấp một đề xuất để xem chi tiết từng dòng (NCC, kế hoạch, số đề xuất, hình thức, hồ sơ) rồi Duyệt / Từ chối.</div>
           <div class="actions"><button class="secondary" onclick="loadPendingPayReq(this)">↻ Tải lại</button></div>
           <div id="payPendingBox" style="margin-top:14px">${loadingText('Đang tải...')}</div>
+        </section>
+        <section class="card" style="margin-top:16px">
+          <h2>Lịch sử đề xuất thanh toán đã xử lý</h2>
+          <div id="payReqHistoryBox">${loadingText('Đang tải...')}</div>
         </section>`;
       loadPendingPayReq();
+      loadPayReqHistory();
+    }
+    async function loadPayReqHistory() {
+      const box = document.getElementById('payReqHistoryBox'); if (!box) return;
+      try {
+        const res = await call('rpc_get_payment_request_history', { p_limit: 40 });
+        const rows = res.rows || [];
+        box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày</th><th>Người lập</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead><tbody>
+          ${rows.map(r => `<tr><td><code>${esc(r.MaDeXuatTT)}</code></td><td>${esc(r.Ngay)}</td><td>${esc(r.NguoiLap||'')}</td>
+            <td class="num-cell">${fmtMoney(r.TongTien)}</td><td>${payReqPill(r.TrangThai)}${r.LyDoTuChoi?' <small class="status">'+esc(r.LyDoTuChoi)+'</small>':''}</td></tr>`).join('')}
+          </tbody></table></div>` : '<p class="status">Chưa có đề xuất thanh toán nào được xử lý.</p>';
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
     }
     async function loadPendingPayReq(btn) {
       const box = document.getElementById('payPendingBox');
@@ -2320,6 +2356,40 @@
         });
         toast('Đã tạo phiếu YCTT.', 'ok');
       } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+
+    // ===== Hướng dẫn (tập trung 1 chỗ) =====================================
+    function renderGuide() {
+      document.getElementById('content').innerHTML = `
+        <section class="card" style="max-width:820px">
+          <h2>📘 Hướng dẫn sử dụng</h2>
+          <div class="notice ok">Toàn bộ hướng dẫn gói gọn ở đây. Trong từng màn, mỗi ô nhập đã có gợi ý ngắn — không cần đọc thêm.</div>
+          <h3>Quy trình tổng thể</h3>
+          <ol class="hint-list">
+            <li><b>Mua hàng</b> lập <b>Đề xuất mua hàng/tạm ứng</b> (đính kèm báo giá, hạn TT) → Lưu nháp → Gửi duyệt.</li>
+            <li><b>Lãnh đạo</b> duyệt: <b>≥ 10 triệu → Chủ tịch</b>, <b>&lt; 10 triệu → Tổng giám đốc</b>. Chủ tịch xem &amp; override được mọi khoản.</li>
+            <li>Duyệt xong hệ thống sinh <b>công nợ</b>.</li>
+            <li><b>Mua hàng</b> <b>Nghiệm thu</b>: SL thực nhận + biên bản/phiếu cân (bắt buộc) + hóa đơn VAT → chốt số nợ.</li>
+            <li><b>Kế toán</b> lập <b>Đề xuất thanh toán</b> (nạp khoản đã nghiệm thu/đến hạn) → gửi duyệt.</li>
+            <li><b>Chủ tịch</b> duyệt đề xuất thanh toán → <b>Kế toán bấm "Đã chi tiền"</b>.</li>
+            <li><b>Tất toán</b>: khoản trả đủ được lưu trữ.</li>
+          </ol>
+          <h3>Vai trò</h3>
+          <ul class="hint-list">
+            <li><b>Nhân viên mua hàng</b>: báo giá, đề xuất mua/tạm ứng, nghiệm thu, in phiếu.</li>
+            <li><b>Tổng giám đốc</b>: duyệt đề xuất &lt; 10 triệu.</li>
+            <li><b>Chủ tịch</b>: duyệt đề xuất ≥ 10 triệu (và override), duyệt đề xuất thanh toán.</li>
+            <li><b>Kế toán công nợ</b>: lập &amp; đi tiền đề xuất thanh toán, theo dõi công nợ, tất toán.</li>
+            <li><b>Admin</b>: tạo tài khoản, phân quyền, danh mục.</li>
+          </ul>
+          <h3>Tính năng chung</h3>
+          <ul class="hint-list">
+            <li>🔔 <b>Thông báo</b>: bấm để tới thẳng việc cần xử lý. 💬 <b>Tin nhắn</b>: trao đổi, gửi tệp (≤5MB), đính kèm phiếu.</li>
+            <li><b>Tải dữ liệu</b>: xuất Excel dữ liệu gốc theo khoảng ngày để phân tích.</li>
+            <li><b>Đề xuất cải tiến</b>: gửi góp ý thẳng tới quản trị viên.</li>
+          </ul>
+          <p class="status" style="margin-top:12px">Yêu cầu cụ thể liên hệ email <b>ahuyle.work@gmail.com</b>.</p>
+        </section>`;
     }
 
     // ===== Tài khoản cá nhân (chỉ xem) =====================================
