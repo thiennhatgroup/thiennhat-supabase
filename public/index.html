@@ -334,6 +334,17 @@
       table:not(.line-table) td:last-child { border-bottom: 0; }
       table:not(.line-table) td::before { content: attr(data-label); font-weight: 600; color: var(--muted); text-align: left; flex: 0 0 42%; }
       table:not(.line-table) td:empty { display: none; }
+      /* Bảng NHẬP LIỆU (dòng vật tư / dòng thanh toán): xếp dọc, ô nhập full-width, nhãn phía trên */
+      .line-table { border: 0; min-width: 0; }
+      .line-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .line-table, .line-table tbody, .line-table tr, .line-table td { display: block; width: 100%; }
+      .line-table tr { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 12px; padding: 8px 12px; background: #fff; box-shadow: var(--shadow); }
+      .line-table td { padding: 6px 0; border: 0; border-bottom: 1px dashed var(--line); }
+      .line-table td:last-child { border-bottom: 0; text-align: right; }
+      .line-table td::before { content: attr(data-label); display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+      .line-table td:last-child::before, .line-table td[data-label=""]::before { display: none; }
+      .line-table td input, .line-table td select, .line-table td textarea, .line-table td .combo-stack { width: 100%; box-sizing: border-box; }
+      .line-table td.num-cell { text-align: left; font-weight: 600; font-size: 16px; }
     }
   </style>
 </head>
@@ -1729,7 +1740,7 @@
     }
     // Gắn nhãn cột vào từng ô (để mobile hiển thị "Nhãn: giá trị" khi bảng xếp dọc).
     function labelTableCells(root) {
-      (root || document).querySelectorAll('table:not(.line-table)').forEach(tb => {
+      (root || document).querySelectorAll('table').forEach(tb => {
         const ths = [...tb.querySelectorAll('thead th')].map(th => th.textContent.trim());
         if (!ths.length) return;
         tb.querySelectorAll('tbody tr').forEach(tr => {
