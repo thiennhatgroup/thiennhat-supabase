@@ -15,7 +15,9 @@ insert into role_permissions (role, permission) values ('NhanVienMuaHang', 'paym
 on conflict (role, permission) do nothing;
 
 -- ---- v_debts: payable xét prepay --------------------------------------------
-create or replace view v_debts as
+-- drop trước vì thêm cột prepay vào d.* làm đổi thứ tự cột -> create or replace lỗi.
+drop view if exists v_debts;
+create view v_debts as
 select
   d.*,
   round(coalesce(d.sl_dat, 0) * d.don_gia * (1 + d.vat_rate), 2) as thanh_tien_dat,
