@@ -595,6 +595,7 @@
         state.user = res.user;
         state.doiTuong = res.doiTuong || [];
         state.vatTu = res.vatTu || [];
+        state.vatTuInfo = res.vatTuInfo || [];
         state.permissions = res.permissions || [];
         document.getElementById('loginView').classList.add('hidden');
         document.getElementById('appView').classList.remove('hidden');
@@ -738,12 +739,13 @@
             <h2>Nhập báo giá mới</h2>
             <p class="status">Nhập báo giá trực tiếp tại đây; bảng bên trái sẽ cập nhật ngay ở lần làm mới kế tiếp.</p>
             <div class="field"><label>Ngày báo giá</label><input id="nqNgay" type="date" value="${todayStr()}"></div>
-            <div class="field"><label>Mặt hàng</label><div class="combo-stack"><select id="nqItem">${materialOptions('')}</select><input id="nqItemNew" placeholder="Nhập mặt hàng mới"></div></div>
-            <div class="field"><label>Nhà cung cấp</label><input id="nqNcc" placeholder="Tên NCC"></div>
+            <div class="field"><label>Mặt hàng</label><div class="combo-stack"><select id="nqItem" onchange="onQuoteMatChange()">${materialOptions('')}</select><input id="nqItemNew" placeholder="Nhập mặt hàng mới" oninput="onQuoteMatChange()"></div></div>
+            <div class="field"><label>Nhà cung cấp</label><div class="combo-stack"><select id="nqNccSel">${supplierNameOptions()}</select><input id="nqNccNew" placeholder="Nhập NCC mới nếu chưa có"></div><small>Chọn từ danh mục, hoặc nhập mới ở ô dưới.</small></div>
             <div class="grid">
-              <div class="field"><label>Giá gọi</label><input id="nqGia" class="js-money" inputmode="decimal"></div>
-              <div class="field"><label>VAT</label><select id="nqVat"><option>Chưa VAT</option><option>Đã gồm VAT</option></select></div>
+              <div class="field"><label>Đơn vị tính (ĐVT)</label><input id="nqDvt" placeholder="vd: vnđ/lít, vnđ/kg"></div>
+              <div class="field"><label>Giá gọi (theo ĐVT)</label><input id="nqGia" class="js-money" inputmode="decimal"></div>
             </div>
+            <div class="field"><label>VAT</label><select id="nqVat"><option>Chưa VAT</option><option>Đã gồm VAT</option></select></div>
             <div class="field"><label>Ghi chú</label><input id="nqGhiChu"></div>
             <button class="secondary" onclick="addPriceQuote(this)" ${can('quote:sync') ? '' : 'disabled'}>Lưu báo giá</button>
             <p id="nqMsg" class="status" style="margin-top:8px"></p>
@@ -780,9 +782,10 @@
         const payload = {
           p_ngay: val('nqNgay') || null,
           p_mat_hang: comboValue('nqItem', 'nqItemNew'),
-          p_ncc: val('nqNcc'),
+          p_ncc: comboValue('nqNccSel', 'nqNccNew'),
           p_gia: moneyNum('nqGia') || null,
           p_vat_status: val('nqVat'),
+          p_dvt: val('nqDvt') || null,
           p_ghi_chu: val('nqGhiChu')
         };
         await withBusy(btn, 'Đang lưu...', () => call('rpc_add_price_quote', payload));
@@ -859,6 +862,23 @@
       ).join('');
     }
 
+    function supplierNameOptions(selected) {
+      const cur = String(selected || '').trim();
+      return '<option value="">-- Chọn nhà cung cấp --</option>' + (state.doiTuong || []).map(d =>
+        `<option value="${esc(d.TenDoiTuong)}" ${d.TenDoiTuong === cur ? 'selected' : ''}>${esc(d.TenDoiTuong)}</option>`
+      ).join('');
+    }
+    function dvtOf(name) {
+      const n = String(name || '').trim().toLowerCase();
+      const m = (state.vatTuInfo || []).find(x => String(x.ten || '').trim().toLowerCase() === n);
+      return m ? (m.dvt || '') : '';
+    }
+    function onQuoteMatChange() {
+      const name = comboValue('nqItem', 'nqItemNew');
+      const dvt = dvtOf(name);
+      const el = document.getElementById('nqDvt');
+      if (el && dvt) el.value = dvt;   // tự điền ĐVT theo danh mục; vẫn cho sửa tay
+    }
     function materialOptions(selected) {
       const current = String(selected || '').trim();
       const items = Array.from(new Set([...(state.vatTu || []), current].filter(Boolean))).sort();
@@ -1803,8 +1823,12 @@
       const manage = can('catalog:manage');
       if (state.catTab === 'mat') {
         const rows = state.catalog.materials;
+        const noDvt = rows.filter(m => !String(m.dvt || '').trim()).length;
+        const noNhom = rows.filter(m => !String(m.nhom || '').trim()).length;
         const addBtn = manage ? `<button class="secondary" onclick="openGroupManager()">Nhóm hàng</button><button class="secondary" onclick="addProposerPrompt()">Người đề nghị</button><button onclick="openMaterialForm()">＋ Thêm mặt hàng</button>` : '';
+        const warn = (noDvt || noNhom) ? `<div class="notice err" style="margin-bottom:10px">⚠ Cần chuẩn hoá danh mục: ${noDvt ? `<b>${noDvt}</b> mặt hàng chưa có ĐVT` : ''}${noDvt && noNhom ? ' · ' : ''}${noNhom ? `<b>${noNhom}</b> mặt hàng chưa gán nhóm` : ''}. <a href="#" onclick="filterMissingDvt(event)">Lọc mặt hàng thiếu ĐVT</a></div>` : `<div class="notice ok" style="margin-bottom:10px">✔ Mọi mặt hàng đều có ĐVT và nhóm hàng.</div>`;
         box.innerHTML = `
+          ${warn}
           <div class="cat-toolbar">
             <input id="catMatSearch" placeholder="Tìm theo mã / tên / nhóm..." oninput="drawCatalog._filter()">
             ${addBtn}
@@ -1840,7 +1864,7 @@
         <td><code>${esc(m.ma || '')}</code></td>
         <td>${esc(m.ten || '')}</td>
         <td>${m.nhom ? esc(m.nhom) : '<span class="pill warn">Chưa gán</span>'}</td>
-        <td>${esc(m.dvt || '')}</td>
+        <td>${m.dvt ? esc(m.dvt) : '<span class="pill err">Thiếu ĐVT</span>'}</td>
         <td>${statusPill(m.trangThai)}</td>
         ${manage ? `<td><button class="secondary" onclick="openMaterialForm('${m.id}')">Sửa</button></td>` : ''}
       </tr>`;
@@ -1872,6 +1896,15 @@
       }
     };
     function normLower(s) { return String(s ?? '').toLowerCase(); }
+    function filterMissingDvt(e) {
+      if (e) e.preventDefault();
+      const body = document.getElementById('catMatRows');
+      if (!body) return;
+      const miss = state.catalog.materials.filter(m => !String(m.dvt || '').trim());
+      body.innerHTML = miss.length ? miss.map(m => matRow(m, can('catalog:manage'))).join('')
+        : '<tr><td colspan="6">Không còn mặt hàng nào thiếu ĐVT.</td></tr>';
+      const s = document.getElementById('catMatSearch'); if (s) s.value = '';
+    }
 
     // ---- modal + forms -----------------------------------------------------
     function openModal(title, bodyHtml, onSave, saveLabel) {
