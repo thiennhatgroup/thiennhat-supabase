@@ -888,6 +888,7 @@
             </div>
             <div class="plan-box">
               <label class="check-line"><input type="checkbox" id="pTruongBp"> Trưởng bộ phận đã duyệt đề xuất này</label>
+              <label class="check-line" style="margin-top:8px"><input type="checkbox" id="pPrepay"> Thanh toán TRƯỚC khi nhận hàng (công nợ hiện ngay khi duyệt)</label>
             </div>
             <div class="plan-box">
               <label class="check-line"><input type="checkbox" id="pInPlan" onchange="togglePlanJustify()"> Khoản này đã có trong kế hoạch chi tuần đã duyệt</label>
@@ -981,6 +982,7 @@
         hanThanhToan: val('pHan') || null,
         tonKho: val('pTonKho') || null,
         truongBpDuyet: document.getElementById('pTruongBp')?.checked || false,
+        prepay: document.getElementById('pPrepay')?.checked || false,
         doiTuong: { ma: comboValue('pmaDoiTuong', 'pmaDoiTuongMoi'), ten: val('ptenDoiTuong'), dieuKhoanTT: val('pDieuKhoanTT') },
         dieuKhoanTT: val('pDieuKhoanTT'),
         lines: getProposalLines().filter(l => l.matHang && l.slDat && l.donGia)
@@ -1653,7 +1655,7 @@
       try {
         const res = await withBusy(btn, 'Đang tính...', () => call('rpc_preview_settlement', { p_ma_doi_tuong: val('sma') || null }));
         const plan = res.plan || {};
-        box.innerHTML = `<p class="status">Sẽ tất toán (archive): ${plan.archived ?? 0} dòng. Giữ lại: ${plan.kept ?? 0} dòng.</p>` + table(plan.preview, ['action','maCN','doiTuong','actual','allocated']);
+        box.innerHTML = `<p class="status">Sẽ lưu trữ (đã trả đủ): ${plan.archived ?? 0} khoản. Giữ lại (chưa trả đủ): ${plan.kept ?? 0} khoản.</p>` + table(plan.preview, ['action','maCN','doiTuong','actual','conLai']);
       } catch (err) { box.innerHTML = esc(err.message || err); toast(err.message || String(err), 'err'); }
     }
     async function confirmSettlement(btn) {
@@ -1691,7 +1693,7 @@
       SLThucNhan:'SL thực nhận', ThanhTienThucNhan:'Thành tiền thực nhận', DaThanhToan:'Đã thanh toán', TrangThai:'Trạng thái',
       MaThanhToan:'Mã thanh toán', NgayThanhToan:'Ngày thanh toán', SoTien:'Số tiền', PhanBoMode:'Cách phân bổ', ChungTu:'Chứng từ',
       MaDeXuat:'Mã đề xuất', NgayDeXuat:'Ngày đề xuất', NoiDung:'Nội dung', DieuKhoanTT:'Điều khoản TT', NguoiTao:'Người tạo',
-      action:'Thao tác', maCN:'Mã công nợ', doiTuong:'Đối tượng', allocated:'Phân bổ'
+      action:'Thao tác', maCN:'Mã công nợ', doiTuong:'Đối tượng', allocated:'Phân bổ', conLai:'Còn lại'
     };
     function colLabel(c){ return COL_VI[c] || c; }
     function table(rows, cols, actionFn) {
