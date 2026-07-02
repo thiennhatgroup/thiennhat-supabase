@@ -55,16 +55,18 @@
       min-height: 44px;
       transition: border-color .15s, box-shadow .15s, background .15s, transform .05s;
     }
+    button, input, select, textarea { min-height: 40px; }
     input, select, textarea {
       width: 100%;
       background: var(--input);
-      padding: 11px 13px;
-      font-size: 15px;
+      padding: 9px 12px;
+      font-size: 14px;
       color: var(--ink);
     }
     input::placeholder, textarea::placeholder { color: #9AA6B2; }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); background: #fff; }
-    textarea { min-height: 92px; resize: vertical; }
+    textarea { min-height: 62px; resize: vertical; }
+    .field { margin-bottom: 10px; }
     button {
       background: var(--accent);
       color: #fff;
@@ -122,11 +124,13 @@
     .drawer-brand { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 12px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
     .drawer-brand img { height: 34px; }
     .drawer-x { width: 34px; height: 34px; padding: 0; background: transparent; color: var(--muted); border: none; box-shadow: none; font-size: 20px; }
-    .drawer-item { width: 100%; text-align: left; background: transparent; color: var(--ink); border: none; box-shadow: none; font-weight: 500; padding: 11px 12px; border-radius: 10px; margin-bottom: 2px; }
+    .drawer-item { width: 100%; text-align: left; background: transparent; color: var(--ink); border: none; box-shadow: none; font-weight: 500; padding: 10px 12px; border-radius: 10px; margin-bottom: 2px; font-size: 14px; }
     .drawer-item:hover { background: #F1F5FA; }
     .drawer-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
-    .drawer-group { margin: 4px 0; }
-    .drawer-group-h { width: 100%; text-align: left; background: transparent; color: var(--muted); border: none; box-shadow: none; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; padding: 10px 12px 6px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .drawer > .drawer-item { font-weight: 700; }
+    .drawer-group { margin: 8px 0; background: #F7F9FC; border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+    .drawer-group-body .drawer-item { padding-left: 18px; }
+    .drawer-group-h { width: 100%; text-align: left; background: transparent; color: var(--accent); border: none; box-shadow: none; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px 7px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
     .drawer-group.collapsed .drawer-group-body { display: none; }
     .drawer-group.collapsed .drawer-group-h span { transform: rotate(-90deg); }
     .drawer-group-h span { transition: transform .2s; }
@@ -813,10 +817,11 @@
     }
 
     function renderProposal() {
+      const ed = state.editingProposal;
       document.getElementById('content').innerHTML = `
         <div class="proposal-layout">
           <section class="card">
-            <h2>Đề xuất mua hàng / tạm ứng</h2>
+            <h2>${ed ? 'Sửa nháp ' + esc(ed.MaDeXuat) : 'Đề xuất mua hàng / tạm ứng'}</h2>
             <div class="notice js-msg"></div>
             <div class="grid">
               <div class="field"><label>Loại đề xuất</label><select id="pLoai">
@@ -825,19 +830,23 @@
               </select></div>
               <div class="field"><label>Ngày đề xuất</label><input id="pNgay" type="date" value="${todayStr()}"></div>
             </div>
-            <div class="field"><label>Người đề nghị *</label><input id="pNguoi" value="${esc(state.user?.name || '')}"></div>
+            <div class="grid">
+              <div class="field"><label>Người đề nghị *</label><select id="pNguoi"><option value="">Đang tải...</option></select></div>
+              <div class="field"><label>Bộ phận</label><select id="pBoPhan"><option value="">— Chọn bộ phận —</option></select></div>
+            </div>
             ${objectFields('p')}
             <div class="grid">
               <div class="field"><label>Hạn thanh toán *</label><input id="pHan" type="date"></div>
-              <div class="field"><label>Tồn kho hiện tại (không bắt buộc)</label><input id="pTonKho" inputmode="decimal" placeholder="Số lượng còn trong kho"></div>
+              <div class="field"><label>Tồn kho mặt hàng hiện tại</label><input id="pTonKho" inputmode="decimal" placeholder="Không bắt buộc"></div>
             </div>
-            <div class="field"><label>Nội dung</label><textarea id="pNoiDung"></textarea></div>
             <div class="field"><label>Điều khoản thanh toán</label><textarea id="pDieuKhoanTT"></textarea></div>
             <div class="field"><label>Báo giá đính kèm <span style="color:var(--danger)">*</span></label>
               <input id="pFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*">
-              <small>Đính kèm báo giá gốc của lô (PDF/Word/ảnh). Lãnh đạo sẽ xem khi duyệt. Bắt buộc với đề xuất Mua hàng.</small>
+              <small>Báo giá gốc của lô (PDF/Word/ảnh) — lãnh đạo xem khi duyệt. ${ed && (ed.Attachments||[]).length ? 'Đã có ' + ed.Attachments.length + ' tệp; chọn tệp mới để thay.' : 'Bắt buộc với đề xuất Mua hàng.'}</small>
             </div>
-            <div class="field"><label>Ghi chú thêm cho lãnh đạo (hiện ở bước phê duyệt)</label><textarea id="pNoteLanhDao"></textarea></div>
+            <div class="plan-box">
+              <label class="check-line"><input type="checkbox" id="pTruongBp"> Trưởng bộ phận đã duyệt đề xuất này</label>
+            </div>
             <div class="plan-box">
               <label class="check-line"><input type="checkbox" id="pInPlan" onchange="togglePlanJustify()"> Khoản này đã có trong kế hoạch chi tuần đã duyệt</label>
               <div id="pJustifyWrap" class="field" style="margin-top:10px">
@@ -851,18 +860,66 @@
             <div class="actions">
               <button class="secondary" onclick="addLine()">+ Thêm dòng</button>
               <button class="secondary" onclick="copyLastLine()">Chép dòng cuối</button>
-              <button onclick="saveDraft(this)">Lưu nháp</button>
+              <button onclick="saveDraft(this)">${ed ? 'Lưu thay đổi' : 'Lưu nháp'}</button>
+              ${ed ? `<button class="secondary" onclick="state.editingProposal=null; renderProposal()">Huỷ sửa</button>` : ''}
             </div>
           </section>
           <aside class="card review-pane">
             <h2>Đề xuất của tôi</h2>
-            <p class="status">Lưu nháp trước, kiểm tra ở đây, rồi bấm <b>Gửi duyệt</b> để đẩy lên lãnh đạo.</p>
+            <p class="status">Lưu nháp, kiểm tra ở đây (bấm <b>Sửa</b> nếu cần bổ sung), rồi bấm <b>Gửi duyệt</b>.</p>
             <div id="myProposalsBox">${loadingText('Đang tải...')}</div>
           </aside>
         </div>`;
       addLine();
       togglePlanJustify();
       loadMyProposals();
+      fillProposalLists();
+    }
+    async function fillProposalLists() {
+      const pn = document.getElementById('pNguoi'); const bp = document.getElementById('pBoPhan');
+      let proposers = [], depts = [];
+      try { const res = await call('rpc_list_catalog'); proposers = res.proposers || []; depts = res.departments || []; } catch (e) {}
+      const cur = state.user?.name || '';
+      const names = Array.from(new Set([cur, ...proposers.map(x => x.ten)].filter(Boolean)));
+      if (pn) { pn.innerHTML = names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join(''); pn.value = cur; }
+      if (bp) bp.innerHTML = '<option value="">— Chọn bộ phận —</option>' + depts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+      if (pn && bp) pn.onchange = () => { const m = proposers.find(x => x.ten === pn.value); if (m && m.boPhan) bp.value = m.boPhan; };
+      // Áp dữ liệu khi đang sửa nháp
+      const ed = state.editingProposal;
+      if (ed) {
+        setVal('pLoai', ed.LoaiDeXuat === 'TamUng' ? 'TamUng' : 'MuaHang');
+        if (ed.NgayDeXuat) setVal('pNgay', ed.NgayDeXuat);
+        if (pn && ed.NguoiDeNghi) { if (!names.includes(ed.NguoiDeNghi)) pn.insertAdjacentHTML('afterbegin', `<option value="${esc(ed.NguoiDeNghi)}">${esc(ed.NguoiDeNghi)}</option>`); pn.value = ed.NguoiDeNghi; }
+        if (bp && ed.BoPhan) bp.value = ed.BoPhan;
+        setVal('ptenDoiTuong', ed.TenDoiTuong || '');
+        setVal('pDieuKhoanTT', ed.DieuKhoanTT || '');
+        if (ed.HanThanhToan) setVal('pHan', ed.HanThanhToan);
+        if (ed.TonKho != null) setVal('pTonKho', ed.TonKho);
+        const tb = document.getElementById('pTruongBp'); if (tb) tb.checked = !!ed.TruongBpDuyet;
+        const ip = document.getElementById('pInPlan'); if (ip) ip.checked = !!ed.TrongKeHoachTuan;
+        setVal('pGiaiTrinh', ed.GiaiTrinhNgoaiKeHoach || ''); togglePlanJustify();
+        const tb2 = document.querySelector('#lineTable tbody'); if (tb2) tb2.innerHTML = '';
+        (ed.lines || []).forEach(l => addLine({ matHang: l.matHang, slDat: l.slDat, donGia: l.donGia, vat: l.vat, ghiChu: l.ghiChu }));
+        if (!(ed.lines || []).length) addLine();
+      }
+    }
+    function setVal(id, v) { const e = document.getElementById(id); if (e) e.value = v; }
+    async function addDeptPrompt() {
+      const t = (prompt('Tên bộ phận mới:', '') || '').trim();
+      if (!t) return;
+      try { await call('rpc_add_department', { p_ten: t }); toast('Đã thêm bộ phận.', 'ok'); }
+      catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    async function addProposerPrompt() {
+      const t = (prompt('Tên người đề nghị mới:', '') || '').trim();
+      if (!t) return;
+      const bp = (prompt('Bộ phận của người này (có thể để trống):', '') || '').trim();
+      try { await call('rpc_add_proposer', { p_ten: t, p_bo_phan: bp || null }); toast('Đã thêm người đề nghị.', 'ok'); }
+      catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    async function editProposal(ma) {
+      try { const res = await call('rpc_get_proposal', { p_ma_de_xuat: ma }); state.editingProposal = res.proposal; renderProposal(); toast('Đang sửa ' + ma, 'ok'); }
+      catch (err) { toast(err.message || String(err), 'err'); }
     }
     function togglePlanJustify() {
       const inPlan = document.getElementById('pInPlan')?.checked;
@@ -878,28 +935,36 @@
         giaiTrinhNgoaiKeHoach: inPlan ? '' : val('pGiaiTrinh'),
         ngayDeXuat: val('pNgay'),
         nguoiDeNghi: val('pNguoi'),
+        boPhan: val('pBoPhan'),
         hanThanhToan: val('pHan') || null,
         tonKho: val('pTonKho') || null,
-        noteLanhDao: val('pNoteLanhDao'),
+        truongBpDuyet: document.getElementById('pTruongBp')?.checked || false,
         doiTuong: { ma: comboValue('pmaDoiTuong', 'pmaDoiTuongMoi'), ten: val('ptenDoiTuong'), dieuKhoanTT: val('pDieuKhoanTT') },
-        noiDung: val('pNoiDung'),
         dieuKhoanTT: val('pDieuKhoanTT'),
         lines: getProposalLines().filter(l => l.matHang && l.slDat && l.donGia)
       };
     }
     async function saveDraft(btn) {
+      const ed = state.editingProposal;
       const p = collectProposal('Nháp');
-      if (!p.nguoiDeNghi.trim()) { toast('Cần nhập người đề nghị.', 'err'); return; }
+      if (!p.nguoiDeNghi.trim()) { toast('Cần chọn người đề nghị.', 'err'); return; }
       if (!p.doiTuong.ten.trim()) { toast('Cần nhập tên đối tượng / NCC.', 'err'); return; }
       if (!p.lines.length) { toast('Cần ít nhất một dòng vật tư đầy đủ (mặt hàng, SL, đơn giá).', 'err'); return; }
       if (!p.hanThanhToan) { toast('Cần nhập hạn thanh toán.', 'err'); return; }
       if (!p.trongKeHoachTuan && !p.giaiTrinhNgoaiKeHoach.trim()) { toast('Khoản ngoài kế hoạch tuần — cần nhập giải trình.', 'err'); return; }
       const nFiles = document.getElementById('pFiles')?.files.length || 0;
-      if (p.loaiDeXuat === 'MuaHang' && !nFiles) { toast('Đề xuất mua hàng cần đính kèm báo giá.', 'err'); return; }
+      const hasOld = ed && (ed.Attachments || []).length > 0;
+      if (p.loaiDeXuat === 'MuaHang' && !nFiles && !hasOld) { toast('Đề xuất mua hàng cần đính kèm báo giá.', 'err'); return; }
       try {
         p.attachments = await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('pFiles', 'proposals'));
-        const res = await call('rpc_create_proposal', { p_payload: p });
-        toast(`Đã lưu nháp ${res.maDeXuat}. Kiểm tra bên phải rồi bấm Gửi duyệt.`, 'ok');
+        if (ed) {
+          await call('rpc_update_proposal', { p_ma_de_xuat: ed.MaDeXuat, p_payload: p });
+          toast(`Đã cập nhật nháp ${ed.MaDeXuat}.`, 'ok');
+          state.editingProposal = null;
+        } else {
+          const res = await call('rpc_create_proposal', { p_payload: p });
+          toast(`Đã lưu nháp ${res.maDeXuat}. Kiểm tra bên phải rồi bấm Gửi duyệt.`, 'ok');
+        }
         renderProposal();
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
@@ -913,7 +978,7 @@
             <div class="ac-top"><strong>${esc(r.MaDeXuat)}</strong>${proposalStatusPill(r.TrangThai)}</div>
             <div class="ac-obj">${esc(r.TenDoiTuong||'')}</div>
             <div class="ac-money">${fmtMoney(r.TongTien)} <small>đ</small></div>
-            ${r.TrangThai==='Nháp' ? `<div class="actions" style="margin-top:8px"><button onclick="submitProposal('${esc(r.MaDeXuat)}', this)">Gửi duyệt →</button></div>` : ''}
+            ${r.TrangThai==='Nháp' ? `<div class="actions" style="margin-top:8px"><button class="secondary" onclick="editProposal('${esc(r.MaDeXuat)}')">Sửa</button><button onclick="submitProposal('${esc(r.MaDeXuat)}', this)">Gửi duyệt →</button></div>` : ''}
             ${r.TrangThai==='Từ chối' && r.GhiChu ? `<div class="status" style="margin-top:6px">Lý do: ${esc(r.GhiChu)}</div>` : ''}
           </div>`).join('') : '<p class="status">Bạn chưa có đề xuất nào.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
@@ -1189,10 +1254,11 @@
         <div class="detail-head">
           <div><label>Đối tượng / NCC</label><div>${esc(p.TenDoiTuong || '')}</div></div>
           <div><label>Ngày đề xuất</label><div>${esc(p.NgayDeXuat || '')}</div></div>
-          <div><label>Người đề nghị</label><div>${esc(p.NguoiDeNghi || '')}</div></div>
+          <div><label>Người đề nghị</label><div>${esc(p.NguoiDeNghi || '')}${p.BoPhan ? ' · ' + esc(p.BoPhan) : ''}</div></div>
           <div><label>Tổng tiền (sau VAT)</label><div><b>${fmtMoney(p.TongTien)} đ</b></div></div>
           <div><label>Điều khoản TT</label><div>${esc(p.DieuKhoanTT || '')}</div></div>
           <div><label>Hạn thanh toán</label><div>${esc(p.HanThanhToan || '—')}</div></div>
+          <div><label>Trưởng BP đã duyệt</label><div>${p.TruongBpDuyet ? '<span class="pill ok">Đã duyệt</span>' : '<span class="pill warn">Chưa</span>'}</div></div>
           ${p.TonKho != null ? `<div><label>Tồn kho hiện tại</label><div>${fmtMaybeMoney(p.TonKho)}</div></div>` : ''}
         </div>
         <div class="field"><label>Báo giá đính kèm (bản gốc)</label><div>${attachLinks(p.Attachments)}</div></div>
@@ -1286,8 +1352,10 @@
               <div class="field"><label>Phiếu cân / số chứng từ giao nhận</label><input id="rChungTu"></div>
               <div class="field"><label>Hạn thanh toán (sửa nếu cần)</label><input id="rHan" type="date"></div>
             </div>
-            <div class="field"><label>Đính kèm biên bản giao nhận / phiếu cân (không bắt buộc)</label>
+            <div class="field"><label>Biên bản giao nhận / phiếu cân <span style="color:var(--danger)">*</span></label>
               <input id="rFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"></div>
+            <div class="field"><label>Hóa đơn VAT (nếu đã có)</label>
+              <input id="rHoaDon" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"></div>
             <div class="plan-box"><label class="check-line"><input type="checkbox" id="rHoSo"> Hồ sơ / chứng từ đã đầy đủ (đủ điều kiện xuất hóa đơn VAT)</label></div>
             <div class="field"><label>Ghi chú nghiệm thu (chất lượng, sai lệch…)</label><textarea id="rGhiChu"></textarea></div>
             <button onclick="saveReceipt(this)">Lưu &amp; chốt về công nợ</button>
@@ -1345,13 +1413,15 @@
       const maCN = val('rMaCN');
       if (!maCN) { setMsg('Chọn một khoản ở danh sách bên phải trước.'); toast('Chưa chọn khoản nghiệm thu.', 'err'); return; }
       if (!moneyRaw('rSL')) { toast('Cần nhập SL thực nhận.', 'err'); return; }
+      if (!(document.getElementById('rFiles')?.files.length)) { toast('Cần đính kèm biên bản giao nhận / phiếu cân.', 'err'); return; }
       try {
         const files = await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('rFiles', 'receipts'));
+        const hoaDon = await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('rHoaDon', 'invoices'));
         await withBusy(btn, 'Đang lưu...', () => call('rpc_update_receipt', { p_payload: {
           maCN, slThucNhan: moneyRaw('rSL'), ngayNhan: val('rNgay'),
           chungTu: val('rChungTu'), hanThanhToan: val('rHan') || null,
           hoSoDayDu: document.getElementById('rHoSo')?.checked || false,
-          files, ghiChu: val('rGhiChu')
+          files, hoaDonFiles: hoaDon, ghiChu: val('rGhiChu')
         } }));
         toast(`Đã nghiệm thu & chốt ${maCN} về công nợ.`, 'ok');
         state.currentReceipt = null;
@@ -1527,7 +1597,7 @@
       const manage = can('catalog:manage');
       if (state.catTab === 'mat') {
         const rows = state.catalog.materials;
-        const addBtn = manage ? `<button class="secondary" onclick="openGroupManager()">Nhóm hàng</button><button onclick="openMaterialForm()">＋ Thêm mặt hàng</button>` : '';
+        const addBtn = manage ? `<button class="secondary" onclick="openGroupManager()">Nhóm hàng</button><button class="secondary" onclick="addProposerPrompt()">Người đề nghị</button><button onclick="openMaterialForm()">＋ Thêm mặt hàng</button>` : '';
         box.innerHTML = `
           <div class="cat-toolbar">
             <input id="catMatSearch" placeholder="Tìm theo mã / tên / nhóm..." oninput="drawCatalog._filter()">
@@ -2364,7 +2434,7 @@
         <section class="card">
           <h2>Tài khoản &amp; phân quyền</h2>
           <div class="notice ok">Gán vai trò cho từng người ngay tại đây. Người dùng đăng nhập bằng email + mã PIN.</div>
-          <div class="actions"><button onclick="openUserForm()">＋ Thêm tài khoản</button><button class="secondary" onclick="loadUsers(this)">↻ Tải lại</button></div>
+          <div class="actions"><button onclick="openUserForm()">＋ Thêm tài khoản</button><button class="secondary" onclick="addDeptPrompt()">＋ Bộ phận</button><button class="secondary" onclick="loadUsers(this)">↻ Tải lại</button></div>
           <div id="usersBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
           <div class="notice" style="margin-top:12px">Vai trò &amp; quyền: <b>Nhân viên mua hàng</b> tạo đề xuất/nghiệm thu · <b>Lãnh đạo</b> duyệt đề xuất &amp; thanh toán · <b>Kế toán công nợ</b> đề xuất/đi tiền, theo dõi công nợ · <b>Trưởng phòng</b> xem báo giá · <b>Admin</b> toàn quyền.</div>
         </section>`;
