@@ -322,6 +322,19 @@
       /* Hạn chế scroll ngang: bảng nhiều cột cho phép cuộn trong khung, còn lại co về 1 cột */
       .detail-head { grid-template-columns: 1fr; }
     }
+    /* Mobile: bảng dữ liệu (chỉ đọc) xếp DỌC thành thẻ, khỏi cuộn ngang.
+       Bảng nhập liệu .line-table giữ nguyên (cho phép cuộn). */
+    @media (max-width: 760px) {
+      .table-wrap { max-height: none; overflow: visible; border: 0; }
+      table:not(.line-table) { border: 0; min-width: 0; }
+      table:not(.line-table) thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      table:not(.line-table), table:not(.line-table) tbody, table:not(.line-table) tr, table:not(.line-table) td { display: block; width: 100%; }
+      table:not(.line-table) tr { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; padding: 4px 12px; background: #fff; box-shadow: var(--shadow); }
+      table:not(.line-table) td { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; text-align: right; padding: 8px 0; border: 0; border-bottom: 1px dashed var(--line); white-space: normal; word-break: break-word; }
+      table:not(.line-table) td:last-child { border-bottom: 0; }
+      table:not(.line-table) td::before { content: attr(data-label); font-weight: 600; color: var(--muted); text-align: left; flex: 0 0 42%; }
+      table:not(.line-table) td:empty { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -1714,6 +1727,26 @@
       if (typeof v === 'number') return fmtMoney(v);
       return v ?? '';
     }
+    // Gắn nhãn cột vào từng ô (để mobile hiển thị "Nhãn: giá trị" khi bảng xếp dọc).
+    function labelTableCells(root) {
+      (root || document).querySelectorAll('table:not(.line-table)').forEach(tb => {
+        const ths = [...tb.querySelectorAll('thead th')].map(th => th.textContent.trim());
+        if (!ths.length) return;
+        tb.querySelectorAll('tbody tr').forEach(tr => {
+          [...tr.children].forEach((td, i) => { if (ths[i] != null && !td.hasAttribute('data-label')) td.setAttribute('data-label', ths[i]); });
+        });
+      });
+    }
+    (function watchTables() {
+      const c = document.getElementById('content');
+      if (!c) return;
+      let queued = false;
+      const obs = new MutationObserver(() => {
+        if (queued) return; queued = true;
+        requestAnimationFrame(() => { queued = false; labelTableCells(c); });
+      });
+      obs.observe(c, { childList: true, subtree: true });
+    })();
 
     // ---- Danh mục (master data) -------------------------------------------
     // In-app management of materials (mã hoá vật tư + nhóm hàng) and suppliers.
