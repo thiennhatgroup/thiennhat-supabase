@@ -869,6 +869,7 @@
           <section class="card">
             <h2>${ed ? 'Sửa nháp ' + esc(ed.MaDeXuat) : 'Đề xuất mua hàng / tạm ứng'}</h2>
             <div class="notice js-msg"></div>
+            ${ed && ed.LyDoTraLai ? `<div class="notice err">↩ <b>Đề xuất bị trả lại (rà soát):</b> ${esc(ed.LyDoTraLai)}<br><small>Vui lòng chỉnh sửa/giải trình theo yêu cầu, sau đó Lưu nháp rồi Gửi duyệt lại.</small></div>` : ''}
             <div class="grid">
               <div class="field"><label>Loại đề xuất</label><select id="pLoai">
                 <option value="MuaHang">Mua hàng</option>
@@ -943,6 +944,7 @@
         if (ed.HanThanhToan) setVal('pHan', ed.HanThanhToan);
         if (ed.TonKho != null) setVal('pTonKho', ed.TonKho);
         const tb = document.getElementById('pTruongBp'); if (tb) tb.checked = !!ed.TruongBpDuyet;
+        const pp = document.getElementById('pPrepay'); if (pp) pp.checked = !!ed.Prepay;
         const ip = document.getElementById('pInPlan'); if (ip) ip.checked = !!ed.TrongKeHoachTuan;
         setVal('pGiaiTrinh', ed.GiaiTrinhNgoaiKeHoach || ''); togglePlanJustify();
         const tb2 = document.querySelector('#lineTable tbody'); if (tb2) tb2.innerHTML = '';
@@ -2792,6 +2794,7 @@
       try { await call('rpc_mark_notification_read', { p_id: id }); } catch (e) {}
       document.getElementById('notifPanel')?.classList.add('hidden');
       refreshNotif();
+      if (loai === 'proposal_bounced' && refId) { renderScreen('proposal'); editProposal(refId); return; }
       if (!screen || !NAV_ALL.includes(screen)) return;
       if (loai === 'chat' && refId) { state.chatWith = refId; state.chatWithName = ''; }
       renderScreen(screen);
