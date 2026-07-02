@@ -185,9 +185,13 @@
     .pill.ok { background: #E4F3EA; color: #1E7A4C; }
     .pill.warn { background: #FDF0D6; color: #7A5A11; }
     .pill.err { background: #FBE0DD; color: #9A3730; }
-    .totals { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 14px; }
-    .metric { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
+    .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 14px; align-items: stretch; }
+    .metric { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); min-width: 0; }
     .metric strong { display: block; font-size: 20px; margin-top: 4px; color: var(--accent); }
+    .totals .metric { display: flex; flex-direction: column; justify-content: flex-start; gap: 4px; padding: 12px 14px; }
+    .totals .metric > span { font-size: 12.5px; color: var(--muted); line-height: 1.3; }
+    .totals .metric strong { margin-top: 0; font-size: clamp(14px, 1.5vw, 18px); white-space: nowrap; }
+    .totals .metric strong small { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 2px; }
     .metric.best { border-color: #B7DCC6; background: #F1FAF4; }
     .quote-layout { display: grid; grid-template-columns: minmax(360px, 1.15fr) minmax(320px, .85fr); gap: 18px; align-items: start; }
     .quote-best { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
@@ -1022,6 +1026,7 @@
             <div class="ac-top"><strong>${esc(r.MaDeXuat)}</strong>${proposalStatusPill(r.TrangThai)}</div>
             <div class="ac-obj">${esc(r.TenDoiTuong||'')}</div>
             <div class="ac-money">${fmtMoney(r.TongTien)} <small>đ</small></div>
+            ${r.TrangThai==='Nháp' && r.LyDoTraLai ? `<div class="notice err" style="margin-top:6px">↩ Bị trả lại: ${esc(r.LyDoTraLai)} — vui lòng chỉnh sửa/giải trình rồi gửi lại.</div>` : ''}
             ${r.TrangThai==='Nháp' ? `<div class="actions" style="margin-top:8px"><button class="secondary" onclick="editProposal('${esc(r.MaDeXuat)}')">Sửa</button><button onclick="submitProposal('${esc(r.MaDeXuat)}', this)">Gửi duyệt →</button></div>` : ''}
             ${r.TrangThai==='Từ chối' && r.GhiChu ? `<div class="status" style="margin-top:6px">Lý do: ${esc(r.GhiChu)}</div>` : ''}
           </div>`).join('') : '<p class="status">Bạn chưa có đề xuất nào.</p>';
@@ -1630,10 +1635,10 @@
         const res = await withBusy(btn, 'Đang generate...', () => call('rpc_get_debt_dashboard', { p_filter: filter }));
         box.innerHTML = `
           <div class="totals">
-            <div class="metric">Còn phải trả<strong>${fmtMoney(res.totals.ap)} đ</strong></div>
-            <div class="metric">Trả trước/tạm ứng<strong>${fmtMoney(res.totals.ar)} đ</strong></div>
-            <div class="metric">Chênh lệch ròng<strong>${fmtMoney(res.totals.net)} đ</strong></div>
-            <div class="metric">Số khoản<strong>${fmtMoney(res.totals.count)}</strong></div>
+            <div class="metric"><span>Còn phải trả</span><strong>${fmtMoney(res.totals.ap)}<small>đ</small></strong></div>
+            <div class="metric"><span>Trả trước/tạm ứng</span><strong>${fmtMoney(res.totals.ar)}<small>đ</small></strong></div>
+            <div class="metric"><span>Chênh lệch ròng</span><strong>${fmtMoney(res.totals.net)}<small>đ</small></strong></div>
+            <div class="metric"><span>Số khoản</span><strong>${fmtMoney(res.totals.count)}</strong></div>
           </div>
           <div class="table-wrap">${table(res.summary, ['maDoiTuong','tenDoiTuong','actual','paid','ap','ar','net','count','status'])}</div>`;
       } catch (err) { box.innerHTML = esc(err.message || err); toast(err.message || String(err), 'err'); }
@@ -2461,7 +2466,7 @@
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>Theo dõi &amp; rà soát</h2>
-          <div class="notice ok">Xem mọi khoản đang trình + đã duyệt/nghiệm thu/thanh toán. Phiếu <b>đang chờ duyệt</b> có thể <b>Hủy</b> (kèm lý do) trước khi lên sếp. Trưởng bộ phận chỉ thấy phiếu bộ phận mình.</div>
+          <div class="notice ok">Xem mọi khoản đang trình + đã duyệt/nghiệm thu/thanh toán. Phiếu <b>đang chờ duyệt</b> hoặc <b>đã duyệt (chưa thanh toán)</b> có thể <b>Trả lại</b> (kèm lý do) — công nợ đã sinh sẽ được gỡ, người lập nhận thông báo để giải trình và tạo lại. Trưởng bộ phận chỉ thấy phiếu bộ phận mình.</div>
           <div class="actions" style="align-items:flex-end">
             <div class="field" style="margin:0"><label>Từ ngày</label><input id="osFrom" type="date"></div>
             <div class="field" style="margin:0"><label>Đến ngày</label><input id="osTo" type="date" value="${today}"></div>
@@ -2485,7 +2490,7 @@
             <td>${esc(p.NguoiDeNghi||'')}${p.BoPhan?' · '+esc(p.BoPhan):''}</td><td>${esc(p.TenDoiTuong||'')}</td>
             <td class="num-cell">${fmtMoney(p.TongTien)}</td><td>${osStatusPill(p.TrangThai)}</td>
             <td>${p.DaNghiemThu?'<span class="pill ok">NT</span> ':''}${p.DaPhatSinhTT?'<span class="pill ok">TT</span>':''}</td>
-            <td>${p.TrangThai==='Chờ duyệt' && canCancel ? `<button class="danger" onclick="cancelProposalOs('${esc(p.MaDeXuat)}', this)">Hủy</button>` : ''}</td>
+            <td>${canCancel && (p.TrangThai==='Chờ duyệt' || (p.TrangThai==='Đã duyệt' && !p.DaPhatSinhTT)) ? `<button class="danger" onclick="bounceProposalOs('${esc(p.MaDeXuat)}', this)">Trả lại</button>` : ''}</td>
           </tr>`).join('')}</tbody></table></div>` : '<p class="status">Không có đề xuất mua hàng trong khoảng đã chọn.</p>';
         const payRows = pays.length ? `<div class="table-wrap"><table><thead><tr>
           <th>Mã ĐXTT</th><th>Ngày</th><th>Người lập</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
@@ -2501,6 +2506,12 @@
       const r = (prompt('Lý do hủy đề xuất ' + ma + ' (gửi người lập):', '') || '').trim();
       if (!r) return;
       try { await withBusy(btn, 'Đang hủy...', () => call('rpc_cancel_proposal', { p_ma_de_xuat: ma, p_reason: r })); toast(`Đã hủy ${ma}.`, 'ok'); loadOversight(); }
+      catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    async function bounceProposalOs(ma, btn) {
+      const r = (prompt('Lý do TRẢ LẠI đề xuất ' + ma + ' để người lập giải trình và tạo lại:', '') || '').trim();
+      if (!r) return;
+      try { await withBusy(btn, 'Đang trả lại...', () => call('rpc_bounce_proposal', { p_ma_de_xuat: ma, p_reason: r })); toast(`Đã trả lại ${ma} cho người lập.`, 'ok'); loadOversight(); }
       catch (err) { toast(err.message || String(err), 'err'); }
     }
     async function cancelPayReqOs(ma, btn) {
