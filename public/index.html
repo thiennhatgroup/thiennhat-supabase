@@ -335,7 +335,14 @@
     }
     /* Mobile: bảng dữ liệu (chỉ đọc) xếp DỌC thành thẻ, khỏi cuộn ngang.
        Bảng nhập liệu .line-table giữ nguyên (cho phép cuộn). */
+    .detail-total { text-align: right; font-size: 16px; margin-top: 8px; padding-top: 8px; border-top: 2px solid var(--line); }
+    .to-top { display: none; position: fixed; right: 14px; bottom: 18px; z-index: 40; width: 46px; height: 46px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; }
+    .to-top.show { display: block; }
+    .mjump { display: none; }
     @media (max-width: 760px) {
+      .mjump { display: flex; gap: 8px; flex-wrap: wrap; position: sticky; top: 0; z-index: 6; background: var(--bg); padding: 8px 0 10px; margin: -4px 0 8px; }
+      .mjump button { flex: 1 1 auto; min-height: 42px; font-size: 14px; }
+      .entry-first { order: -1; }
       .table-wrap { max-height: none; overflow: visible; border: 0; }
       table:not(.line-table) { border: 0; min-width: 0; }
       table:not(.line-table) thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -720,8 +727,10 @@
 
     function renderQuotes() {
       document.getElementById('content').innerHTML = `
+        <div class="mjump"><button class="secondary" onclick="jumpTo('qTrack')">📊 Bảng so sánh giá NCC</button></div>
         <div class="quote-layout">
-          <section class="card">
+          <section class="card" id="qTrack">
+            <div class="mjump"><button class="secondary" onclick="jumpTo('qEntry')">↑ Lên form nhập báo giá</button></div>
             <h2>Theo dõi báo giá nhà cung cấp</h2>
             <div class="notice ok">
               Chọn hoặc nhập mới mặt hàng. Hệ thống lấy giá mới nhất tại hoặc trước ngày so sánh, rồi xếp hạng NCC theo giá sau VAT.
@@ -746,17 +755,17 @@
             </div>
             <div id="quoteBox" style="margin-top:12px">${loadingText('Đang tải bảng báo giá...')}</div>
           </section>
-          <aside class="card">
+          <aside class="card entry-first" id="qEntry">
             <h2>Nhập báo giá mới</h2>
             <p class="status">Nhập báo giá trực tiếp tại đây; bảng bên trái sẽ cập nhật ngay ở lần làm mới kế tiếp.</p>
             <div class="field"><label>Ngày báo giá</label><input id="nqNgay" type="date" value="${todayStr()}"></div>
             <div class="field"><label>Mặt hàng</label><div class="combo-stack"><select id="nqItem" onchange="onQuoteMatChange()">${materialOptions('')}</select><input id="nqItemNew" placeholder="Nhập mặt hàng mới" oninput="onQuoteMatChange()"></div></div>
             <div class="field"><label>Nhà cung cấp</label><div class="combo-stack"><select id="nqNccSel">${supplierNameOptions()}</select><input id="nqNccNew" placeholder="Nhập NCC mới nếu chưa có"></div><small>Chọn từ danh mục, hoặc nhập mới ở ô dưới.</small></div>
             <div class="grid">
-              <div class="field"><label>Đơn vị tính (ĐVT)</label><input id="nqDvt" placeholder="vd: vnđ/lít, vnđ/kg"></div>
-              <div class="field"><label>Giá gọi (theo ĐVT)</label><input id="nqGia" class="js-money" inputmode="decimal"></div>
+              <div class="field"><label>Đơn vị tính (ĐVT)</label><input id="nqDvt" placeholder="vd: lít, kg, phuy"></div>
+              <div class="field"><label>Giá chào (chưa VAT)</label><input id="nqGia" class="js-money" inputmode="decimal"></div>
             </div>
-            <div class="field"><label>VAT</label><select id="nqVat"><option>Chưa VAT</option><option>Đã gồm VAT</option></select></div>
+            <div class="field"><label>%VAT</label><select id="nqVatRate"><option value="0">0%</option><option value="0.08" selected>8%</option><option value="0.1">10%</option></select><small>Giá sau VAT được tính tự động khi so sánh.</small></div>
             <div class="field"><label>Ghi chú</label><input id="nqGhiChu"></div>
             <button class="secondary" onclick="addPriceQuote(this)" ${can('quote:sync') ? '' : 'disabled'}>Lưu báo giá</button>
             <p id="nqMsg" class="status" style="margin-top:8px"></p>
@@ -795,7 +804,7 @@
           p_mat_hang: comboValue('nqItem', 'nqItemNew'),
           p_ncc: comboValue('nqNccSel', 'nqNccNew'),
           p_gia: moneyNum('nqGia') || null,
-          p_vat_status: val('nqVat'),
+          p_vat_rate: Number(val('nqVatRate') || 0.08),
           p_dvt: val('nqDvt') || null,
           p_ghi_chu: val('nqGhiChu')
         };
@@ -920,8 +929,9 @@
     function renderProposal() {
       const ed = state.editingProposal;
       document.getElementById('content').innerHTML = `
+        <div class="mjump"><button class="secondary" onclick="jumpTo('pMineBox')">📋 Xem 'Đề xuất của tôi'</button></div>
         <div class="proposal-layout">
-          <section class="card">
+          <section class="card" id="pFormCard">
             <h2>${ed ? 'Sửa nháp ' + esc(ed.MaDeXuat) : 'Đề xuất mua hàng / tạm ứng'}</h2>
             <div class="notice js-msg"></div>
             ${ed && ed.LyDoTraLai ? `<div class="notice err">↩ <b>Đề xuất bị trả lại (rà soát):</b> ${esc(ed.LyDoTraLai)}<br><small>Vui lòng chỉnh sửa/giải trình theo yêu cầu, sau đó Lưu nháp rồi Gửi duyệt lại.</small></div>` : ''}
@@ -958,7 +968,7 @@
               </div>
             </div>
             <h3>Dòng vật tư</h3>
-            <div class="table-wrap"><table id="lineTable" class="line-table"><thead><tr><th style="min-width:200px">Mặt hàng</th><th style="min-width:110px">SL đặt</th><th style="min-width:150px">Đơn giá</th><th style="min-width:130px">VAT</th><th style="min-width:150px">Thành tiền (sau VAT)</th><th style="min-width:160px">Ghi chú</th><th style="min-width:64px"></th></tr></thead><tbody></tbody></table></div>
+            <div class="table-wrap"><table id="lineTable" class="line-table"><thead><tr><th style="min-width:200px">Mặt hàng</th><th style="min-width:110px">SL đặt</th><th style="min-width:150px">Đơn giá (chưa VAT)</th><th style="min-width:130px">%VAT</th><th style="min-width:150px">Thành tiền (sau VAT)</th><th style="min-width:160px">Ghi chú</th><th style="min-width:64px"></th></tr></thead><tbody></tbody></table></div>
             <div class="total-bar">Trước VAT: <strong id="totalPre">0</strong> · Tiền VAT: <strong id="totalVat">0</strong> · Tổng sau VAT: <strong id="proposalTotal">0 đ</strong></div>
             <div class="actions">
               <button class="secondary" onclick="addLine()">+ Thêm dòng</button>
@@ -967,7 +977,8 @@
               ${ed ? `<button class="secondary" onclick="state.editingProposal=null; renderProposal()">Huỷ sửa</button>` : ''}
             </div>
           </section>
-          <aside class="card review-pane">
+          <aside class="card review-pane" id="pMineBox">
+            <div class="mjump"><button class="secondary" onclick="jumpTo('pFormCard')">↑ Lên form tạo phiếu</button></div>
             <h2>Đề xuất của tôi</h2>
             <p class="status">Lưu nháp, kiểm tra ở đây (bấm <b>Sửa</b> nếu cần bổ sung), rồi bấm <b>Gửi duyệt</b>.</p>
             <div id="myProposalsBox">${loadingText('Đang tải...')}</div>
@@ -1173,11 +1184,13 @@
       tr.dataset.bestAfter = '';
       if (hint) hint.classList.remove('over');
       if (!mat) { if (hint) hint.textContent = ''; return; }
-      if (hint) hint.textContent = 'Đang lấy giá tốt nhất…';
+      const dvt = dvtOf(mat);
+      const dvtTag = dvt ? `ĐVT: <b>${esc(dvt)}</b> · ` : '';
+      if (hint) hint.innerHTML = dvtTag + 'Đang lấy giá tốt nhất…';
       try {
         const res = await call('rpc_get_quote_dashboard', { p_item: mat, p_limit: 5 });
         const rows = res.rows || [];
-        if (!rows.length) { if (hint) hint.textContent = 'Chưa có báo giá NCC cho mặt hàng này.'; return; }
+        if (!rows.length) { if (hint) hint.innerHTML = dvtTag + 'Chưa có báo giá NCC cho mặt hàng này.'; return; }
         const b = rows[0]; // rank 1 = giá tốt nhất (sau VAT)
         tr.dataset.bestAfter = b.priceAfterVat;
         const gia = tr.querySelector('.js-dongia');
@@ -1185,7 +1198,7 @@
           gia.value = moneyFormat(b.priceBeforeVat);
           recalcLine(gia);
         }
-        if (hint) hint.innerHTML = `Giá tốt nhất: <b>${fmtMoney(b.priceAfterVat)} đ</b> sau VAT · ${esc(b.supplier)} (${esc(b.date)})`;
+        if (hint) hint.innerHTML = dvtTag + `Giá tốt nhất: <b>${fmtMoney(b.priceAfterVat)} đ</b> sau VAT · ${esc(b.supplier)} (${esc(b.date)})`;
       } catch (e) { if (hint) hint.textContent = ''; }
     }
     function getProposalLines() {
@@ -1353,6 +1366,29 @@
       </div>`;
     }
 
+    function linesDetailTable(lines, opt = {}) {
+      lines = lines || [];
+      let tong = 0;
+      const body = lines.map((l, i) => {
+        tong += Number(l.ThanhTienSauVAT || 0);
+        const dvt = dvtOf(l.MatHang) || '—';
+        const cmp = opt.clickable ? ' <span class="mini-link">so sánh giá ↗</span>' : '';
+        const attrs = opt.clickable ? ` class="line-clickable" onclick="showLineCompare('${esc(opt.ma)}', ${i})" title="Xem so sánh giá NCC"` : '';
+        const gc = l.GhiChu ? `<div class="status" style="font-size:12px">Ghi chú: ${esc(l.GhiChu)}</div>` : '';
+        return `<tr${attrs}>
+          <td>${esc(l.MatHang)}${cmp}${gc}</td>
+          <td>${esc(dvt)}</td>
+          <td>${fmtMaybeMoney(l.SLDat)}</td>
+          <td>${fmtMoney(l.DonGiaChuaVAT)}</td>
+          <td>${fmtPct(l.VATRate)}</td>
+          <td>${fmtMoney(l.ThanhTienSauVAT)}</td>
+        </tr>`;
+      }).join('');
+      return `<div class="table-wrap" style="max-height:none"><table>
+        <thead><tr><th>Mặt hàng</th><th>ĐVT</th><th>SL đặt</th><th>Đơn giá (chưa VAT)</th><th>%VAT</th><th>Thành tiền (sau VAT)</th></tr></thead>
+        <tbody>${body}</tbody></table></div>
+        <div class="detail-total">Tổng cộng (sau VAT): <b>${fmtMoney(tong)} đ</b></div>`;
+    }
     function openProposalDetail(ma) {
       const p = (state.pending || []).find(x => x.MaDeXuat === ma);
       if (!p) return;
@@ -1360,14 +1396,6 @@
       const planBlock = p.TrongKeHoachTuan
         ? '<div class="notice ok" style="margin:0">✔ Đã có trong kế hoạch chi tuần đã duyệt.</div>'
         : `<div class="notice">⚠ Ngoài kế hoạch chi tuần. Giải trình của bộ phận mua hàng:<br><b>${esc(p.GiaiTrinhNgoaiKeHoach || '(chưa nhập)')}</b></div>`;
-      const lineRows = (p.lines || []).map((l, i) => `
-        <tr class="line-clickable" onclick="showLineCompare('${esc(ma)}', ${i})" title="Xem so sánh giá NCC cho mặt hàng này">
-          <td>${esc(l.MatHang)} <span class="mini-link">so sánh giá ↗</span></td>
-          <td>${fmtMaybeMoney(l.SLDat)}</td>
-          <td>${fmtMaybeMoney(l.DonGiaChuaVAT)}</td>
-          <td>${fmtPct(l.VATRate)}</td>
-          <td>${fmtMoney(l.ThanhTienSauVAT)}</td>
-        </tr>`).join('');
       openModal(`Phiếu ${ma} — ${loai}`, `
         <div class="detail-head">
           <div><label>Đối tượng / NCC</label><div>${esc(p.TenDoiTuong || '')}</div></div>
@@ -1384,10 +1412,7 @@
         ${p.NoteLanhDao ? `<div class="notice">Ghi chú của mua hàng gửi lãnh đạo:<br><b>${esc(p.NoteLanhDao)}</b></div>` : ''}
         ${planBlock}
         <h3>Dòng vật tư — nhấp để so sánh giá NCC</h3>
-        <div class="table-wrap" style="max-height:none">
-          <table><thead><tr><th>Mặt hàng</th><th>SL đặt</th><th>Đơn giá chưa VAT</th><th>VAT</th><th>Thành tiền sau VAT</th></tr></thead>
-          <tbody>${lineRows}</tbody></table>
-        </div>
+        ${linesDetailTable(p.lines, { clickable: true, ma })}
         <div id="lineCompareBox"></div>
         <div class="field" style="margin-top:14px"><label>Giải trình khi duyệt / lý do từ chối</label><textarea id="approveNote" placeholder="Ghi chú kèm quyết định (bắt buộc khi từ chối)."></textarea></div>
         <div class="actions">
@@ -1770,6 +1795,7 @@
       return v ?? '';
     }
     // Gắn nhãn cột vào từng ô (để mobile hiển thị "Nhãn: giá trị" khi bảng xếp dọc).
+    function jumpTo(id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     function labelTableCells(root) {
       (root || document).querySelectorAll('table').forEach(tb => {
         const ths = [...tb.querySelectorAll('thead th')].map(th => th.textContent.trim());
@@ -1788,6 +1814,15 @@
         requestAnimationFrame(() => { queued = false; labelTableCells(c); });
       });
       obs.observe(c, { childList: true, subtree: true });
+    })();
+    (function initToTop() {
+      const b = document.createElement('button');
+      b.className = 'to-top'; b.id = 'toTop'; b.textContent = '↑'; b.title = 'Lên đầu trang';
+      b.onclick = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); const m = document.querySelector('main'); if (m) m.scrollTo({ top: 0, behavior: 'smooth' }); };
+      document.body.appendChild(b);
+      const onScroll = () => { const y = window.scrollY || document.documentElement.scrollTop || (document.querySelector('main')?.scrollTop || 0); b.classList.toggle('show', y > 400); };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      const m = document.querySelector('main'); if (m) m.addEventListener('scroll', onScroll, { passive: true });
     })();
 
     // ---- Danh mục (master data) -------------------------------------------
@@ -1937,6 +1972,7 @@
           ${footer}
         </div>`;
       document.body.appendChild(overlay);
+      try { labelTableCells(overlay); } catch (e) {}
       overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
       if (onSave) document.getElementById('catSaveBtn').onclick = function () { onSave(this); };
     }
@@ -1944,6 +1980,17 @@
     function modalErr(text) {
       const el = document.querySelector('#catModal .js-modal-msg');
       if (el) { el.textContent = text || ''; el.classList.toggle('hidden', !text); }
+    }
+    // Hộp nhập lý do (thay prompt() — thân thiện trên điện thoại).
+    function promptReason(title, placeholder, onConfirm, confirmLabel) {
+      openModal(title, `<div class="field"><label>Lý do</label><textarea id="reasonInput" rows="3" placeholder="${esc(placeholder || '')}"></textarea></div>`,
+        function () {
+          const v = (document.getElementById('reasonInput')?.value || '').trim();
+          if (!v) { modalErr('Vui lòng nhập lý do.'); return; }
+          closeModal();
+          Promise.resolve(onConfirm(v)).catch(err => toast(err.message || String(err), 'err'));
+        }, confirmLabel || 'Xác nhận');
+      setTimeout(() => document.getElementById('reasonInput')?.focus(), 60);
     }
     function groupOptions(selected) {
       return ['<option value="">— Chưa gán —</option>']
@@ -2271,32 +2318,64 @@
           <div class="ac-hint">Nhấp để xem &amp; duyệt →</div>
         </div>`).join('')}</div>`;
     }
-    function openPayReqDetail(ma) {
-      const r = (state.payPending || []).find(x => x.MaDeXuatTT === ma);
-      if (!r) return;
-      const lines = (r.lines || []).map(l => `<tr>
-        <td>${esc(l.ncc)}${l.linked ? ` <small class="status">CN: ${esc(l.maCN||'')}</small>` : ' <span class="pill warn">ngoài PO</span>'}</td>
-        <td class="num-cell">${fmtMoney(l.keHoach)}</td>
-        <td class="num-cell">${fmtMoney(l.soTien)}</td>
-        <td>${esc(l.noiDung||'')}</td>
-        <td>${esc(l.hinhThucTT||'')}</td>
-        <td>${esc(l.tinhTrangHoSo||'')}</td>
-        <td>${esc(l.giaiTrinh||'')}</td>
-      </tr>`).join('');
-      openModal(`Đề xuất thanh toán ${ma}`, `
-        <div class="detail-head">
-          <div><label>Ngày</label><div>${esc(r.Ngay)}</div></div>
-          <div><label>Người lập</label><div>${esc(r.NguoiLap||'')}</div></div>
-          <div><label>Tổng đề xuất</label><div><b>${fmtMoney(r.TongTien)} đ</b></div></div>
+    function payLineBlock(l, i) {
+      const head = `<div class="ac-top" style="justify-content:space-between">
+          <strong>${i + 1}. ${esc(l.ncc || '')}</strong>
+          ${l.linked ? `<span class="pill ok">CN: ${esc(l.maCN || '')}</span>` : '<span class="pill warn">Ngoài PO (tự nhập)</span>'}
         </div>
-        <div class="table-wrap" style="max-height:none"><table><thead><tr>
-          <th>NCC</th><th>Kế hoạch</th><th>Đề xuất TT</th><th>Nội dung</th><th>Hình thức</th><th>Tình trạng hồ sơ</th><th>Giải trình</th>
-        </tr></thead><tbody>${lines}</tbody></table></div>
-        <div class="field" style="margin-top:14px"><label>Ghi chú khi duyệt / lý do từ chối</label><textarea id="payApproveNote" placeholder="Bắt buộc khi từ chối."></textarea></div>
-        <div class="actions">
-          <button onclick="approvePayReq('${esc(ma)}', this)">✔ Duyệt</button>
-          <button class="danger" onclick="rejectPayReq('${esc(ma)}', this)">✘ Từ chối</button>
-        </div>`, null, null);
+        <div class="ac-money" style="margin:2px 0">${fmtMoney(l.soTien)} <small>đ đề xuất chi</small></div>
+        <div class="ac-meta">Kế hoạch: ${fmtMoney(l.keHoach)} đ · Hình thức: ${esc(l.hinhThucTT || '')} · Hồ sơ: ${esc(l.tinhTrangHoSo || '—')}</div>
+        ${l.noiDung ? `<div class="ac-meta">Nội dung: ${esc(l.noiDung)}</div>` : ''}`;
+      let body;
+      if (l.linked) {
+        const dvt = l.dvt || dvtOf(l.matHang) || '—';
+        body = `<div class="detail-head" style="margin-top:8px">
+            <div><label>Phiếu ĐX gốc</label><div>${esc(l.maDeXuat || '—')}${l.boPhan ? ' · ' + esc(l.boPhan) : ''}</div></div>
+            <div><label>Người đề nghị</label><div>${esc(l.nguoiDeNghi || '—')}</div></div>
+            <div><label>Mặt hàng</label><div>${esc(l.matHang || '—')}</div></div>
+            <div><label>ĐVT</label><div>${esc(dvt)}</div></div>
+            <div><label>SL đặt</label><div>${fmtMaybeMoney(l.slDat)}</div></div>
+            <div><label>SL thực nhận (nghiệm thu)</label><div>${l.slThucNhan != null ? fmtMaybeMoney(l.slThucNhan) : '<span class="pill warn">Chưa nghiệm thu</span>'}</div></div>
+            <div><label>Đơn giá (chưa VAT)</label><div>${fmtMoney(l.donGia)}</div></div>
+            <div><label>%VAT</label><div>${fmtPct(l.vatRate)}</div></div>
+            <div><label>Thành tiền thực nhận (sau VAT)</label><div><b>${fmtMoney(l.thanhTienThucNhan)} đ</b></div></div>
+            <div><label>Đã trả</label><div>${fmtMoney(l.daThanhToan)} đ</div></div>
+            <div><label>Còn phải trả</label><div><b>${fmtMoney(l.soDuConLai)} đ</b></div></div>
+            <div><label>Hạn thanh toán</label><div>${esc(l.hanThanhToan || '—')}</div></div>
+            <div><label>Ngày nhận hàng</label><div>${esc(l.ngayNhan || '—')}</div></div>
+            <div><label>Điều khoản TT</label><div>${esc(l.dieuKhoanTT || '—')}</div></div>
+            <div><label>Hồ sơ đầy đủ</label><div>${l.hoSoDayDu ? '<span class="pill ok">Đủ</span>' : '<span class="pill warn">Chưa đủ</span>'}</div></div>
+          </div>
+          <div class="field" style="margin-top:6px"><label>Biên bản nghiệm thu</label><div>${attachLinks(l.nghiemThuFiles)}</div></div>
+          <div class="field"><label>Báo giá gốc (bản chào NCC)</label><div>${attachLinks(l.baoGia)}</div></div>`;
+      } else {
+        body = `<div class="notice" style="margin-top:8px">⚠ Dòng tự nhập, không nối phiếu mua hàng. Giải trình:<br><b>${esc(l.giaiTrinh || '(chưa nhập)')}</b></div>`;
+      }
+      return `<div class="card" style="padding:14px;margin:10px 0;box-shadow:none;border:1px solid var(--line)">${head}${body}</div>`;
+    }
+    async function openPayReqDetail(ma) {
+      try {
+        const res = await call('rpc_payment_request_detail', { p_ma: ma });
+        const r = res.pr; if (!r) return;
+        const blocks = (r.lines || []).map((l, i) => payLineBlock(l, i)).join('');
+        const anyUnaccepted = (r.lines || []).some(l => l.linked && l.slThucNhan == null);
+        openModal(`Đề xuất thanh toán ${esc(ma)}`, `
+          <div class="detail-head">
+            <div><label>Ngày</label><div>${esc(r.Ngay)}</div></div>
+            <div><label>Người lập</label><div>${esc(r.NguoiLap || '')}</div></div>
+            <div><label>Thời gian lập</label><div>${esc(r.ThoiGianLap || '—')}</div></div>
+            <div><label>Số dòng</label><div>${(r.lines || []).length}</div></div>
+            <div><label>TỔNG ĐỀ XUẤT CHI</label><div><b>${fmtMoney(r.TongTien)} đ</b></div></div>
+          </div>
+          ${anyUnaccepted ? '<div class="notice err">⚠ Có dòng gắn công nợ nhưng CHƯA nghiệm thu (chưa có SL thực nhận). Cân nhắc trước khi duyệt chi.</div>' : ''}
+          <h3>Các khoản đề nghị chi (${(r.lines || []).length})</h3>
+          ${blocks || '<p class="status">Không có dòng nào.</p>'}
+          <div class="field" style="margin-top:14px"><label>Ghi chú khi duyệt / lý do từ chối</label><textarea id="payApproveNote" placeholder="Bắt buộc khi từ chối."></textarea></div>
+          <div class="actions">
+            <button onclick="approvePayReq('${esc(ma)}', this)">✔ Duyệt chi</button>
+            <button class="danger" onclick="rejectPayReq('${esc(ma)}', this)">✘ Từ chối</button>
+          </div>`, null, null);
+      } catch (err) { toast(err.message || String(err), 'err'); }
     }
     async function approvePayReq(ma, btn) {
       const note = document.getElementById('payApproveNote')?.value || '';
@@ -2562,6 +2641,7 @@
             <div class="field" style="margin:0"><label>Đến ngày</label><input id="osTo" type="date" value="${today}"></div>
             <button onclick="loadOversight(this)">Cập nhật</button>
           </div>
+          <div class="mjump"><button class="secondary" onclick="jumpTo('osProps')">📄 Đề xuất mua hàng</button><button class="secondary" onclick="jumpTo('osPays')">💳 Đề xuất thanh toán</button></div>
           <div id="osBox" style="margin-top:14px">${loadingText('Đang tải...')}</div>
         </section>`;
       loadOversight();
@@ -2588,21 +2668,21 @@
             <td class="num-cell">${fmtMoney(p.TongTien)}</td><td>${osStatusPill(p.TrangThai)}</td>
             <td>${p.TrangThai==='Chờ duyệt' && canCancel ? `<button class="danger" onclick="cancelPayReqOs('${esc(p.MaDeXuatTT)}', this)">Hủy</button>` : ''}</td>
           </tr>`).join('')}</tbody></table></div>` : '<p class="status">Không có đề xuất thanh toán.</p>';
-        box.innerHTML = `<h3>Đề xuất mua hàng / tạm ứng (${props.length})</h3>${propRows}
-          ${res.role !== 'TruongPhong' ? `<h3 style="margin-top:16px">Đề xuất thanh toán (${pays.length})</h3>${payRows}` : ''}`;
+        box.innerHTML = `<h3 id="osProps">Đề xuất mua hàng / tạm ứng (${props.length})</h3>${propRows}
+          ${res.role !== 'TruongPhong' ? `<h3 id="osPays" style="margin-top:16px">Đề xuất thanh toán (${pays.length})</h3>${payRows}` : ''}`;
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
     }
-    async function cancelProposalOs(ma, btn) {
-      const r = (prompt('Lý do hủy đề xuất ' + ma + ' (gửi người lập):', '') || '').trim();
-      if (!r) return;
-      try { await withBusy(btn, 'Đang hủy...', () => call('rpc_cancel_proposal', { p_ma_de_xuat: ma, p_reason: r })); toast(`Đã hủy ${ma}.`, 'ok'); loadOversight(); }
-      catch (err) { toast(err.message || String(err), 'err'); }
+    function cancelProposalOs(ma) {
+      promptReason('Hủy đề xuất ' + ma, 'Lý do hủy (gửi người lập)...', async (r) => {
+        await call('rpc_cancel_proposal', { p_ma_de_xuat: ma, p_reason: r });
+        toast(`Đã hủy ${ma}.`, 'ok'); loadOversight();
+      }, 'Hủy phiếu');
     }
-    async function bounceProposalOs(ma, btn) {
-      const r = (prompt('Lý do TRẢ LẠI đề xuất ' + ma + ' để người lập giải trình và tạo lại:', '') || '').trim();
-      if (!r) return;
-      try { await withBusy(btn, 'Đang trả lại...', () => call('rpc_bounce_proposal', { p_ma_de_xuat: ma, p_reason: r })); toast(`Đã trả lại ${ma} cho người lập.`, 'ok'); closeModal(); loadOversight(); }
-      catch (err) { toast(err.message || String(err), 'err'); }
+    function bounceProposalOs(ma) {
+      promptReason('Trả lại đề xuất ' + ma, 'Nêu rõ vấn đề để người lập giải trình và tạo lại...', async (r) => {
+        await call('rpc_bounce_proposal', { p_ma_de_xuat: ma, p_reason: r });
+        toast(`Đã trả lại ${ma} cho người lập.`, 'ok'); loadOversight();
+      }, 'Trả lại');
     }
     async function openOversightDetail(ma, e) {
       if (e) e.preventDefault();
@@ -2613,10 +2693,6 @@
         const planBlock = p.TrongKeHoachTuan
           ? '<div class="notice ok" style="margin:0">✔ Đã có trong kế hoạch chi tuần.</div>'
           : `<div class="notice">⚠ Ngoài kế hoạch chi tuần. Giải trình:<br><b>${esc(p.GiaiTrinhNgoaiKeHoach || '(chưa nhập)')}</b></div>`;
-        const lineRows = (p.lines || []).map(l => `<tr>
-          <td>${esc(l.MatHang)}</td><td>${fmtMaybeMoney(l.SLDat)}</td>
-          <td>${fmtMaybeMoney(l.DonGiaChuaVAT)}</td><td>${fmtPct(l.VATRate)}</td>
-          <td>${fmtMoney(l.ThanhTienSauVAT)}</td></tr>`).join('');
         const canBounce = (p.TrangThai === 'Chờ duyệt') || (p.TrangThai === 'Đã duyệt' && !p.DaPhatSinhTT);
         openModal(`Phiếu ${esc(ma)} — ${loai}`, `
           <div class="detail-head">
@@ -2640,21 +2716,18 @@
           ${p.LyDoTraLai ? `<div class="notice err">↩ Lý do đã trả lại trước đó: ${esc(p.LyDoTraLai)}</div>` : ''}
           ${planBlock}
           <h3>Dòng vật tư</h3>
-          <div class="table-wrap" style="max-height:none">
-            <table><thead><tr><th>Mặt hàng</th><th>SL đặt</th><th>Đơn giá chưa VAT</th><th>VAT</th><th>Thành tiền sau VAT</th></tr></thead>
-            <tbody>${lineRows}</tbody></table>
-          </div>
+          ${linesDetailTable(p.lines, {})}
           ${p.GhiChu ? `<div class="field" style="margin-top:10px"><label>Ghi chú / lịch sử</label><div class="status">${esc(p.GhiChu)}</div></div>` : ''}
           ${canBounce ? `<div class="actions" style="margin-top:14px"><button class="danger" onclick="bounceProposalOs('${esc(ma)}', this)">↩ Trả lại kèm lý do</button></div>`
             : `<div class="notice" style="margin-top:14px">Phiếu này không ở trạng thái có thể trả lại (chỉ trả lại được phiếu Chờ duyệt hoặc Đã duyệt chưa phát sinh thanh toán).</div>`}
         `, null, null);
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
-    async function cancelPayReqOs(ma, btn) {
-      const r = (prompt('Lý do hủy đề xuất thanh toán ' + ma + ':', '') || '').trim();
-      if (!r) return;
-      try { await withBusy(btn, 'Đang hủy...', () => call('rpc_cancel_payment_request', { p_ma: ma, p_reason: r })); toast(`Đã hủy ${ma}.`, 'ok'); loadOversight(); }
-      catch (err) { toast(err.message || String(err), 'err'); }
+    function cancelPayReqOs(ma) {
+      promptReason('Hủy đề xuất thanh toán ' + ma, 'Lý do hủy...', async (r) => {
+        await call('rpc_cancel_payment_request', { p_ma: ma, p_reason: r });
+        toast(`Đã hủy ${ma}.`, 'ok'); loadOversight();
+      }, 'Hủy');
     }
 
     // ===== Hướng dẫn (tập trung 1 chỗ) =====================================
