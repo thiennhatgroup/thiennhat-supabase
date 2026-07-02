@@ -1151,11 +1151,16 @@
         const rows = res.rows || [];
         box.innerHTML = rows.length ? rows.map(r => `<div class="approve-card" style="margin-bottom:10px">
             <div class="ac-top"><strong>${esc(r.MaDeXuat)}</strong>${proposalStatusPill(r.TrangThai)}</div>
-            <div class="ac-obj">${esc(r.TenDoiTuong||'')}</div>
-            <div class="ac-money">${fmtMoney(r.TongTien)} <small>đ</small></div>
+            <div class="ac-obj">NCC: ${esc(r.TenDoiTuong||'')}${r.BoPhan?' · '+esc(r.BoPhan):''}</div>
+            <div class="ac-meta">${esc(r.LoaiDeXuat==='TamUng'?'Tạm ứng':'Mua hàng')} · ${r.SoDong||0} dòng vật tư · Hạn TT: ${esc(r.HanThanhToan||'—')}</div>
+            ${r.DieuKhoanTT?`<div class="ac-meta">Điều khoản TT: ${esc(r.DieuKhoanTT)}</div>`:''}
+            <div class="ac-money">${fmtMoney(r.TongTien)} <small>đ (sau VAT)</small></div>
             ${r.TrangThai==='Nháp' && r.LyDoTraLai ? `<div class="notice err" style="margin-top:6px">↩ Bị trả lại: ${esc(r.LyDoTraLai)} — vui lòng chỉnh sửa/giải trình rồi gửi lại.</div>` : ''}
-            ${r.TrangThai==='Nháp' ? `<div class="actions" style="margin-top:8px"><button class="secondary" onclick="editProposal('${esc(r.MaDeXuat)}')">Sửa</button><button onclick="submitProposal('${esc(r.MaDeXuat)}', this)">Gửi duyệt →</button></div>` : ''}
             ${r.TrangThai==='Từ chối' && r.GhiChu ? `<div class="status" style="margin-top:6px">Lý do: ${esc(r.GhiChu)}</div>` : ''}
+            <div class="actions" style="margin-top:8px">
+              <button class="secondary" onclick="openProposalDetailRO('${esc(r.MaDeXuat)}')">Xem chi tiết</button>
+              ${r.TrangThai==='Nháp' ? `<button class="secondary" onclick="editProposal('${esc(r.MaDeXuat)}')">Sửa</button><button onclick="submitProposal('${esc(r.MaDeXuat)}', this)">Gửi duyệt →</button>` : ''}
+            </div>
           </div>`).join('') : '<p class="status">Bạn chưa có đề xuất nào.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
     }
@@ -1467,6 +1472,13 @@
         openModal(`Phiếu ${esc(ma)} — chi tiết`, proposalRichBody(p) + action, null, null);
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
+    async function openProposalDetailRO(ma) {
+      try {
+        const res = await call('rpc_proposal_detail', { p_ma_de_xuat: ma });
+        const p = res.proposal; if (!p) return;
+        openModal(`Phiếu ${esc(ma)} — chi tiết`, proposalRichBody(p), null, null);
+      } catch (err) { toast(err.message || String(err), 'err'); }
+    }
     function openProposalDetail(ma) {
       const p = (state.pending || []).find(x => x.MaDeXuat === ma);
       if (!p) return;
@@ -1621,10 +1633,12 @@
       if (!rows.length) { box.innerHTML = '<p class="status">Không có khoản nào chờ nghiệm thu.</p>'; return; }
       box.innerHTML = rows.map((r, i) => `<div class="approve-card" style="margin-bottom:10px" onclick="pickReceipt(${i})">
         <div class="ac-top"><strong>${esc(r.MaCN)}</strong><span class="pill">${esc(r.MaDeXuat||'')}</span></div>
-        <div class="ac-obj">${esc(r.TenDoiTuong||'')}</div>
-        <div class="ac-meta">${esc(r.MatHang||'')} · SL đặt ${fmtMaybeMoney(r.SLDat)} · ${fmtMoney(r.ThanhTienDat)}đ</div>
-        <div class="ac-meta">Người đề nghị: ${esc(r.NguoiDeNghi||'')} · duyệt ${esc(r.NgayDuyet||'')}</div>
-        <div class="ac-hint">Nạp vào form nghiệm thu →</div>
+        <div class="ac-obj">NCC: ${esc(r.TenDoiTuong||'')}</div>
+        <div class="ac-meta">Mặt hàng: <b>${esc(r.MatHang||'')}</b> · ĐVT: ${esc(r.dvt || dvtOf(r.MatHang) || '—')} · SL đặt: ${fmtMaybeMoney(r.SLDat)}</div>
+        <div class="ac-meta">Đơn giá (chưa VAT): ${fmtMoney(r.DonGia)} · VAT ${fmtPct(r.VATRate)} · Giá sau VAT: <b>${fmtMoney(r.ThanhTienDat)}đ</b></div>
+        <div class="ac-meta">Hạn TT: ${esc(r.HanThanhToan||'—')} · Điều khoản TT: ${esc(r.DieuKhoanTT||'—')}</div>
+        <div class="ac-meta">Người đề nghị: ${esc(r.NguoiDeNghi||'')} · duyệt ${esc(r.NgayDuyet||'')} · 📎 ${(r.Attachments||[]).length} báo giá</div>
+        <div class="ac-hint">Nhấp để nạp vào form nghiệm thu →</div>
       </div>`).join('');
     }
     function pickReceipt(i) {
@@ -1749,20 +1763,23 @@
       try {
         const res = await withBusy(btn, 'Đang tải...', () => call('rpc_list_open_debts', { p_ma_doi_tuong: val('dpMa') || null }));
         const rows = res.rows || [];
-        box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>
-          <th>Mã công nợ</th><th>Nhà cung cấp</th><th>Mặt hàng</th><th>Hạn TT</th><th class="num-cell">Giá trị thực nhận</th><th class="num-cell">Đã trả</th><th class="num-cell">Còn phải trả</th><th style="min-width:220px">Ghi nhận đã trả</th></tr></thead><tbody>
-          ${rows.map(r => `<tr>
-            <td><code>${esc(r.maCN)}</code></td><td>${esc(r.tenDoiTuong||'')}</td><td>${esc(r.matHang||'')}</td><td>${esc(r.hanThanhToan||'—')}</td>
-            <td class="num-cell">${fmtMoney(r.thanhTienThucNhan)}</td><td class="num-cell">${fmtMoney(r.daThanhToan)}</td>
-            <td class="num-cell"><b>${fmtMoney(r.soDuConLai)}</b></td>
-            <td><div style="display:flex;gap:6px"><input class="js-money dp-amt" data-macn="${esc(r.maCN)}" data-dumax="${r.soDuConLai}" inputmode="decimal" placeholder="Số tiền" style="min-height:36px">
-            <button style="min-height:36px;padding:4px 12px" onclick="recordDebtPay('${esc(r.maCN)}', this)">Ghi</button></div></td>
-          </tr>`).join('')}</tbody></table></div>
-          <small>Ghi nhận đúng số tiền thực trả cho từng khoản; có thể trả nhiều lần (trả từng phần).</small>` : '<p class="status">Không có khoản nào còn phải trả.</p>';
+        box.innerHTML = rows.length ? rows.map(r => `<div class="approve-card" style="margin-bottom:10px">
+            <div class="ac-top"><strong>${esc(r.maCN)}</strong>${r.maDeXuat ? `<span class="pill">${esc(r.maDeXuat)}</span>` : ''}</div>
+            <div class="ac-obj">NCC: ${esc(r.tenDoiTuong || '')}</div>
+            <div class="ac-meta">Mặt hàng: <b>${esc(r.matHang || '')}</b> · ĐVT: ${esc(r.dvt || '—')} · SL đặt: ${fmtMaybeMoney(r.slDat)}${r.slThucNhan != null ? ` · SL thực nhận: ${fmtMaybeMoney(r.slThucNhan)}` : ''}</div>
+            <div class="ac-meta">Đơn giá (chưa VAT): ${fmtMoney(r.donGia)} · VAT ${fmtPct(r.vatRate)} · Giá trị thực nhận (sau VAT): <b>${fmtMoney(r.thanhTienThucNhan)}đ</b></div>
+            <div class="ac-meta">Hạn TT: ${esc(r.hanThanhToan || '—')} · Điều khoản TT: ${esc(r.dieuKhoanTT || '—')}</div>
+            <div class="ac-money">Còn phải trả: <b>${fmtMoney(r.soDuConLai)}</b> <small>đ</small> · đã trả ${fmtMoney(r.daThanhToan)}đ</div>
+            <div class="actions dp-row" style="margin-top:8px">
+              <input class="js-money dp-amt" data-macn="${esc(r.maCN)}" data-dumax="${r.soDuConLai}" inputmode="decimal" placeholder="Số tiền đã trả" style="min-height:38px;max-width:200px">
+              <button onclick="recordDebtPay('${esc(r.maCN)}', this)">Ghi thanh toán</button>
+              ${r.maDeXuat ? `<button class="secondary" onclick="openProposalDetailRO('${esc(r.maDeXuat)}')">Xem chi tiết phiếu</button>` : ''}
+            </div>
+          </div>`).join('') + '<small>Ghi đúng số tiền thực trả cho từng khoản; có thể trả nhiều lần (trả từng phần).</small>' : '<p class="status">Không có khoản nào còn phải trả.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
     }
     async function recordDebtPay(maCN, btn) {
-      const input = btn.closest('td').querySelector('.dp-amt');
+      const input = (btn.closest('.dp-row') || btn.closest('td') || document).querySelector('.dp-amt');
       const so = moneyNum(input);
       if (!so || so <= 0) { toast('Nhập số tiền đã trả.', 'err'); return; }
       const du = Number(input.dataset.dumax || 0);
@@ -1805,32 +1822,42 @@
     }
 
     function renderSettlement() {
-      renderShell('Lưu &amp; clear tất toán', `
-        <div class="field"><label>Mã đối tượng</label><select id="sma">${objectOptions()}</select><small>Để trống để preview toàn bộ.</small></div>
-        <div class="actions">
-          <button onclick="previewSettlement(this)">Preview tất toán</button>
-          <button class="danger" onclick="confirmSettlement(this)">Xác nhận archive &amp; clear</button>
-        </div>
-        <div id="settleBox" class="table-wrap" style="margin-top:12px"></div>`, 'debt');
-      loadRecent('debt');
+      document.getElementById('content').innerHTML = `
+        <section class="card">
+          <h2>Tất toán công nợ</h2>
+          <div class="notice ok"><b>Tất toán</b> = lưu trữ (ẩn khỏi danh sách theo dõi) các khoản <b>đã trả đủ</b>. KHÔNG xóa dữ liệu, KHÔNG đổi số — chỉ giúp danh sách công nợ gọn lại. Khoản chưa trả đủ vẫn được giữ nguyên.</div>
+          <div class="actions" style="align-items:flex-end">
+            <div class="field" style="margin:0;min-width:260px"><label>Nhà cung cấp (để trống = tất cả)</label><select id="sma">${objectOptions()}</select></div>
+            <button onclick="previewSettlement(this)">Xem khoản đủ điều kiện tất toán</button>
+          </div>
+          <div id="settleBox" style="margin-top:14px"></div>
+        </section>`;
     }
     async function previewSettlement(btn) {
-      const box = document.getElementById('settleBox');
-      box.innerHTML = loadingText('Đang tính preview tất toán...');
+      const box = document.getElementById('settleBox'); if (!box) return;
+      box.innerHTML = loadingText('Đang tính...');
       try {
-        const res = await withBusy(btn, 'Đang tính...', () => call('rpc_preview_settlement', { p_ma_doi_tuong: val('sma') || null }));
-        const plan = res.plan || {};
-        box.innerHTML = `<p class="status">Sẽ lưu trữ (đã trả đủ): ${plan.archived ?? 0} khoản. Giữ lại (chưa trả đủ): ${plan.kept ?? 0} khoản.</p>` + table(plan.preview, ['action','maCN','doiTuong','actual','conLai']);
-      } catch (err) { box.innerHTML = esc(err.message || err); toast(err.message || String(err), 'err'); }
+        const fn = () => call('rpc_preview_settlement', { p_ma_doi_tuong: val('sma') || null });
+        const res = await (btn ? withBusy(btn, 'Đang tính...', fn) : fn());
+        const plan = res.plan || {}; const pv = plan.preview || [];
+        const list = pv.length ? `<div class="table-wrap" style="max-height:none"><table><thead><tr>
+            <th>Mã công nợ</th><th>Đối tượng</th><th class="num-cell">Giá trị thực nhận</th><th class="num-cell">Còn lại</th></tr></thead><tbody>
+            ${pv.map(x => `<tr><td><code>${esc(x.maCN)}</code></td><td>${esc(x.doiTuong || '')}</td>
+              <td class="num-cell">${fmtMoney(x.actual)}</td><td class="num-cell">${fmtMoney(x.conLai)}</td></tr>`).join('')}
+          </tbody></table></div>` : '';
+        box.innerHTML = `
+          <div class="notice ${plan.archived ? 'ok' : ''}">Đủ điều kiện tất toán (đã trả đủ): <b>${plan.archived ?? 0}</b> khoản · Giữ lại (đã nghiệm thu nhưng chưa trả đủ): <b>${plan.kept ?? 0}</b> khoản.</div>
+          ${plan.archived ? list + `<div class="actions" style="margin-top:12px"><button class="danger" onclick="confirmSettlement(this)">✔ Xác nhận tất toán ${plan.archived} khoản</button></div>`
+            : '<p class="status">Hiện chưa có khoản nào đã trả đủ để tất toán. Hãy ghi nhận thanh toán đủ ở màn “Cập nhật thanh toán” trước.</p>'}`;
+      } catch (err) { box.innerHTML = `<div class="notice err">${esc(err.message || err)}</div>`; toast(err.message || String(err), 'err'); }
     }
     async function confirmSettlement(btn) {
-      if (!confirm('Xác nhận archive trước rồi clear/compact công nợ?')) return;
+      if (!confirm('Xác nhận tất toán (lưu trữ) các khoản đã trả đủ? Dữ liệu không bị xóa, chỉ ẩn khỏi danh sách theo dõi.')) return;
       try {
-        const res = await withBusy(btn, 'Đang clear...', () => call('rpc_confirm_settlement', { p_ma_doi_tuong: val('sma') || null }));
-        document.getElementById('settleBox').innerHTML = `Đã archive ${res.archived} dòng, giữ lại ${res.kept} dòng.`;
-        toast(`Đã archive ${res.archived} dòng.`, 'ok');
-        loadRecent('debt');
-      } catch (err) { document.getElementById('settleBox').innerHTML = esc(err.message || err); toast(err.message || String(err), 'err'); }
+        const res = await withBusy(btn, 'Đang tất toán...', () => call('rpc_confirm_settlement', { p_ma_doi_tuong: val('sma') || null }));
+        toast(`Đã tất toán ${res.archived} khoản.`, 'ok');
+        previewSettlement();
+      } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
     async function loadRecent(kind, btn) {
@@ -2538,23 +2565,47 @@
     }
 
     // ---- In đề xuất mua hàng (ghép nhiều phiếu) ----
+    function printableLinesTable(p) {
+      let tong = 0;
+      const rows = (p.lines || []).map(l => {
+        const amt = lineAcceptedAmount(l); tong += Number(amt || 0);
+        return `<tr>
+          <td>${esc(l.MatHang || '')}</td>
+          <td>${esc(dvtOf(l.MatHang) || '—')}</td>
+          <td>${fmtMaybeMoney(l.SLDat)}</td>
+          <td>${l.SLThucNhan != null ? fmtMaybeMoney(l.SLThucNhan) : '<span class="pill warn">chưa NT</span>'}</td>
+          <td>${fmtMoney(l.DonGia)}</td>
+          <td>${fmtPct(l.VATRate)}</td>
+          <td>${fmtMoney(amt)}</td>
+        </tr>`;
+      }).join('');
+      return `<div class="table-wrap" style="max-height:none"><table>
+        <thead><tr><th>Mặt hàng</th><th>ĐVT</th><th>SL đặt</th><th>SL nghiệm thu</th><th>Đơn giá</th><th>%VAT</th><th>Thành tiền nghiệm thu</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+        <div class="detail-total">Tổng thành tiền nghiệm thu: <b>${fmtMoney(tong)} đ</b></div>`;
+    }
+    function printableCardHead(r) {
+      return `<div class="ac-top"><strong>${esc(r.MaDeXuat)}</strong><span class="pill">${r.LoaiDeXuat === 'TamUng' ? 'Tạm ứng' : 'Mua hàng'}</span></div>
+        <div class="ac-obj">NCC: ${esc(r.TenDoiTuong || '')} · duyệt ${esc(r.NgayDuyet || '—')} · Người đề nghị: ${esc(r.NguoiDeNghi || '—')}</div>
+        ${r.NoiDung ? `<div class="ac-meta">Nội dung: ${esc(r.NoiDung)}</div>` : ''}
+        <div class="ac-meta">Điều khoản TT: ${esc(r.DieuKhoanTT || '—')}</div>`;
+    }
     function renderPrintPP() {
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>In / xuất đề xuất mua hàng</h2>
-          <div class="notice ok">Chọn các phiếu đã duyệt &amp; đã nghiệm thu — tất cả sẽ được gộp vào <b>một file / một sheet</b> để lãnh đạo in &amp; ký một lần.</div>
-          <div class="actions"><button class="secondary" onclick="renderPrintPP()">↻ Tải lại</button><button onclick="exportPP(this)">⬇ Xuất Excel gộp (đã chọn)</button></div>
+          <div class="notice ok">Tích chọn các phiếu đã duyệt &amp; đã nghiệm thu, rồi <b>Xuất Excel gộp</b> để lãnh đạo in &amp; ký một lần. Mỗi phiếu hiển thị rõ số lượng, đơn vị, thành tiền nghiệm thu bên dưới.</div>
+          <div class="actions"><label class="check-line" style="gap:8px"><input type="checkbox" onchange="ppToggleAll(this)"> Chọn tất cả</label><button class="secondary" onclick="renderPrintPP()">↻ Tải lại</button><button onclick="exportPP(this)">⬇ Xuất Excel gộp (đã chọn)</button></div>
           <div id="ppBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
         </section>`;
       loadPrintable(rows => {
         state.printable = rows;
         const box = document.getElementById('ppBox');
-        box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>
-          <th><input type="checkbox" onchange="ppToggleAll(this)"></th><th>Mã ĐX</th><th>Loại</th><th>NCC</th><th>Ngày duyệt</th><th>Nội dung</th></tr></thead><tbody>
-          ${rows.map((r,i)=>`<tr><td><input type="checkbox" class="pp-chk" data-i="${i}"></td>
-            <td><code>${esc(r.MaDeXuat)}</code></td><td>${r.LoaiDeXuat==='TamUng'?'Tạm ứng':'Mua hàng'}</td>
-            <td>${esc(r.TenDoiTuong||'')}</td><td>${esc(r.NgayDuyet||'')}</td><td>${esc(r.NoiDung||'')}</td></tr>`).join('')}
-          </tbody></table></div>` : '<p class="status">Không có phiếu đã duyệt &amp; nghiệm thu.</p>';
+        box.innerHTML = rows.length ? rows.map((r, i) => `<div class="approve-card" style="margin-bottom:12px">
+            <label class="check-line" style="gap:8px;margin-bottom:4px"><input type="checkbox" class="pp-chk" data-i="${i}"> <b>Chọn phiếu này</b></label>
+            ${printableCardHead(r)}
+            ${printableLinesTable(r)}
+          </div>`).join('') : '<p class="status">Không có phiếu đã duyệt &amp; nghiệm thu.</p>';
       });
     }
     function ppToggleAll(el) { document.querySelectorAll('.pp-chk').forEach(c => c.checked = el.checked); }
@@ -2613,22 +2664,24 @@
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>In / xuất phiếu yêu cầu thanh toán (BM-03TH)</h2>
-          <div class="notice ok">Chọn một phiếu đã nghiệm thu. Số tài khoản &amp; ngân hàng NCC hệ thống tự lấy. Số hóa đơn/chứng từ bạn nhập tay bên dưới rồi bấm Tạo phiếu.</div>
-          <div class="field"><label>Chọn phiếu (đã nghiệm thu)</label><select id="ycttSel" onchange="ycttPick()"><option value="">— Chọn —</option></select></div>
-          <div id="ycttForm"></div>
+          <div class="notice ok">Chọn một phiếu đã nghiệm thu để tạo phiếu YCTT. Số tài khoản &amp; ngân hàng NCC hệ thống tự lấy; số hóa đơn nhập tay trong hộp tạo phiếu. Mỗi phiếu hiển thị rõ số lượng, đơn vị, thành tiền nghiệm thu bên dưới.</div>
+          <div class="actions"><button class="secondary" onclick="renderPrintYCTT()">↻ Tải lại</button></div>
+          <div id="ycttBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
         </section>`;
       loadPrintable(rows => {
         state.printable = rows;
-        const sel = document.getElementById('ycttSel');
-        sel.innerHTML = '<option value="">— Chọn —</option>' + rows.map((r,i)=>`<option value="${i}">${esc(r.MaDeXuat)} · ${esc(r.TenDoiTuong||'')}</option>`).join('');
+        const box = document.getElementById('ycttBox');
+        box.innerHTML = rows.length ? rows.map((r, i) => `<div class="approve-card" style="margin-bottom:12px">
+            ${printableCardHead(r)}
+            ${printableLinesTable(r)}
+            <div class="actions" style="margin-top:8px"><button onclick="ycttOpenForm(${i})">🧾 Tạo phiếu YCTT</button></div>
+          </div>`).join('') : '<p class="status">Không có phiếu đã nghiệm thu.</p>';
       });
     }
-    function ycttPick() {
-      const i = document.getElementById('ycttSel').value;
-      const box = document.getElementById('ycttForm');
-      if (i === '') { box.innerHTML = ''; return; }
+    function ycttOpenForm(i) {
       const p = state.printable[Number(i)];
-      box.innerHTML = `
+      if (!p) return;
+      openModal(`Tạo phiếu YCTT — ${esc(p.MaDeXuat)}`, `
         <div class="grid">
           <div class="field"><label>Đơn vị thụ hưởng</label><input value="${esc(p.TenDoiTuong||'')}" disabled></div>
           <div class="field"><label>Người đề nghị</label><input id="yNguoi" value="${esc(p.NguoiDeNghi||'')}"></div>
@@ -2652,7 +2705,7 @@
           <div class="field"><label>Trừ tạm ứng / trả trước</label><input id="yTruTamUng" class="js-money" inputmode="decimal" value="0"></div>
           <div class="field"><label>Diễn giải chung (tùy chọn)</label><input id="yDienGiai" value="${esc(p.NoiDung||'')}"></div>
         </div>
-        <button onclick="exportYCTT(${Number(i)}, this)">⬇ Tạo &amp; tải phiếu YCTT</button>`;
+        <button onclick="exportYCTT(${Number(i)}, this)">⬇ Tạo &amp; tải phiếu YCTT</button>`, null, null);
     }
     async function exportYCTT(idx, btn) {
       const p = state.printable[idx];
@@ -2716,6 +2769,7 @@
           await saveWb(wb, `YCTT_${p.MaDeXuat}.xlsx`);
         });
         toast('Đã tạo phiếu YCTT.', 'ok');
+        closeModal();
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
