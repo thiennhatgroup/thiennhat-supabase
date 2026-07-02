@@ -320,8 +320,15 @@
       .chat-wrap { grid-template-columns: 1fr; height: auto; }
       .chat-side { max-height: 180px; }
       .chat-thread { height: 52vh; }
-      main { padding: 14px; }
+      main { padding: 14px; padding-bottom: 74px; }
       header { padding: 10px 12px; }
+      .tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0 -2px 10px rgba(0,0,0,.06); padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px)); }
+      .tabbar .tab { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 2px; background: transparent; border: none; box-shadow: none; color: var(--muted); padding: 6px 2px; min-height: 52px; border-radius: 10px; min-width: 0; }
+      .tabbar .tab .ic { font-size: 20px; line-height: 1; }
+      .tabbar .tab .tl { font-size: 10.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+      .tabbar .tab.active { color: var(--accent); }
+      .to-top { bottom: 80px; }
+      .back-fab { bottom: 80px; }
       .brand img { height: 30px; }
       .card { padding: 16px; border-radius: 14px; }
       .workspace, .quote-layout, .proposal-layout { grid-template-columns: 1fr; }
@@ -338,10 +345,17 @@
     .detail-total { text-align: right; font-size: 16px; margin-top: 8px; padding-top: 8px; border-top: 2px solid var(--line); }
     .to-top { display: none; position: fixed; right: 14px; bottom: 18px; z-index: 40; width: 46px; height: 46px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; }
     .to-top.show { display: block; }
+    .back-fab { display: none; position: fixed; left: 12px; bottom: 18px; z-index: 40; align-items: center; gap: 6px; padding: 0 16px; height: 46px; border-radius: 24px; border: none; background: var(--ink); color: #fff; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; }
+    .back-fab.show { display: inline-flex; }
+    .secnav { display: none; }
+    .tabbar { display: none; }
     .mjump { display: none; }
     @media (max-width: 760px) {
       .mjump { display: flex; gap: 8px; flex-wrap: wrap; position: sticky; top: 0; z-index: 6; background: var(--bg); padding: 8px 0 10px; margin: -4px 0 8px; }
       .mjump button { flex: 1 1 auto; min-height: 42px; font-size: 14px; }
+      .secnav { display: flex; gap: 8px; overflow-x: auto; position: sticky; top: 0; z-index: 6; background: var(--bg); padding: 8px 0; margin: -6px 0 10px; -webkit-overflow-scrolling: touch; }
+      .secnav button { flex: 0 0 auto; min-height: 38px; padding: 6px 14px; font-size: 13px; white-space: nowrap; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; color: var(--accent); font-weight: 600; box-shadow: none; }
+      .secnav button:active { background: var(--accent-soft); }
       .entry-first { order: -1; }
       .table-wrap { max-height: none; overflow: visible; border: 0; }
       table:not(.line-table) { border: 0; min-width: 0; }
@@ -622,7 +636,11 @@
         const allowed = visibleScreens();
         if (!allowed.some(s => s[0] === state.screen)) state.screen = allowed.length ? allowed[0][0] : 'quotes';
         renderDrawer();
+        renderTabBar();
         renderScreen(state.screen);
+        state.histDepth = 0;
+        try { history.replaceState({ screen: state.screen }, '', '#' + state.screen); } catch (e) {}
+        updateBackBtn();
         refreshNotif();
         if (!state.notifTimer) state.notifTimer = setInterval(refreshNotif, 45000);
       } catch (err) {
@@ -654,7 +672,47 @@
       document.getElementById('drawerBackdrop').classList.add('hidden');
     }
     function toggleGroup(el) { el.closest('.drawer-group').classList.toggle('collapsed'); }
-    function navTo(id) { closeDrawer(); renderScreen(id); }
+    const TAB_ICON = { proposal:'➕', approve:'✅', payapprove:'💳', payreq:'🧾', debtpay:'💵', receipt:'📦', oversight:'🔍', dashboard:'📊', quotes:'🏷️', settlement:'✔️', catalog:'📚', users:'👥' };
+    const TAB_LABEL = { proposal:'Tạo ĐX', approve:'Duyệt ĐX', payapprove:'Duyệt TT', payreq:'ĐX chi', debtpay:'Ghi TT', receipt:'Nhận hàng', oversight:'Rà soát', dashboard:'Công nợ', quotes:'Báo giá', settlement:'Tất toán', catalog:'Danh mục', users:'Tài khoản' };
+    const TAB_ORDER = ['proposal','approve','payapprove','payreq','debtpay','receipt','oversight','dashboard','quotes','settlement','catalog','users'];
+    function renderTabBar() {
+      let bar = document.getElementById('tabbar');
+      if (!bar) { bar = document.createElement('nav'); bar.id = 'tabbar'; bar.className = 'tabbar'; document.body.appendChild(bar); }
+      const allow = visibleScreens().map(s => s[0]);
+      const picked = TAB_ORDER.filter(id => allow.includes(id)).slice(0, 4);
+      const tab = id => `<button class="tab" data-id="${id}" onclick="navTo('${id}')"><span class="ic">${TAB_ICON[id] || '•'}</span><span class="tl">${esc(TAB_LABEL[id] || id)}</span></button>`;
+      bar.innerHTML = picked.map(tab).join('') + `<button class="tab" data-id="__more" onclick="toggleDrawer()"><span class="ic">☰</span><span class="tl">Thêm</span></button>`;
+      updateTabActive();
+    }
+    function updateTabActive() {
+      const bar = document.getElementById('tabbar'); if (!bar) return;
+      bar.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.id === state.screen));
+    }
+    function navTo(id) {
+      closeDrawer();
+      if (id === state.screen && !document.getElementById('catModal')) { renderScreen(id); return; }
+      try { history.pushState({ screen: id }, '', '#' + id); } catch (e) {}
+      state.histDepth = (state.histDepth || 0) + 1;
+      renderScreen(id);
+      updateBackBtn();
+    }
+    function updateBackBtn() {
+      const b = document.getElementById('backFab');
+      if (b) b.classList.toggle('show', (state.histDepth || 0) > 0);
+    }
+    function goBack() {
+      if (document.getElementById('catModal')) { closeModal(); return; }
+      history.back();
+    }
+    window.addEventListener('popstate', (e) => {
+      if (document.getElementById('catModal')) {
+        closeModal();
+        try { history.pushState({ screen: state.screen }, '', '#' + state.screen); } catch (_) {}
+        return;
+      }
+      const s = e.state && e.state.screen;
+      if (s) { state.histDepth = Math.max(0, (state.histDepth || 0) - 1); renderScreen(s); updateBackBtn(); }
+    });
     function renderDrawer() {
       const features = visibleScreens(); // các màn thao tác theo quyền
       const exps = EXPORT_SCREENS.filter(s => can(s[2]));
@@ -701,6 +759,7 @@
     function renderScreen(id) {
       state.screen = id;
       renderDrawer();
+      updateTabActive();
       if (id === 'account') return renderAccount();
       if (id === 'guide') return renderGuide();
       if (id === 'chat') return renderChat();
@@ -1815,6 +1874,19 @@
     }
     // Gắn nhãn cột vào từng ô (để mobile hiển thị "Nhãn: giá trị" khi bảng xếp dọc).
     function jumpTo(id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    // Thanh "mục con" tự động (kiểu Gmail): với màn có ≥2 phần, chèn dải chip để
+    // nhấn nhảy thẳng tới phần đó — chỉ hiện trên mobile. Bỏ qua nếu màn đã có .mjump.
+    function buildSectionNav() {
+      const c = document.getElementById('content');
+      if (!c || c.querySelector(':scope > .secnav') || c.querySelector('.mjump')) return;
+      const heads = [...c.querySelectorAll('h2, h3')].filter(h => (h.textContent || '').trim());
+      if (heads.length < 2) return;
+      heads.forEach((h, i) => { if (!h.id) h.id = 'sec_' + i; });
+      const bar = document.createElement('div');
+      bar.className = 'secnav';
+      bar.innerHTML = heads.map(h => `<button type="button" onclick="jumpTo('${h.id}')">${esc((h.textContent || '').trim())}</button>`).join('');
+      c.insertBefore(bar, c.firstChild);
+    }
     function labelTableCells(root) {
       (root || document).querySelectorAll('table').forEach(tb => {
         const ths = [...tb.querySelectorAll('thead th')].map(th => th.textContent.trim());
@@ -1830,11 +1902,15 @@
       let queued = false;
       const obs = new MutationObserver(() => {
         if (queued) return; queued = true;
-        requestAnimationFrame(() => { queued = false; labelTableCells(c); });
+        requestAnimationFrame(() => { queued = false; labelTableCells(c); buildSectionNav(); });
       });
       obs.observe(c, { childList: true, subtree: true });
     })();
     (function initToTop() {
+      const back = document.createElement('button');
+      back.className = 'back-fab'; back.id = 'backFab'; back.innerHTML = '← Quay lại'; back.title = 'Về màn trước';
+      back.onclick = () => goBack();
+      document.body.appendChild(back);
       const b = document.createElement('button');
       b.className = 'to-top'; b.id = 'toTop'; b.textContent = '↑'; b.title = 'Lên đầu trang';
       b.onclick = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); const m = document.querySelector('main'); if (m) m.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -3022,10 +3098,10 @@
       try { await call('rpc_mark_notification_read', { p_id: id }); } catch (e) {}
       document.getElementById('notifPanel')?.classList.add('hidden');
       refreshNotif();
-      if (loai === 'proposal_bounced' && refId) { renderScreen('proposal'); editProposal(refId); return; }
+      if (loai === 'proposal_bounced' && refId) { navTo('proposal'); editProposal(refId); return; }
       if (!screen || !NAV_ALL.includes(screen)) return;
       if (loai === 'chat' && refId) { state.chatWith = refId; state.chatWithName = ''; }
-      renderScreen(screen);
+      navTo(screen);
     }
     async function markAllNotif() {
       try { await call('rpc_mark_all_notifications_read'); } catch (e) {}
