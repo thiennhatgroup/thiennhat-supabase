@@ -270,7 +270,31 @@
     .compare-panel { border: 1px solid var(--accent); border-radius: 8px; padding: 12px; margin-top: 12px; background: #FFFBF4; }
     .compare-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .best-row td { background: #EEF8F1; font-weight: 700; }
+    .chat-wrap { display: grid; grid-template-columns: 260px 1fr; height: 70vh; min-height: 420px; }
+    .chat-side { border-right: 1px solid var(--line); overflow-y: auto; }
+    .chat-side-h { padding: 12px 14px; font-weight: 800; border-bottom: 1px solid var(--line); }
+    .chat-contact { padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+    .chat-contact:hover { background: #F1F5FA; }
+    .chat-contact.active { background: var(--accent-soft); }
+    .chat-badge { background: var(--danger); color: #fff; border-radius: 999px; font-size: 11px; padding: 1px 7px; margin-left: 4px; }
+    .chat-main { display: flex; flex-direction: column; }
+    .chat-head { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    .chat-thread { flex: 1; overflow-y: auto; padding: 14px; background: #F7F9FC; display: flex; flex-direction: column; gap: 8px; }
+    .chat-bubble { max-width: 74%; padding: 8px 12px; border-radius: 14px; font-size: 14px; box-shadow: var(--shadow); word-break: break-word; }
+    .chat-bubble.me { align-self: flex-end; background: var(--accent); color: #fff; }
+    .chat-bubble.them { align-self: flex-start; background: #fff; }
+    .chat-bubble.me a { color: #fff; }
+    .chat-time { font-size: 10px; opacity: .7; margin-top: 3px; }
+    .chat-ref-chip { font-size: 11px; font-weight: 700; opacity: .9; margin-bottom: 3px; }
+    .chat-composer { border-top: 1px solid var(--line); padding: 10px 12px; }
+    .chat-ref { background: var(--accent-soft); border-radius: 8px; padding: 6px 10px; margin-bottom: 8px; font-size: 13px; }
+    .chat-row { display: flex; gap: 8px; align-items: center; }
+    .chat-row input#chatBody { flex: 1; }
+    .chat-row button { width: auto; }
     @media (max-width: 920px) {
+      .chat-wrap { grid-template-columns: 1fr; height: auto; }
+      .chat-side { max-height: 180px; }
+      .chat-thread { height: 52vh; }
       main { padding: 14px; }
       header { padding: 10px 12px; }
       .brand img { height: 30px; }
@@ -579,6 +603,7 @@
       document.getElementById('drawer').innerHTML = `
         <div class="drawer-brand"><img src="./logo.png" onerror="this.onerror=null;this.src='./logo.svg'" alt="Thiên Nhật"><button class="drawer-x" onclick="closeDrawer()">✕</button></div>
         ${item('account', '👤 Tài khoản')}
+        ${item('chat', '💬 Tin nhắn')}
         <div class="drawer-group">
           <button class="drawer-group-h" onclick="toggleGroup(this)">Thao tác <span>▾</span></button>
           <div class="drawer-group-body">${features.map(([id, label]) => item(id, label)).join('')}</div>
@@ -617,6 +642,7 @@
       state.screen = id;
       renderDrawer();
       if (id === 'account') return renderAccount();
+      if (id === 'chat') return renderChat();
       if (id === 'improve') return renderImprove();
       if (id === 'exp_pp') return renderExport('pp');
       if (id === 'exp_tt') return renderExport('tt');
@@ -1217,7 +1243,15 @@
       if (!box) return;
       const rows = state.pending || [];
       if (!rows.length) { box.innerHTML = '<p class="status">Không có đề xuất nào chờ duyệt.</p>'; return; }
-      box.innerHTML = `<div class="approve-grid">${rows.map(cardPending).join('')}</div>`;
+      const inPlan = rows.filter(r => r.TrongKeHoachTuan);
+      const offPlan = rows.filter(r => !r.TrongKeHoachTuan);
+      const sec = (title, cls, list) => `
+        <h3 style="color:${cls}">${title} (${list.length})</h3>
+        ${list.length ? `<div class="approve-grid">${list.map(cardPending).join('')}</div>` : '<p class="status">Không có phiếu.</p>'}`;
+      box.innerHTML =
+        sec('✔ Đã nằm trong kế hoạch chi tuần', 'var(--ok)', inPlan) +
+        `<div style="height:14px"></div>` +
+        sec('⚠ Chưa nằm trong kế hoạch (cần xem giải trình)', 'var(--orange)', offPlan);
     }
     function cardPending(p) {
       const loai = p.LoaiDeXuat === 'TamUng' ? 'Tạm ứng' : 'Mua hàng';
@@ -2227,7 +2261,7 @@
           ws.getCell('D11').value = p.TenDoiTuong || '';
           ws.getCell('D13').value = p.SoTk || '';
           ws.getCell('D15').value = p.ChiNhanh || '';
-          ws.getColumn(9).width = 13; // cột Đơn Giá (mẫu để 0.5 nên ẩn)
+          // Giữ nguyên độ rộng cột của mẫu gốc (SL hiện, Đơn Giá ẩn như bản gốc).
           // Lấy style mẫu (clone) của vùng bảng + tổng + chữ ký TRƯỚC khi xóa
           const st = {
             a: clone(ws.getCell('A18').style), b: clone(ws.getCell('B18').style), d: clone(ws.getCell('D18').style),
@@ -2260,7 +2294,7 @@
             applySt(ws.getCell(`J${rr}`), st.totV); ws.getCell(`J${rr}`).value = val;
           };
           setTot(totR, 'TỔNG CỘNG', tong);
-          setTot(truR, 'Trừ tạm ứng / trả trước', truTU);
+          setTot(truR, 'Trừ tạm ứng hoặc trả trước', truTU);
           setTot(nhanR, 'Nhận từ công ty', tong - truTU);
           ws.mergeCells(`G${dateR}:J${dateR}`); applySt(ws.getCell(`G${dateR}`), st.date);
           ws.getCell(`G${dateR}`).value = `Liên Sơn, ngày ${new Date().toLocaleDateString('vi-VN')}`;
@@ -2377,6 +2411,105 @@
           await saveWb(wb, `${c.file}_${todayStr()}.xlsx`);
           toast(`Đã tải ${rows.length} dòng.`, 'ok');
         });
+      } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+
+    // ===== Chat nội bộ =====================================================
+    const CHAT_MAX = 5 * 1024 * 1024; // 5MB/tệp
+    function renderChat() {
+      document.getElementById('content').innerHTML = `
+        <section class="card" style="padding:0;overflow:hidden">
+          <div class="chat-wrap">
+            <div class="chat-side">
+              <div class="chat-side-h">Danh bạ</div>
+              <div id="chatContacts">${loadingText('Đang tải...')}</div>
+            </div>
+            <div class="chat-main">
+              <div id="chatHead" class="chat-head"><span class="status">Chọn người để bắt đầu trò chuyện</span></div>
+              <div id="chatThread" class="chat-thread"></div>
+              <div id="chatComposer" class="chat-composer hidden">
+                <div id="chatRefBar" class="chat-ref hidden"></div>
+                <div class="chat-row">
+                  <input id="chatBody" placeholder="Nhập tin nhắn..." onkeydown="if(event.key==='Enter')sendChat(this)">
+                  <input id="chatFile" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" style="display:none" onchange="chatFilePicked()">
+                  <button class="secondary" title="Đính kèm tệp (≤5MB)" onclick="document.getElementById('chatFile').click()">📎</button>
+                  <button class="secondary" title="Đính kèm phiếu ĐX" onclick="openRefPicker()">📄</button>
+                  <button onclick="sendChat(this)">Gửi</button>
+                </div>
+                <small id="chatFileHint" class="status"></small>
+              </div>
+            </div>
+          </div>
+        </section>`;
+      state.chatWith = state.chatWith || null;
+      loadContacts();
+      if (state.chatWith) openChat(state.chatWith, state.chatWithName);
+      if (state.chatTimer) clearInterval(state.chatTimer);
+      state.chatTimer = setInterval(() => { if (state.screen === 'chat') { loadContacts(); if (state.chatWith) loadThread(); } }, 8000);
+    }
+    async function loadContacts() {
+      const box = document.getElementById('chatContacts'); if (!box) return;
+      try {
+        const res = await call('rpc_list_contacts');
+        state.contacts = res.rows || [];
+        box.innerHTML = state.contacts.map(c => `<div class="chat-contact ${state.chatWith===c.id?'active':''}" onclick="openChat('${c.id}','${esc(c.ten)}')">
+          <div><b>${esc(c.ten)}</b> ${c.unread ? `<span class="chat-badge">${c.unread}</span>` : ''}</div>
+          <div class="status" style="font-size:12px">${esc(ROLE_LABELS[c.vaiTro]||c.vaiTro||'')}${c.lastBody ? ' · ' + esc(String(c.lastBody).slice(0,26)) : ''}</div>
+        </div>`).join('') || '<p class="status" style="padding:10px">Chưa có tài khoản nào khác.</p>';
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
+    }
+    function openChat(id, name) {
+      state.chatWith = id; state.chatWithName = name;
+      document.getElementById('chatHead').innerHTML = `<b>${esc(name||'')}</b>`;
+      document.getElementById('chatComposer').classList.remove('hidden');
+      state.chatFiles = []; clearChatRef();
+      loadContacts(); loadThread();
+    }
+    async function loadThread() {
+      const box = document.getElementById('chatThread'); if (!box || !state.chatWith) return;
+      try {
+        const res = await call('rpc_get_conversation', { p_with: state.chatWith, p_limit: 200 });
+        const rows = res.rows || [];
+        box.innerHTML = rows.map(m => `<div class="chat-bubble ${m.fromMe?'me':'them'}">
+          ${m.refMa ? `<div class="chat-ref-chip">📄 ${esc(m.refMa)}</div>` : ''}
+          ${m.body ? esc(m.body) : ''}
+          ${(m.attachments||[]).map(a=>`<div>${attachLinks([a])}</div>`).join('')}
+          <div class="chat-time">${esc(m.time)}</div>
+        </div>`).join('');
+        box.scrollTop = box.scrollHeight;
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
+    }
+    function chatFilePicked() {
+      const f = document.getElementById('chatFile').files;
+      const over = [...f].find(x => x.size > CHAT_MAX);
+      const hint = document.getElementById('chatFileHint');
+      if (over) { hint.textContent = `Tệp "${over.name}" vượt 5MB — vui lòng chọn tệp nhỏ hơn.`; document.getElementById('chatFile').value = ''; return; }
+      hint.textContent = f.length ? `Đã chọn ${f.length} tệp.` : '';
+    }
+    async function openRefPicker() {
+      try {
+        const res = await call('rpc_get_my_proposals', { p_limit: 30 });
+        const rows = res.rows || [];
+        openModal('Đính kèm phiếu đề xuất', rows.length ? rows.map(r=>`<div class="approve-card" style="margin-bottom:8px" onclick="pickRef('${esc(r.MaDeXuat)}')">
+          <div class="ac-top"><strong>${esc(r.MaDeXuat)}</strong>${proposalStatusPill(r.TrangThai)}</div>
+          <div class="ac-obj">${esc(r.TenDoiTuong||'')} · ${fmtMoney(r.TongTien)}đ</div></div>`).join('') : '<p class="status">Chưa có phiếu nào.</p>', null, null);
+      } catch (err) { toast(err.message||String(err),'err'); }
+    }
+    function pickRef(ma) { state.chatRef = ma; closeModal();
+      const bar = document.getElementById('chatRefBar'); bar.classList.remove('hidden'); bar.innerHTML = `📄 Kèm phiếu <b>${esc(ma)}</b> <button class="secondary" style="min-height:26px;padding:2px 8px" onclick="clearChatRef()">✕</button>`; }
+    function clearChatRef() { state.chatRef = null; const b = document.getElementById('chatRefBar'); if (b) { b.classList.add('hidden'); b.innerHTML=''; } }
+    async function sendChat(btn) {
+      if (!state.chatWith) return;
+      const body = val('chatBody').trim();
+      const fileEl = document.getElementById('chatFile');
+      const nFiles = fileEl?.files.length || 0;
+      if (!body && !nFiles && !state.chatRef) { return; }
+      try {
+        const atts = await withBusy(btn, '...', () => uploadAttachments('chatFile', 'chat'));
+        await call('rpc_send_message', { p_to: state.chatWith, p_body: body, p_attachments: atts, p_ref_ma: state.chatRef || null });
+        document.getElementById('chatBody').value = ''; if (fileEl) fileEl.value = '';
+        document.getElementById('chatFileHint').textContent = ''; clearChatRef();
+        loadThread(); loadContacts();
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
