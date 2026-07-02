@@ -270,6 +270,14 @@
     .compare-panel { border: 1px solid var(--accent); border-radius: 8px; padding: 12px; margin-top: 12px; background: #FFFBF4; }
     .compare-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .best-row td { background: #EEF8F1; font-weight: 700; }
+    .approve-sec { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 16px; background: #fff; }
+    .approve-sec.ok { border-left: 5px solid var(--ok); }
+    .approve-sec.warn { border-left: 5px solid var(--orange); background: #FFFCF7; }
+    .approve-sec-h { display: flex; justify-content: space-between; align-items: center; font-weight: 800; margin-bottom: 12px; }
+    .approve-sec.ok .approve-sec-h { color: var(--ok); }
+    .approve-sec.warn .approve-sec-h { color: var(--orange); }
+    .approve-sec-sum { font-size: 13px; font-weight: 700; color: var(--muted); }
+    .approve-card.card-warn { border-color: #F3C9A8; }
     .chat-wrap { display: grid; grid-template-columns: 260px 1fr; height: 70vh; min-height: 420px; }
     .chat-side { border-right: 1px solid var(--line); overflow-y: auto; }
     .chat-side-h { padding: 12px 14px; font-weight: 800; border-bottom: 1px solid var(--line); }
@@ -1245,27 +1253,30 @@
       if (!rows.length) { box.innerHTML = '<p class="status">Không có đề xuất nào chờ duyệt.</p>'; return; }
       const inPlan = rows.filter(r => r.TrongKeHoachTuan);
       const offPlan = rows.filter(r => !r.TrongKeHoachTuan);
-      const sec = (title, cls, list) => `
-        <h3 style="color:${cls}">${title} (${list.length})</h3>
-        ${list.length ? `<div class="approve-grid">${list.map(cardPending).join('')}</div>` : '<p class="status">Không có phiếu.</p>'}`;
+      const sum = list => list.reduce((s, r) => s + Number(r.TongTien || 0), 0);
+      const sec = (title, tone, list) => `
+        <div class="approve-sec ${tone}">
+          <div class="approve-sec-h">
+            <span>${title}</span>
+            <span class="approve-sec-sum">${list.length} phiếu · ${fmtMoney(sum(list))} đ</span>
+          </div>
+          ${list.length ? `<div class="approve-grid">${list.map(r => cardPending(r, tone)).join('')}</div>` : '<p class="status" style="padding:4px 2px">Không có phiếu.</p>'}
+        </div>`;
       box.innerHTML =
-        sec('✔ Đã nằm trong kế hoạch chi tuần', 'var(--ok)', inPlan) +
-        `<div style="height:14px"></div>` +
-        sec('⚠ Chưa nằm trong kế hoạch (cần xem giải trình)', 'var(--orange)', offPlan);
+        sec('✔ Đã nằm trong kế hoạch chi tuần', 'ok', inPlan) +
+        sec('⚠ Chưa nằm trong kế hoạch — khoản phát sinh (xem giải trình)', 'warn', offPlan);
     }
-    function cardPending(p) {
+    function cardPending(p, tone) {
       const loai = p.LoaiDeXuat === 'TamUng' ? 'Tạm ứng' : 'Mua hàng';
-      const planPill = p.TrongKeHoachTuan
-        ? '<span class="pill ok">Trong kế hoạch tuần</span>'
-        : '<span class="pill warn">Ngoài kế hoạch — có giải trình</span>';
       const nLines = (p.lines || []).length;
-      return `<div class="approve-card" ondblclick="openProposalDetail('${esc(p.MaDeXuat)}')" onclick="openProposalDetail('${esc(p.MaDeXuat)}')">
+      const nFiles = (p.Attachments || []).length;
+      return `<div class="approve-card ${tone==='warn'?'card-warn':''}" onclick="openProposalDetail('${esc(p.MaDeXuat)}')">
         <div class="ac-top"><strong>${esc(p.MaDeXuat)}</strong><span class="pill">${esc(loai)}</span></div>
         <div class="ac-obj">${esc(p.TenDoiTuong || '')}</div>
         <div class="ac-money">${fmtMoney(p.TongTien)} <small>đ (sau VAT)</small></div>
-        <div class="ac-meta">${esc(p.NgayDeXuat || '')} · ${nLines} dòng · ${esc(p.NguoiDeNghi || '')}</div>
-        <div class="ac-plan">${planPill}</div>
-        <div class="ac-hint">Nhấp để xem chi tiết &amp; duyệt →</div>
+        <div class="ac-meta">${esc(p.NgayDeXuat || '')} · ${nLines} dòng · ${esc(p.NguoiDeNghi || '')}${p.BoPhan ? ' (' + esc(p.BoPhan) + ')' : ''}</div>
+        <div class="ac-meta">${nFiles ? '📎 ' + nFiles + ' báo giá' : '⚠ chưa có báo giá'} · Hạn TT: ${esc(p.HanThanhToan || '—')} · ${p.TruongBpDuyet ? 'Trưởng BP ✔' : 'Trưởng BP —'}</div>
+        <div class="ac-hint">Nhấp để xem chi tiết, file đính kèm &amp; duyệt →</div>
       </div>`;
     }
 
@@ -2537,17 +2548,20 @@
       const rows = state.notif || [];
       panel.innerHTML = `
         <div class="notif-head"><b>Thông báo</b>${rows.some(n=>!n.daDoc) ? '<button class="secondary" style="width:auto;min-height:32px;padding:4px 10px" onclick="markAllNotif()">Đánh dấu đã đọc</button>' : ''}</div>
-        ${rows.length ? rows.map(n => `<div class="notif-item ${n.daDoc?'':'unread'}" onclick="openNotif('${esc(n.id)}','${esc(n.manHinh||'')}')">
+        ${rows.length ? rows.map(n => `<div class="notif-item ${n.daDoc?'':'unread'}" onclick="openNotif('${esc(n.id)}','${esc(n.manHinh||'')}','${esc(n.refId||'')}','${esc(n.loai||'')}')">
           <div class="nt-title">${esc(n.tieuDe)}</div>
           <div class="nt-body">${esc(n.noiDung||'')}</div>
           <div class="nt-time">${esc(n.thoiGian)}</div>
         </div>`).join('') : '<p class="status" style="padding:10px">Chưa có thông báo.</p>'}`;
     }
-    async function openNotif(id, screen) {
+    const NAV_ALL = ['quotes','proposal','approve','receipt','payreq','payapprove','dashboard','settlement','catalog','users','printpp','printyctt','account','chat','improve','exp_pp','exp_tt','exp_bg'];
+    async function openNotif(id, screen, refId, loai) {
       try { await call('rpc_mark_notification_read', { p_id: id }); } catch (e) {}
       document.getElementById('notifPanel')?.classList.add('hidden');
       refreshNotif();
-      if (screen && visibleScreens().some(s => s[0] === screen)) renderScreen(screen);
+      if (!screen || !NAV_ALL.includes(screen)) return;
+      if (loai === 'chat' && refId) { state.chatWith = refId; state.chatWithName = ''; }
+      renderScreen(screen);
     }
     async function markAllNotif() {
       try { await call('rpc_mark_all_notifications_read'); } catch (e) {}
