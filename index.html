@@ -453,17 +453,16 @@
     };
     // Moi man hinh gan voi 1 quyen; nav chi hien man hinh ma vai tro co quyen (server VAN chot chan lai qua require_permission()).
     const allScreens = [
-      ['quotes', 'Báo giá NCC', 'quote:read'],
-      ['proposal', 'Đề xuất mua hàng / tạm ứng', 'proposal:create'],
+      ['quotes', 'Báo giá vật tư', 'quote:read'],
+      ['proposal', 'Đề xuất mua hàng & tạm ứng', 'proposal:create'],
+      ['oversight', 'Theo dõi đề xuất mua hàng & tạm ứng', 'oversight:read'],
       ['approve', 'Duyệt đề xuất mua hàng', 'proposal:approve'],
-      ['receipt', 'Nhận hàng', 'receipt:update'],
-      ['congnoconfirm', 'Duyệt chứng từ & lưu công nợ', 'congno:confirm'],
+      ['receipt', 'Nghiệm thu đơn hàng', 'receipt:update'],
+      ['congnoconfirm', 'Duyệt hồ sơ thanh toán', 'congno:confirm'],
       ['payreq', 'Đề xuất thanh toán', 'payment:request'],
       ['payapprove', 'Duyệt đề xuất thanh toán', 'payment:approve'],
-      ['debtpay', 'Cập nhật thanh toán', 'payment:create'],
-      ['oversight', 'Theo dõi & rà soát', 'oversight:read'],
       ['dashboard', 'Theo dõi công nợ', 'dashboard:read'],
-      ['settlement', 'Tất toán', 'settlement:preview'],
+      ['debtpay', 'Cập nhật thanh toán', 'payment:create'],
       ['printpp', 'In đề xuất mua hàng', 'print:purchasing'],
       ['printyctt', 'In phiếu yêu cầu TT', 'print:purchasing'],
       ['catalog', 'Danh mục', 'catalog:read'],
@@ -685,8 +684,8 @@
     }
     function toggleGroup(el) { el.closest('.drawer-group').classList.toggle('collapsed'); }
     const TAB_ICON = { proposal:'➕', approve:'✅', payapprove:'💳', payreq:'🧾', debtpay:'💵', receipt:'📦', congnoconfirm:'📋', oversight:'🔍', dashboard:'📊', quotes:'🏷️', settlement:'✔️', catalog:'📚', users:'👥' };
-    const TAB_LABEL = { proposal:'Tạo ĐX', approve:'Duyệt ĐX', payapprove:'Duyệt TT', payreq:'ĐX chi', debtpay:'Ghi TT', receipt:'Nhận hàng', congnoconfirm:'Duyệt CT', oversight:'Rà soát', dashboard:'Công nợ', quotes:'Báo giá', settlement:'Tất toán', catalog:'Danh mục', users:'Tài khoản' };
-    const TAB_ORDER = ['proposal','approve','payapprove','oversight','congnoconfirm','payreq','debtpay','receipt','dashboard','quotes','settlement','catalog','users'];
+    const TAB_LABEL = { proposal:'Tạo ĐX', approve:'Duyệt ĐX', payapprove:'Duyệt TT', payreq:'ĐX chi', debtpay:'Ghi TT', receipt:'Nghiệm thu', congnoconfirm:'Duyệt HS', oversight:'Theo dõi ĐX', dashboard:'Công nợ', quotes:'Báo giá', catalog:'Danh mục', users:'Tài khoản' };
+    const TAB_ORDER = ['proposal','approve','payapprove','oversight','congnoconfirm','payreq','debtpay','receipt','dashboard','quotes','catalog','users'];
     function renderTabBar() {
       let bar = document.getElementById('tabbar');
       if (!bar) { bar = document.createElement('nav'); bar.id = 'tabbar'; bar.className = 'tabbar'; document.body.appendChild(bar); }
@@ -726,7 +725,7 @@
       if (s) { state.histDepth = Math.max(0, (state.histDepth || 0) - 1); renderScreen(s); updateBackBtn(); }
     });
     const ROLE_MENU_ORDER = {
-      KeToanCongNo: ['oversight','congnoconfirm','payreq','debtpay','dashboard','settlement','catalog','quotes','receipt'],
+      KeToanCongNo: ['oversight','congnoconfirm','payreq','payapprove','dashboard','debtpay','catalog','quotes'],
       ChuTich: ['approve','payapprove','dashboard','oversight','quotes'],
       TongGiamDoc: ['approve','dashboard','oversight','quotes'],
       TruongPhong: ['oversight','dashboard','quotes'],
@@ -749,7 +748,7 @@
         ${item('chat', '💬 Tin nhắn')}
         <div class="drawer-group">
           <button class="drawer-group-h" onclick="toggleGroup(this)">Thao tác <span>▾</span></button>
-          <div class="drawer-group-body">${features.map(([id, label]) => item(id, label)).join('')}</div>
+          <div class="drawer-group-body">${features.map(([id, label], i) => item(id, `${i + 1}. ${label}`)).join('')}</div>
         </div>
         ${exps.length ? `<div class="drawer-group">
           <button class="drawer-group-h" onclick="toggleGroup(this)">Tải dữ liệu <span>▾</span></button>
@@ -1669,8 +1668,8 @@
       document.getElementById('content').innerHTML = `
         <div class="proposal-layout">
           <section class="card">
-            <h2>Nghiệm thu nhận hàng</h2>
-            <div class="notice ok">Chọn khoản đã duyệt bên phải → nhập khối lượng thực nhận + tick loại chứng từ đã có (đính kèm nếu có). Bấm lưu để <b>gửi kế toán duyệt chứng từ</b>. Kế toán kiểm tra rồi mới lưu về công nợ.</div>
+            <h2>Nghiệm thu đơn hàng</h2>
+            <div class="notice ok">Chọn khoản đã duyệt bên phải → nhập khối lượng thực nhận. <b>Bắt buộc</b>: hạn thanh toán, đính kèm hóa đơn VAT, và đính kèm BBGN/phiếu cân/ảnh chụp vật tư. Bấm lưu để <b>gửi kế toán duyệt hồ sơ</b>.</div>
             <div class="notice js-msg"></div>
             <div class="field"><label>Khoản đang nghiệm thu (Mã CN)</label><input id="rMaCN" readonly placeholder="Chọn một phiếu ở danh sách bên phải →"></div>
             <div id="rReturnBanner"></div>
@@ -1682,7 +1681,7 @@
             <div class="total-bar">Thành tiền thực nhận (sau VAT): <strong id="rThanhTien">0 đ</strong></div>
             <div class="grid">
               <div class="field"><label>Số chứng từ / phiếu giao nhận (nếu có)</label><input id="rChungTu"></div>
-              <div class="field"><label>Hạn thanh toán (không bắt buộc)</label><input id="rHan" type="date"></div>
+              <div class="field"><label>Hạn thanh toán *</label><input id="rHan" type="date" class="hl-input"></div>
             </div>
             <div class="plan-box"><label style="font-weight:600;display:block;margin-bottom:6px">Loại chứng từ đã có (tick những loại đã thu):</label>
               <label class="check-line"><input type="checkbox" class="ct-type" value="Phiếu cân"> Phiếu cân</label>
@@ -1691,12 +1690,12 @@
               <label class="check-line"><input type="checkbox" class="ct-type" value="Phiếu nhập kho"> Phiếu nhập kho</label>
               <label class="check-line"><input type="checkbox" class="ct-type" value="Chứng từ khác"> Chứng từ khác</label>
             </div>
-            <div class="field"><label>Đính kèm chứng từ (không bắt buộc — PDF/ảnh)</label>
-              <input id="rFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"></div>
-            <div class="field"><label>Hóa đơn VAT (nếu đã có)</label>
-              <input id="rHoaDon" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"></div>
+            <div class="field"><label>Hóa đơn VAT * (đính kèm — PDF/ảnh)</label>
+              <input id="rHoaDon" type="file" class="hl-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"></div>
+            <div class="field"><label>BBGN / phiếu cân / ảnh chụp vật tư * (đính kèm)</label>
+              <input id="rFiles" type="file" class="hl-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"></div>
             <div class="field"><label>Ghi chú nghiệm thu (chất lượng, sai lệch…)</label><textarea id="rGhiChu"></textarea></div>
-            <button onclick="saveReceipt(this)">Lưu — gửi kế toán duyệt chứng từ</button>
+            <button onclick="saveReceipt(this)">Lưu — gửi kế toán duyệt hồ sơ</button>
           </section>
           <aside class="card">
             <h2>Khoản đã duyệt chờ nghiệm thu</h2>
@@ -1774,6 +1773,9 @@
       const maCN = val('rMaCN');
       if (!maCN) { setMsg('Chọn một khoản ở danh sách bên phải trước.'); toast('Chưa chọn khoản nghiệm thu.', 'err'); return; }
       if (!moneyRaw('rSL')) { toast('Cần nhập SL thực nhận.', 'err'); return; }
+      if (!val('rHan')) { setMsg('Bắt buộc nhập Hạn thanh toán.'); toast('Thiếu Hạn thanh toán.', 'err'); return; }
+      if (!(document.getElementById('rHoaDon')?.files.length)) { setMsg('Bắt buộc đính kèm Hóa đơn VAT.'); toast('Thiếu hóa đơn VAT.', 'err'); return; }
+      if (!(document.getElementById('rFiles')?.files.length)) { setMsg('Bắt buộc đính kèm BBGN / phiếu cân / ảnh chụp vật tư.'); toast('Thiếu BBGN/phiếu cân/ảnh.', 'err'); return; }
       const chungTuTypes = [...document.querySelectorAll('.ct-type:checked')].map(c => c.value);
       try {
         const files = await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('rFiles', 'receipts'));
@@ -1792,7 +1794,7 @@
     function renderCongNoConfirm() {
       document.getElementById('content').innerHTML = `
         <section class="card">
-          <h2>Duyệt chứng từ &amp; lưu công nợ</h2>
+          <h2>Duyệt hồ sơ thanh toán</h2>
           <div class="notice ok">Đơn đã được NVMH nghiệm thu, đang chờ kế toán kiểm tra chứng từ. Xem đủ hồ sơ → nhập số đã trả trước (nếu có) → <b>Lưu về công nợ</b> (khi đó khoản mới vào theo dõi/đề xuất thanh toán). Thiếu thì bấm <b>Trả lại NVMH</b> bổ sung.</div>
           <div class="actions"><button class="secondary" onclick="loadReceiptReview(this)">↻ Tải lại</button></div>
           <div id="cnReviewBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
@@ -1818,7 +1820,8 @@
             <div class="actions cn-row" style="margin-top:8px;align-items:flex-end">
               <div class="field" style="margin:0;max-width:220px"><label>Đã thanh toán trước (nếu có)</label><input class="js-money cn-paid" inputmode="decimal" placeholder="0"></div>
               <button onclick="confirmCongNo('${esc(r.maCN)}', this)">✔ Lưu về công nợ</button>
-              <button class="danger" onclick="returnReceipt('${esc(r.maCN)}')">↩ Trả lại NVMH</button>
+              <button class="danger" onclick="returnReceipt('${esc(r.maCN)}')">↩ Trả lại NVMH bổ sung</button>
+              <button class="secondary" onclick="chatAboutProposal('${esc(r.maDeXuat||'')}')">💬 Nhắn tin NVMH</button>
             </div>
           </div>`).join('') : '<p class="status">Không có đơn nào chờ duyệt chứng từ.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
@@ -3027,11 +3030,17 @@
       const from7 = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
       document.getElementById('content').innerHTML = `
         <section class="card">
-          <h2>Theo dõi &amp; rà soát</h2>
+          <h2>Theo dõi đề xuất mua hàng &amp; tạm ứng</h2>
           <div class="notice ok">Xem mọi khoản đang trình + đã duyệt/nghiệm thu/thanh toán. Phiếu <b>đang chờ duyệt</b> hoặc <b>đã duyệt (chưa thanh toán)</b> có thể <b>Trả lại</b> (kèm lý do) — công nợ đã sinh sẽ được gỡ, người lập nhận thông báo để giải trình và tạo lại. Trưởng bộ phận chỉ thấy phiếu bộ phận mình.</div>
-          <div class="actions" style="align-items:flex-end">
+          <div class="actions" style="align-items:flex-end;flex-wrap:wrap">
             <div class="field" style="margin:0"><label>Từ ngày</label><input id="osFrom" type="date" value="${from7}"></div>
             <div class="field" style="margin:0"><label>Đến ngày</label><input id="osTo" type="date" value="${today}"></div>
+            <div class="field" style="margin:0"><label>Trạng thái</label>
+              <select id="osStatus" onchange="drawOversight()">
+                <option value="">Tất cả (đã trình)</option>
+                <option value="Chờ duyệt">Chờ duyệt</option>
+                <option value="Đã duyệt">Đã duyệt</option>
+              </select></div>
             <button onclick="loadOversight(this)">Cập nhật</button>
           </div>
           <div class="mjump"><button class="secondary" onclick="jumpTo('osProps')">📄 Đề xuất mua hàng</button><button class="secondary" onclick="jumpTo('osPays')">💳 Đề xuất thanh toán</button></div>
@@ -3044,7 +3053,18 @@
       box.innerHTML = loadingText('Đang tải...');
       try {
         const res = await withBusy(btn, 'Đang tải...', () => call('rpc_oversight', { p_from: val('osFrom') || null, p_to: val('osTo') || null }));
-        const props = res.proposals || [], pays = res.paymentRequests || [];
+        state.osData = res;
+        drawOversight();
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    function drawOversight() {
+      const box = document.getElementById('osBox'); if (!box) return;
+      const res = state.osData; if (!res) return;
+      const st = val('osStatus') || '';
+      // Luôn ẩn phiếu Nháp (NVMH chưa trình); lọc thêm theo trạng thái nếu chọn.
+      const props = (res.proposals || []).filter(p => p.TrangThai !== 'Nháp' && (!st || p.TrangThai === st));
+      const pays = res.paymentRequests || [];
+      try {
         const canCancel = res.role === 'KeToanCongNo' || res.role === 'TruongPhong' || res.role === 'Admin';
         const THR = 10000000;
         const propRows = props.length ? `<div class="table-wrap"><table><thead><tr>
