@@ -464,6 +464,7 @@
       ['cashier', 'Chi tiền (thủ quỹ)', 'payment:execute'],
       ['leaderdash', 'Tổng quan điều hành', 'dashboard:read'],
       ['dashboard', 'Theo dõi công nợ', 'dashboard:read'],
+      ['debtpay', 'Cập nhật thanh toán (thủ công)', 'payment:create'],
       ['printpp', 'In đề xuất mua hàng', 'print:purchasing'],
       ['printyctt', 'In phiếu yêu cầu TT', 'print:purchasing'],
       ['catalog', 'Danh mục', 'catalog:read'],
@@ -727,7 +728,7 @@
       if (s) { state.histDepth = Math.max(0, (state.histDepth || 0) - 1); renderScreen(s); updateBackBtn(); }
     });
     const ROLE_MENU_ORDER = {
-      KeToanCongNo: ['oversight','congnoconfirm','payreq','payapprove','dashboard','catalog','quotes'],
+      KeToanCongNo: ['oversight','congnoconfirm','payreq','payapprove','dashboard','debtpay','catalog','quotes'],
       ThuQuy: ['cashier','leaderdash','dashboard'],
       ChuTich: ['leaderdash','approve','payapprove','dashboard','oversight','quotes'],
       TongGiamDoc: ['leaderdash','approve','dashboard','oversight','quotes'],
@@ -1240,6 +1241,7 @@
             <div class="ac-meta">${esc(r.LoaiDeXuat==='TamUng'?'Tạm ứng':'Mua hàng')} · ${r.SoDong||0} dòng vật tư · Hạn TT: ${esc(r.HanThanhToan||'—')}</div>
             ${r.DieuKhoanTT?`<div class="ac-meta">Điều khoản TT: ${esc(r.DieuKhoanTT)}</div>`:''}
             <div class="ac-money">${fmtMoney(r.TongTien)} <small>đ (sau VAT)</small></div>
+            ${(r.AnhChuyenKhoan||[]).length ? `<div class="notice ok" style="margin-top:6px">✔ Đã chuyển tiền — Ảnh chuyển khoản: ${attachLinks(r.AnhChuyenKhoan)}</div>` : ''}
             ${r.TrangThai==='Nháp' && r.LyDoTraLai ? `<div class="notice err" style="margin-top:6px">↩ Bị trả lại: ${esc(r.LyDoTraLai)} — vui lòng chỉnh sửa/giải trình rồi gửi lại.</div>` : ''}
             ${r.TrangThai==='Từ chối' && r.GhiChu ? `<div class="status" style="margin-top:6px">Lý do: ${esc(r.GhiChu)}</div>` : ''}
             <div class="actions" style="margin-top:8px">
@@ -1883,7 +1885,8 @@
     function renderDebtPay() {
       document.getElementById('content').innerHTML = `
         <section class="card">
-          <h2>Cập nhật thanh toán công nợ</h2>
+          <h2>Cập nhật thanh toán công nợ (thủ công)</h2>
+          <div class="notice err">⚠ Chỉ dùng để <b>điều chỉnh/ghi bù thủ công</b> các trường hợp đặc biệt. Khoản đã được <b>thủ quỹ xác nhận chuyển</b> thì công nợ ĐÃ tự trừ — <b>không ghi lại ở đây</b> để tránh trừ hai lần.</div>
           <div class="notice ok">Nhập số tiền đã thanh toán cho từng khoản. Sau khi ghi nhận, <b>số dư công nợ tự cập nhật</b>. Chọn nhà cung cấp để lọc (để trống = tất cả khoản còn nợ).</div>
           <div class="actions" style="align-items:flex-end">
             <div class="field" style="margin:0;min-width:280px"><label>Nhà cung cấp</label><select id="dpMa">${objectOptions()}</select></div>
@@ -2625,32 +2628,30 @@
         const fn = () => call('rpc_get_cashier_queue', {});
         const res = await (btn ? withBusy(btn, 'Đang tải...', fn) : fn());
         const rows = res.rows || [];
-        box.innerHTML = rows.length ? rows.map((r, i) => `<div class="approve-card" style="margin-bottom:12px">
+        box.innerHTML = rows.length ? rows.map(r => `<div class="approve-card" style="margin-bottom:12px">
             <div class="ac-top"><strong>${esc(r.maDeXuatTT)}</strong><span class="pill ok">Đã duyệt</span></div>
-            <div class="ac-obj">Ngày ${esc(r.ngay)} · Người lập: ${esc(r.nguoiLap || '—')} · Tổng: <b>${fmtMoney(r.tong)}đ</b></div>
-            <div class="table-wrap" style="margin-top:8px"><table><thead><tr><th>NCC</th><th>Số tiền</th><th>STK / Ngân hàng</th><th>Hình thức</th><th>Mã CN</th><th>Chứng từ</th></tr></thead><tbody>
-              ${(r.lines || []).map(l => `<tr>
-                <td>${esc(l.ncc || '')}${l.mst ? `<br><small class="status">MST: ${esc(l.mst)}</small>` : ''}</td>
-                <td class="num-cell">${fmtMoney(l.soTien)}</td>
-                <td>${l.soTk ? `<b>${esc(l.soTk)}</b>` : '<span class="pill warn">thiếu STK</span>'}${l.chiNhanh ? '<br><small>' + esc(l.chiNhanh) + '</small>' : ''}</td>
-                <td>${esc(l.hinhThucTT || 'CK')}</td>
-                <td>${l.maCN ? '<code>' + esc(l.maCN) + '</code>' : '—'}</td>
-                <td>${attachLinks(l.chungTu)}</td>
-              </tr>`).join('')}
-            </tbody></table></div>
-            <div class="field" style="margin-top:8px"><label>Ảnh uỷ nhiệm chi / chuyển khoản * (đính kèm)</label>
-              <input id="cashProof${i}" type="file" class="hl-input" multiple accept=".pdf,image/*"></div>
-            <div class="actions"><button onclick="cashierConfirm('${esc(r.maDeXuatTT)}', ${i}, this)">✔ Xác nhận đã chuyển & trừ công nợ</button></div>
-          </div>`).join('') : '<p class="status">Không có đề xuất nào chờ chuyển tiền.</p>';
+            <div class="ac-obj">Ngày ${esc(r.ngay)} · Người lập: ${esc(r.nguoiLap || '—')} · Tổng: <b>${fmtMoney(r.tong)}đ</b> · Đã chuyển: <b>${fmtMoney(r.daChuyen)}đ</b></div>
+            ${(r.lines || []).map(l => `<div class="cash-line" style="border-top:1px solid var(--line);padding:8px 0">
+              <div class="ac-meta"><b>${esc(l.ncc || '')}</b> · ${fmtMoney(l.soTien)}đ · ${esc(l.hinhThucTT || 'CK')}${l.maCN ? ' · CN: <code>' + esc(l.maCN) + '</code>' : ''}</div>
+              <div class="ac-meta">STK: ${l.soTk ? '<b>' + esc(l.soTk) + '</b>' : '<span class="pill warn">thiếu STK</span>'}${l.chiNhanh ? ' · ' + esc(l.chiNhanh) : ''}${l.mst ? ' · MST: ' + esc(l.mst) : ''}</div>
+              ${(l.chungTu || []).length ? `<div class="ac-meta">Chứng từ: ${attachLinks(l.chungTu)}</div>` : ''}
+              ${l.paid
+                ? `<div class="notice ok" style="margin:6px 0">✔ Đã chuyển. Ảnh: ${attachLinks(l.paidProof)}</div>`
+                : `<div class="actions" style="align-items:flex-end;margin-top:6px">
+                    <div class="field" style="margin:0"><label>Ảnh chuyển khoản *</label><input id="clp_${esc(l.lineId)}" type="file" class="hl-input" multiple accept=".pdf,image/*"></div>
+                    <button onclick="cashierPayLine('${esc(l.lineId)}', this)">✔ Xác nhận đã chuyển khoản này</button>
+                  </div>`}
+            </div>`).join('')}
+          </div>`).join('') : '<p class="status">Không có khoản nào chờ chuyển tiền.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
     }
-    async function cashierConfirm(ma, idx, btn) {
-      if (!(document.getElementById('cashProof' + idx)?.files.length)) { toast('Bắt buộc đính kèm ảnh chuyển khoản.', 'err'); return; }
-      if (!confirm(`Xác nhận đã chuyển tiền cho ${ma}? Hệ thống sẽ trừ công nợ và báo NVMH.`)) return;
+    async function cashierPayLine(lineId, btn) {
+      if (!(document.getElementById('clp_' + lineId)?.files.length)) { toast('Bắt buộc đính kèm ảnh chuyển khoản.', 'err'); return; }
+      if (!confirm('Xác nhận đã chuyển khoản này? Hệ thống sẽ trừ công nợ và báo NVMH.')) return;
       try {
-        const proof = await withBusy(btn, 'Đang tải ảnh...', () => uploadAttachments('cashProof' + idx, 'chi-tien/uy-nhiem'));
-        await withBusy(btn, 'Đang xác nhận...', () => call('rpc_execute_payment_request', { p_ma: ma, p_proof: proof }));
-        toast(`Đã xác nhận chuyển tiền ${ma}.`, 'ok'); loadCashierQueue();
+        const proof = await withBusy(btn, 'Đang tải ảnh...', () => uploadAttachments('clp_' + lineId, 'chi-tien/uy-nhiem'));
+        await withBusy(btn, 'Đang xác nhận...', () => call('rpc_cashier_pay_line', { p_line_id: lineId, p_proof: proof }));
+        toast('Đã xác nhận chuyển khoản.', 'ok'); loadCashierQueue();
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
     // ===== Lãnh đạo: Tổng quan điều hành =====================================
