@@ -3452,7 +3452,7 @@
     }
     async function subscribePush() {
       try {
-        const key = (window.APP && APP.vapidPublicKey) || '';
+        const key = (APP && APP.vapidPublicKey) || '';
         if (!key || !('serviceWorker' in navigator) || !('PushManager' in window)) return; // chưa cấu hình VAPID -> dùng thông báo nội bộ
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
         const reg = await navigator.serviceWorker.ready;
