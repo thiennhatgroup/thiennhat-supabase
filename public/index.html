@@ -716,8 +716,22 @@
       const s = e.state && e.state.screen;
       if (s) { state.histDepth = Math.max(0, (state.histDepth || 0) - 1); renderScreen(s); updateBackBtn(); }
     });
+    const ROLE_MENU_ORDER = {
+      KeToanCongNo: ['oversight','congnoconfirm','payreq','debtpay','dashboard','settlement','catalog','quotes','receipt'],
+      ChuTich: ['approve','payapprove','dashboard','oversight','quotes'],
+      TongGiamDoc: ['approve','dashboard','oversight','quotes'],
+      TruongPhong: ['oversight','dashboard','quotes'],
+      NhanVienMuaHang: ['proposal','receipt','quotes','catalog','dashboard','printpp','printyctt'],
+    };
+    function orderScreensForRole(list) {
+      const pref = ROLE_MENU_ORDER[state.user && state.user.role] || [];
+      return [...list].sort((a, b) => {
+        const ia = pref.indexOf(a[0]), ib = pref.indexOf(b[0]);
+        return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+      });
+    }
     function renderDrawer() {
-      const features = visibleScreens(); // các màn thao tác theo quyền
+      const features = orderScreensForRole(visibleScreens()); // các màn thao tác theo quyền, xếp theo vai trò
       const exps = EXPORT_SCREENS.filter(s => can(s[2]));
       const item = (id, label) => `<button class="drawer-item ${state.screen === id ? 'active' : ''}" onclick="navTo('${id}')">${label}</button>`;
       document.getElementById('drawer').innerHTML = `
@@ -725,6 +739,7 @@
         ${item('account', '👤 Tài khoản')}
         ${item('guide', '📘 Hướng dẫn')}
         ${item('chat', '💬 Tin nhắn')}
+        ${item('improve', '💡 Đề xuất cải tiến')}
         <div class="drawer-group">
           <button class="drawer-group-h" onclick="toggleGroup(this)">Thao tác <span>▾</span></button>
           <div class="drawer-group-body">${features.map(([id, label]) => item(id, label)).join('')}</div>
@@ -733,7 +748,6 @@
           <button class="drawer-group-h" onclick="toggleGroup(this)">Tải dữ liệu <span>▾</span></button>
           <div class="drawer-group-body">${exps.map(([id, label]) => item(id, label)).join('')}</div>
         </div>` : ''}
-        ${item('improve', '💡 Đề xuất cải tiến')}
         <div class="drawer-note">Yêu cầu cụ thể liên hệ tới email <b>ahuyle.work@gmail.com</b></div>`;
     }
 
@@ -1049,7 +1063,7 @@
             </div>
             ${objectFields('p')}
             <div class="grid">
-              <div class="field"><label>Hạn thanh toán *</label><input id="pHan" type="date"></div>
+              <div class="field"><label>Hạn thanh toán</label><input id="pHan" type="date"><small>Không bắt buộc</small></div>
               <div class="field"><label>Tồn kho mặt hàng hiện tại</label><input id="pTonKho" inputmode="decimal" placeholder="Không bắt buộc"></div>
             </div>
             <div class="field"><label>Điều khoản thanh toán</label><textarea id="pDieuKhoanTT"></textarea></div>
@@ -1184,7 +1198,6 @@
       if (!p.nguoiDeNghi.trim()) { toast('Cần chọn người đề nghị.', 'err'); return; }
       if (!p.doiTuong.ten.trim()) { toast('Cần nhập tên đối tượng / NCC.', 'err'); return; }
       if (!p.lines.length) { toast('Cần ít nhất một dòng vật tư đầy đủ (mặt hàng, SL, đơn giá).', 'err'); return; }
-      if (!p.hanThanhToan) { toast('Cần nhập hạn thanh toán.', 'err'); return; }
       if (!p.trongKeHoachTuan && !p.giaiTrinhNgoaiKeHoach.trim()) { toast('Khoản ngoài kế hoạch tuần — cần nhập giải trình.', 'err'); return; }
       const nFiles = document.getElementById('pFiles')?.files.length || 0;
       const hasOld = ed && (ed.Attachments || []).length > 0;
@@ -2999,12 +3012,13 @@
     }
     function renderOversight() {
       const today = todayStr();
+      const from7 = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>Theo dõi &amp; rà soát</h2>
           <div class="notice ok">Xem mọi khoản đang trình + đã duyệt/nghiệm thu/thanh toán. Phiếu <b>đang chờ duyệt</b> hoặc <b>đã duyệt (chưa thanh toán)</b> có thể <b>Trả lại</b> (kèm lý do) — công nợ đã sinh sẽ được gỡ, người lập nhận thông báo để giải trình và tạo lại. Trưởng bộ phận chỉ thấy phiếu bộ phận mình.</div>
           <div class="actions" style="align-items:flex-end">
-            <div class="field" style="margin:0"><label>Từ ngày</label><input id="osFrom" type="date"></div>
+            <div class="field" style="margin:0"><label>Từ ngày</label><input id="osFrom" type="date" value="${from7}"></div>
             <div class="field" style="margin:0"><label>Đến ngày</label><input id="osTo" type="date" value="${today}"></div>
             <button onclick="loadOversight(this)">Cập nhật</button>
           </div>
@@ -3020,14 +3034,18 @@
         const res = await withBusy(btn, 'Đang tải...', () => call('rpc_oversight', { p_from: val('osFrom') || null, p_to: val('osTo') || null }));
         const props = res.proposals || [], pays = res.paymentRequests || [];
         const canCancel = res.role === 'KeToanCongNo' || res.role === 'TruongPhong' || res.role === 'Admin';
+        const THR = 10000000;
         const propRows = props.length ? `<div class="table-wrap"><table><thead><tr>
-          <th>Mã ĐX</th><th>Loại</th><th>Ngày</th><th>Người/Bộ phận</th><th>NCC</th><th>Tổng tiền</th><th>Trạng thái</th><th>NT/TT</th><th></th></tr></thead><tbody>
-          ${props.map(p => `<tr>
-            <td><a href="#" onclick="openOversightDetail('${esc(p.MaDeXuat)}',event)"><code>${esc(p.MaDeXuat)}</code></a></td><td>${esc(p.Loai)}</td><td>${esc(p.Ngay)}</td>
+          <th>Mã ĐX</th><th>Loại</th><th>Người/Bộ phận</th><th>NCC</th><th>Tổng tiền</th><th>Thẩm quyền</th><th>Submit</th><th>Duyệt</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+          ${props.map(p => `<tr class="line-clickable" onclick="openOversightDetail('${esc(p.MaDeXuat)}',event)" title="Nhấp xem chi tiết">
+            <td><code>${esc(p.MaDeXuat)}</code></td><td>${esc(p.Loai)}</td>
             <td>${esc(p.NguoiDeNghi||'')}${p.BoPhan?' · '+esc(p.BoPhan):''}</td><td>${esc(p.TenDoiTuong||'')}</td>
-            <td class="num-cell">${fmtMoney(p.TongTien)}</td><td>${osStatusPill(p.TrangThai)}</td>
-            <td>${p.DaNghiemThu?'<span class="pill ok">NT</span> ':''}${p.DaPhatSinhTT?'<span class="pill ok">TT</span>':''}</td>
-            <td><button class="secondary" onclick="openOversightDetail('${esc(p.MaDeXuat)}',event)">Xem</button> ${canCancel && (p.TrangThai==='Chờ duyệt' || (p.TrangThai==='Đã duyệt' && !p.DaPhatSinhTT)) ? `<button class="danger" onclick="bounceProposalOs('${esc(p.MaDeXuat)}', this)">Trả lại</button>` : ''}</td>
+            <td class="num-cell">${fmtMoney(p.TongTien)}</td>
+            <td>${Number(p.TongTien||0)>=THR?'<span class="pill">Chủ tịch</span>':'<span class="pill">TGĐ</span>'}</td>
+            <td style="font-size:11px">${esc(p.ThoiGianTao||'—')}</td>
+            <td style="font-size:11px">${p.ThoiGianDuyet?esc(p.ThoiGianDuyet)+(p.NguoiDuyet?'<br>'+esc(p.NguoiDuyet):''):'—'}</td>
+            <td>${osStatusPill(p.TrangThai)}</td>
+            <td onclick="event.stopPropagation()">${canCancel && (p.TrangThai==='Chờ duyệt' || (p.TrangThai==='Đã duyệt' && !p.DaPhatSinhTT)) ? `<button class="danger" onclick="bounceProposalOs('${esc(p.MaDeXuat)}', this)">Trả lại</button>` : ''}</td>
           </tr>`).join('')}</tbody></table></div>` : '<p class="status">Không có đề xuất mua hàng trong khoảng đã chọn.</p>';
         const payRows = pays.length ? `<div class="table-wrap"><table><thead><tr>
           <th>Mã ĐXTT</th><th>Ngày</th><th>Người lập</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
