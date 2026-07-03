@@ -5,7 +5,8 @@
 -- Mỗi bộ phận có đủ 3 giai đoạn để test thao tác kế toán:
 --   (1) Đã nghiệm thu, CHỜ DUYỆT HỒ SƠ THANH TOÁN  (Duyệt hồ sơ thanh toán)
 --   (2) Đã lưu công nợ, chưa vào ĐXTT              (Đề xuất thanh toán / Theo dõi công nợ)
---   (3) Đã lưu công nợ + đang trong ĐXTT chờ duyệt  (Duyệt đề xuất thanh toán)
+--   (3) Đã lưu công nợ + ĐXTT CHỜ Chủ tịch duyệt   (Duyệt đề xuất thanh toán)
+--   (4) Đã lưu công nợ + ĐXTT ĐÃ duyệt, chờ thủ quỹ (Theo dõi ĐXTT / Chi tiền)
 -- Mã có tiền tố *-DUMMYK-* để dễ xóa (khối CLEANUP ở cuối).
 -- ============================================================================
 
@@ -17,7 +18,7 @@ declare
   v_dt uuid; v_pid uuid; v_debt uuid; v_req uuid;
   v_seq int := 0; v_reqseq int := 0;
   v_qty numeric := 20; v_price numeric; v_han date; v_tt numeric;
-  v_cnf boolean; v_s3 uuid[];
+  v_cnf boolean; v_s3 uuid[]; v_s4 uuid[];
   v_mats text[] := array['Thép tấm','Dầu thủy lực','Vòng bi','Giấy A4','Que hàn','Băng keo'];
   v_mat text;
 begin
@@ -36,8 +37,8 @@ begin
             '112233445' || di, 'Vietcombank CN Test', 'Thanh toán sau khi nhận hàng', v_dept, 'Hoạt động')
     returning id into v_dt;
 
-    v_s3 := array[]::uuid[];
-    for st in 1..6 loop        -- 1-2: giai đoạn 1; 3-4: giai đoạn 2; 5-6: giai đoạn 3
+    v_s3 := array[]::uuid[]; v_s4 := array[]::uuid[];
+    for st in 1..8 loop        -- 1-2: gđ1; 3-4: gđ2; 5-6: gđ3 (ĐXTT chờ duyệt); 7-8: gđ4 (ĐXTT đã duyệt)
       v_seq := v_seq + 1;
       v_mat := v_mats[1 + (v_seq % array_length(v_mats,1))];
       v_price := case when st % 2 = 1 then 300000 else 2500000 end; -- mix < / >= 10 triệu
@@ -73,10 +74,11 @@ begin
       returning id into v_debt;
 
       update proposal_lines set debt_id = v_debt where proposal_id = v_pid;
-      if st >= 5 then v_s3 := array_append(v_s3, v_debt); end if;
+      if st in (5,6) then v_s3 := array_append(v_s3, v_debt); end if;
+      if st in (7,8) then v_s4 := array_append(v_s4, v_debt); end if;
     end loop;
 
-    -- Giai đoạn 3: gộp 2 khoản đã lưu công nợ thành 1 ĐXTT chờ Chủ tịch duyệt
+    -- Giai đoạn 3: ĐXTT CHỜ Chủ tịch duyệt (gộp 2 khoản)
     v_reqseq := v_reqseq + 1;
     insert into payment_requests (ma_de_xuat_tt, ngay, nguoi_lap, trang_thai, ghi_chu)
     values ('PTK-DUMMYK-' || lpad(v_reqseq::text,3,'0'), current_date, v_buyer, 'Chờ duyệt', 'DUMMYK ' || v_dept)
@@ -89,9 +91,23 @@ begin
              'Thanh toán ' || d.ma_cn, 'CK', 'Đã có hồ sơ'
       from debts d where d.id = v_s3[j];
     end loop;
+
+    -- Giai đoạn 4: ĐXTT ĐÃ Chủ tịch duyệt (chờ thủ quỹ chi) — gộp 2 khoản
+    v_reqseq := v_reqseq + 1;
+    insert into payment_requests (ma_de_xuat_tt, ngay, nguoi_lap, trang_thai, ghi_chu, nguoi_duyet, approved_at)
+    values ('PTK-DUMMYK-' || lpad(v_reqseq::text,3,'0'), current_date, v_buyer, 'Đã duyệt', 'DUMMYK ' || v_dept, v_buyer, now() - interval '30 minutes')
+    returning id into v_req;
+    for j in 1..array_length(v_s4,1) loop
+      insert into payment_request_lines (request_id, debt_id, doi_tuong_id, ncc, ke_hoach, so_tien, noi_dung, hinh_thuc_tt, tinh_trang_ho_so)
+      select v_req, d.id, d.doi_tuong_id, d.ten_doi_tuong,
+             round(d.sl_thuc_nhan * d.don_gia * (1 + d.vat_rate), 2),
+             round(d.sl_thuc_nhan * d.don_gia * (1 + d.vat_rate), 2),
+             'Thanh toán ' || d.ma_cn, 'CK', 'Đã có hồ sơ'
+      from debts d where d.id = v_s4[j];
+    end loop;
   end loop;
 
-  raise notice 'Đã tạo dummy KTTH cho 4 bộ phận (24 đơn + 4 ĐXTT chờ duyệt).';
+  raise notice 'Đã tạo dummy KTTH cho 4 bộ phận (32 đơn + 8 ĐXTT: 4 chờ duyệt, 4 đã duyệt chờ thủ quỹ).';
 end $$;
 
 -- ============================================================================
