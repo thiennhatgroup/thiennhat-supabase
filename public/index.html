@@ -745,6 +745,8 @@
       const item = (id, label) => `<button class="drawer-item ${state.screen === id ? 'active' : ''}" onclick="navTo('${id}')">${label}</button>`;
       document.getElementById('drawer').innerHTML = `
         <div class="drawer-brand"><img src="./logo.png" onerror="this.onerror=null;this.src='./logo.svg'" alt="Thiên Nhật"><button class="drawer-x" onclick="closeDrawer()">✕</button></div>
+        ${item('account', '👤 Tài khoản')}
+        ${item('chat', '💬 Tin nhắn')}
         <div class="drawer-group">
           <button class="drawer-group-h" onclick="toggleGroup(this)">Thao tác <span>▾</span></button>
           <div class="drawer-group-body">${features.map(([id, label]) => item(id, label)).join('')}</div>
@@ -753,10 +755,8 @@
           <button class="drawer-group-h" onclick="toggleGroup(this)">Tải dữ liệu <span>▾</span></button>
           <div class="drawer-group-body">${exps.map(([id, label]) => item(id, label)).join('')}</div>
         </div>` : ''}
-        ${item('chat', '💬 Tin nhắn')}
         ${item('improve', '💡 Đề xuất cải tiến')}
         ${item('guide', '📘 Hướng dẫn')}
-        ${item('account', '👤 Tài khoản')}
         <div class="drawer-note">Yêu cầu cụ thể liên hệ tới email <b>ahuyle.work@gmail.com</b></div>`;
     }
 
