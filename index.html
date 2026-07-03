@@ -1229,28 +1229,48 @@
         renderProposal();
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
+    function myProposalCard(r, paidGroup) {
+      return `<div class="approve-card" style="margin-bottom:10px">
+          <div class="ac-top"><strong>${esc(r.MaDeXuat)}</strong>${proposalStatusPill(r.TrangThai)}</div>
+          <div class="ac-obj">NCC: ${esc(r.TenDoiTuong||'')}${r.BoPhan?' · '+esc(r.BoPhan):''}</div>
+          <div class="ac-meta">${esc(r.LoaiDeXuat==='TamUng'?'Tạm ứng':'Mua hàng')} · ${r.SoDong||0} dòng vật tư · Hạn TT: ${esc(r.HanThanhToan||'—')}</div>
+          ${r.DieuKhoanTT?`<div class="ac-meta">Điều khoản TT: ${esc(r.DieuKhoanTT)}</div>`:''}
+          <div class="ac-money">${fmtMoney(r.TongTien)} <small>đ (sau VAT)</small></div>
+          ${paidGroup && (r.AnhChuyenKhoan||[]).length ? `<div class="notice ok" style="margin-top:6px">✔ Đã chuyển tiền — Ảnh chuyển khoản: ${attachLinks(r.AnhChuyenKhoan)}</div>` : ''}
+          ${r.TrangThai==='Nháp' && r.LyDoTraLai ? `<div class="notice err" style="margin-top:6px">↩ Bị trả lại: ${esc(r.LyDoTraLai)} — vui lòng chỉnh sửa/giải trình rồi gửi lại.</div>` : ''}
+          ${r.TrangThai==='Từ chối' && r.GhiChu ? `<div class="status" style="margin-top:6px">Lý do: ${esc(r.GhiChu)}</div>` : ''}
+          <div class="actions" style="margin-top:8px">
+            <button class="secondary" onclick="openProposalDetailRO('${esc(r.MaDeXuat)}')">Xem chi tiết</button>
+            ${r.TrangThai==='Nháp' ? `<button class="secondary" onclick="editProposal('${esc(r.MaDeXuat)}')">Sửa</button><button onclick="submitProposal('${esc(r.MaDeXuat)}', this)">Gửi duyệt →</button>` : ''}
+            ${!paidGroup && (r.TrangThai==='Chờ duyệt' || r.TrangThai==='Đã duyệt') ? `<button class="danger" onclick="withdrawProposal('${esc(r.MaDeXuat)}')">Rút</button>` : ''}
+            ${paidGroup ? `<button onclick="ackProposalDone('${esc(r.MaDeXuat)}', this)">✔ Đã kiểm tra — Lưu</button>` : ''}
+          </div>
+        </div>`;
+    }
     async function loadMyProposals() {
       const box = document.getElementById('myProposalsBox');
       if (!box) return;
       try {
         const res = await call('rpc_get_my_proposals', { p_limit: 30 });
         const rows = res.rows || [];
-        box.innerHTML = rows.length ? rows.map(r => `<div class="approve-card" style="margin-bottom:10px">
-            <div class="ac-top"><strong>${esc(r.MaDeXuat)}</strong>${proposalStatusPill(r.TrangThai)}</div>
-            <div class="ac-obj">NCC: ${esc(r.TenDoiTuong||'')}${r.BoPhan?' · '+esc(r.BoPhan):''}</div>
-            <div class="ac-meta">${esc(r.LoaiDeXuat==='TamUng'?'Tạm ứng':'Mua hàng')} · ${r.SoDong||0} dòng vật tư · Hạn TT: ${esc(r.HanThanhToan||'—')}</div>
-            ${r.DieuKhoanTT?`<div class="ac-meta">Điều khoản TT: ${esc(r.DieuKhoanTT)}</div>`:''}
-            <div class="ac-money">${fmtMoney(r.TongTien)} <small>đ (sau VAT)</small></div>
-            ${(r.AnhChuyenKhoan||[]).length ? `<div class="notice ok" style="margin-top:6px">✔ Đã chuyển tiền — Ảnh chuyển khoản: ${attachLinks(r.AnhChuyenKhoan)}</div>` : ''}
-            ${r.TrangThai==='Nháp' && r.LyDoTraLai ? `<div class="notice err" style="margin-top:6px">↩ Bị trả lại: ${esc(r.LyDoTraLai)} — vui lòng chỉnh sửa/giải trình rồi gửi lại.</div>` : ''}
-            ${r.TrangThai==='Từ chối' && r.GhiChu ? `<div class="status" style="margin-top:6px">Lý do: ${esc(r.GhiChu)}</div>` : ''}
-            <div class="actions" style="margin-top:8px">
-              <button class="secondary" onclick="openProposalDetailRO('${esc(r.MaDeXuat)}')">Xem chi tiết</button>
-              ${r.TrangThai==='Nháp' ? `<button class="secondary" onclick="editProposal('${esc(r.MaDeXuat)}')">Sửa</button><button onclick="submitProposal('${esc(r.MaDeXuat)}', this)">Gửi duyệt →</button>` : ''}
-              ${(r.TrangThai==='Chờ duyệt' || r.TrangThai==='Đã duyệt') ? `<button class="danger" onclick="withdrawProposal('${esc(r.MaDeXuat)}')">Rút</button>` : ''}
-            </div>
-          </div>`).join('') : '<p class="status">Bạn chưa có đề xuất nào.</p>';
+        const g = { paid: [], approved: [], pending: [], draft: [], closed: [] };
+        rows.forEach(r => {
+          if ((r.AnhChuyenKhoan || []).length) g.paid.push(r);
+          else if (r.TrangThai === 'Đã duyệt') g.approved.push(r);
+          else if (r.TrangThai === 'Chờ duyệt') g.pending.push(r);
+          else if (r.TrangThai === 'Nháp') g.draft.push(r);
+          else g.closed.push(r);
+        });
+        const sec = (title, arr, paidGroup) => arr.length ? `<h3 style="margin:14px 0 6px">${title} (${arr.length})</h3>${arr.map(x => myProposalCard(x, paidGroup)).join('')}` : '';
+        box.innerHTML = rows.length ? (
+          sec('📝 Nháp', g.draft) + sec('⏳ Chờ duyệt', g.pending) + sec('✅ Đã duyệt (chờ nghiệm thu/thanh toán)', g.approved) +
+          sec('💸 Đã chuyển tiền', g.paid, true) + sec('↩ Từ chối / Đã hủy', g.closed)
+        ) : '<p class="status">Bạn chưa có đề xuất nào.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    async function ackProposalDone(ma, btn) {
+      try { await withBusy(btn, 'Đang lưu...', () => call('rpc_ack_proposal_done', { p_ma_de_xuat: ma })); toast(`Đã lưu & ẩn ${ma} (hoàn tất).`, 'ok'); loadMyProposals(); }
+      catch (e) { toast(e.message || String(e), 'err'); }
     }
     async function withdrawProposal(ma) {
       if (!confirm(`Rút đề xuất mua hàng ${ma}?`)) return;
