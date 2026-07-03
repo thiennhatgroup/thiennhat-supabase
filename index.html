@@ -816,21 +816,24 @@
           </section>
           <aside class="card entry-first" id="qEntry">
             <h2>Nhập báo giá mới</h2>
-            <p class="status">Nhập báo giá trực tiếp tại đây; bảng bên trái sẽ cập nhật ngay ở lần làm mới kế tiếp.</p>
-            <div class="field"><label>Ngày báo giá</label><input id="nqNgay" type="date" value="${todayStr()}"></div>
-            <div class="field"><label>Mặt hàng</label><div class="combo-stack"><select id="nqItem" onchange="onQuoteMatChange()">${materialOptions('')}</select><button type="button" class="secondary" onclick="createMaterialPopup(quotePickNewMat)">＋ Tạo mặt hàng mới</button></div><small>Chỉ hiện mặt hàng thuộc bộ phận bạn. Chưa có thì bấm "Tạo mặt hàng mới".</small></div>
-            <div class="field"><label>Nhà cung cấp</label><div class="combo-stack"><select id="nqNccSel">${supplierNameOptions()}</select><button type="button" class="secondary" onclick="createSupplierPopup(quotePickNewNcc)">＋ Tạo NCC mới</button></div></div>
+            <p class="status">Chọn 1 nhà cung cấp, thêm nhiều mặt hàng họ chào giá (mỗi dòng: giá · ĐVT · %VAT · có xuất VAT). Bấm Lưu để lưu cả loạt.</p>
             <div class="grid">
-              <div class="field"><label>Đơn vị tính (ĐVT)</label><input id="nqDvt" placeholder="vd: lít, kg, phuy"></div>
-              <div class="field"><label>Giá chào (chưa VAT)</label><input id="nqGia" class="js-money" inputmode="decimal"></div>
+              <div class="field"><label>Ngày báo giá</label><input id="nqNgay" type="date" value="${todayStr()}"></div>
+              <div class="field"><label>Nhà cung cấp</label><div class="combo-stack"><select id="nqNccSel">${supplierNameOptions()}</select><button type="button" class="secondary" onclick="createSupplierPopup(quotePickNewNcc)">＋ Tạo NCC mới</button></div></div>
             </div>
-            <div class="field"><label>%VAT</label><select id="nqVatRate"><option value="0">0%</option><option value="0.08" selected>8%</option><option value="0.1">10%</option></select><small>Giá sau VAT được tính tự động khi so sánh.</small></div>
-            <div class="field"><label>Ghi chú</label><input id="nqGhiChu"></div>
-            <button class="secondary" onclick="addPriceQuote(this)" ${can('quote:sync') ? '' : 'disabled'}>Lưu báo giá</button>
+            <div class="actions">
+              <button type="button" class="secondary" onclick="addNqLine()">＋ Thêm mặt hàng</button>
+              <button type="button" class="secondary" onclick="createMaterialPopup(m=>addNqLine(m.ten, m.dvt))">＋ Tạo mặt hàng mới</button>
+            </div>
+            <div class="table-wrap"><table class="line-table"><thead><tr>
+              <th style="min-width:150px">Mặt hàng</th><th style="width:90px">ĐVT</th><th style="width:130px">Giá (chưa VAT)</th><th style="width:90px">%VAT</th><th style="width:110px">Có xuất VAT</th><th style="min-width:120px">Ghi chú</th><th style="width:56px"></th>
+            </tr></thead><tbody id="nqLines"></tbody></table></div>
+            <button onclick="saveQuotes(this)" ${can('quote:sync') ? '' : 'disabled'}>Lưu báo giá</button>
             <p id="nqMsg" class="status" style="margin-top:8px"></p>
           </aside>
         </div>`;
       loadQuoteDashboard();
+      addNqLine();
     }
 
     async function loadQuoteDashboard(btn=null) {
@@ -854,22 +857,45 @@
       }
     }
 
-    async function addPriceQuote(btn) {
+    function nqLineRow(ten, dvt) {
+      return `<tr>
+        <td><select class="nq-mat" onchange="nqFillDvt(this)">${materialOptions(ten || '')}</select></td>
+        <td><input class="nq-dvt" value="${esc(dvt || dvtOf(ten) || '')}" placeholder="ĐVT"></td>
+        <td><input class="nq-gia js-money" inputmode="decimal" placeholder="Giá chưa VAT"></td>
+        <td><select class="nq-vat"><option value="0">0%</option><option value="0.08" selected>8%</option><option value="0.1">10%</option></select></td>
+        <td><select class="nq-covat"><option value="true" selected>Có VAT</option><option value="false">Không VAT</option></select></td>
+        <td><input class="nq-ghichu" placeholder="Ghi chú"></td>
+        <td><button class="secondary" onclick="this.closest('tr').remove()">Xóa</button></td>
+      </tr>`;
+    }
+    function addNqLine(ten, dvt) {
+      const tb = document.getElementById('nqLines'); if (!tb) return;
+      tb.insertAdjacentHTML('beforeend', nqLineRow(ten, dvt));
+      if (ten) { const rows = tb.querySelectorAll('tr'); const last = rows[rows.length - 1]; last.querySelector('.nq-mat').value = ten; }
+    }
+    function nqFillDvt(sel) {
+      const tr = sel.closest('tr'); const d = tr && tr.querySelector('.nq-dvt');
+      if (d && !d.value) d.value = dvtOf(sel.value) || '';
+    }
+    async function saveQuotes(btn) {
       const msg = document.getElementById('nqMsg');
+      const ncc = comboValue('nqNccSel', 'nqNccNew');
+      if (!ncc) { toast('Chọn nhà cung cấp.', 'err'); return; }
+      const lines = [...document.querySelectorAll('#nqLines tr')].map(tr => ({
+        matHang: comboValue(tr.querySelector('.nq-mat'), null),
+        dvt: tr.querySelector('.nq-dvt')?.value || '',
+        gia: moneyRaw(tr.querySelector('.nq-gia')),
+        vatRate: Number(tr.querySelector('.nq-vat')?.value || 0.08),
+        coVat: tr.querySelector('.nq-covat')?.value !== 'false',
+        ghiChu: tr.querySelector('.nq-ghichu')?.value || ''
+      })).filter(l => l.matHang && Number(l.gia) > 0);
+      if (!lines.length) { toast('Cần ít nhất một dòng có mặt hàng + giá.', 'err'); return; }
       msg.textContent = 'Đang lưu báo giá...';
       try {
-        const payload = {
-          p_ngay: val('nqNgay') || null,
-          p_mat_hang: comboValue('nqItem', 'nqItemNew'),
-          p_ncc: comboValue('nqNccSel', 'nqNccNew'),
-          p_gia: moneyNum('nqGia') || null,
-          p_vat_rate: Number(val('nqVatRate') || 0.08),
-          p_dvt: val('nqDvt') || null,
-          p_ghi_chu: val('nqGhiChu')
-        };
-        await withBusy(btn, 'Đang lưu...', () => call('rpc_add_price_quote', payload));
-        msg.textContent = 'Đã lưu báo giá.';
-        toast('Đã lưu báo giá.', 'ok');
+        const r = await withBusy(btn, 'Đang lưu...', () => call('rpc_add_price_quotes_batch', { p_ncc: ncc, p_ngay: val('nqNgay') || null, p_lines: lines }));
+        msg.textContent = `Đã lưu ${r.lines} dòng báo giá.`;
+        toast(`Đã lưu ${r.lines} dòng báo giá cho ${ncc}.`, 'ok');
+        document.getElementById('nqLines').innerHTML = ''; addNqLine();
         loadQuoteDashboard();
       } catch (err) { msg.textContent = err.message || err; toast(err.message || String(err), 'err'); }
     }
