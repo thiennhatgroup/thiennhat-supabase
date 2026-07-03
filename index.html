@@ -1247,9 +1247,16 @@
             <div class="actions" style="margin-top:8px">
               <button class="secondary" onclick="openProposalDetailRO('${esc(r.MaDeXuat)}')">Xem chi tiết</button>
               ${r.TrangThai==='Nháp' ? `<button class="secondary" onclick="editProposal('${esc(r.MaDeXuat)}')">Sửa</button><button onclick="submitProposal('${esc(r.MaDeXuat)}', this)">Gửi duyệt →</button>` : ''}
+              ${(r.TrangThai==='Chờ duyệt' || r.TrangThai==='Đã duyệt') ? `<button class="danger" onclick="withdrawProposal('${esc(r.MaDeXuat)}')">Rút</button>` : ''}
             </div>
           </div>`).join('') : '<p class="status">Bạn chưa có đề xuất nào.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    async function withdrawProposal(ma) {
+      if (!confirm(`Rút đề xuất mua hàng ${ma}?`)) return;
+      const r = prompt('Lý do rút (tùy chọn):', '') || '';
+      try { await call('rpc_withdraw_proposal', { p_ma_de_xuat: ma, p_reason: r }); toast(`Đã rút ${ma}.`, 'ok'); loadMyProposals(); }
+      catch (e) { toast(e.message || String(e), 'err'); }
     }
     async function submitProposal(ma, btn) {
       try {
@@ -1690,6 +1697,10 @@
               <div class="field"><label>Số chứng từ / phiếu giao nhận (nếu có)</label><input id="rChungTu"></div>
               <div class="field"><label>Hạn thanh toán *</label><input id="rHan" type="date" class="hl-input"></div>
             </div>
+            <div class="grid">
+              <div class="field"><label>STK ngân hàng NCC *</label><input id="rSoTk" class="hl-input" placeholder="Số tài khoản nhà cung cấp"></div>
+              <div class="field"><label>Chi nhánh ngân hàng NCC *</label><input id="rChiNhanh" class="hl-input" placeholder="VD: Vietcombank CN Hà Nội"></div>
+            </div>
             <div class="plan-box"><label style="font-weight:600;display:block;margin-bottom:6px">Loại chứng từ đã có (tick những loại đã thu):</label>
               <label class="check-line"><input type="checkbox" class="ct-type" value="Phiếu cân"> Phiếu cân</label>
               <label class="check-line"><input type="checkbox" class="ct-type" value="Biên bản giao nhận / nghiệm thu"> Biên bản giao nhận / nghiệm thu</label>
@@ -1783,6 +1794,8 @@
       if (!val('rHan')) { setMsg('Bắt buộc nhập Hạn thanh toán.'); toast('Thiếu Hạn thanh toán.', 'err'); return; }
       if (!(document.getElementById('rHoaDon')?.files.length)) { setMsg('Bắt buộc đính kèm Hóa đơn VAT.'); toast('Thiếu hóa đơn VAT.', 'err'); return; }
       if (!(document.getElementById('rFiles')?.files.length)) { setMsg('Bắt buộc đính kèm BBGN / phiếu cân / ảnh chụp vật tư.'); toast('Thiếu BBGN/phiếu cân/ảnh.', 'err'); return; }
+      if (!val('rSoTk').trim()) { setMsg('Bắt buộc nhập STK ngân hàng NCC.'); toast('Thiếu STK NCC.', 'err'); return; }
+      if (!val('rChiNhanh').trim()) { setMsg('Bắt buộc nhập chi nhánh ngân hàng NCC.'); toast('Thiếu chi nhánh NH.', 'err'); return; }
       const chungTuTypes = [...document.querySelectorAll('.ct-type:checked')].map(c => c.value);
       try {
         const files = await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('rFiles', 'nghiem-thu/chung-tu'));
@@ -1790,6 +1803,7 @@
         await withBusy(btn, 'Đang lưu...', () => call('rpc_update_receipt', { p_payload: {
           maCN, slThucNhan: moneyRaw('rSL'), ngayNhan: val('rNgay'),
           chungTu: val('rChungTu'), hanThanhToan: val('rHan') || null,
+          soTk: val('rSoTk'), chiNhanh: val('rChiNhanh'),
           chungTuTypes, files: files.concat(hoaDon || []), hoaDonFiles: hoaDon, ghiChu: val('rGhiChu')
         } }));
         toast(`Đã nghiệm thu ${maCN} — gửi kế toán duyệt chứng từ.`, 'ok');
@@ -2556,14 +2570,13 @@
         const res = await withBusy(btn, 'Đang tải...', () => call('rpc_get_payable_debts', {}));
         const rows = res.rows || [];
         const body = rows.length ? `<div class="table-wrap" style="max-height:440px"><table><thead><tr>
-            <th>Mã CN</th><th>NCC</th><th>Mặt hàng</th><th>Hạn TT</th><th>Hồ sơ</th><th>Chứng từ</th><th>Số dư còn lại</th><th></th></tr></thead><tbody>
+            <th>Mã CN</th><th>NCC</th><th>Mặt hàng</th><th>Hạn TT</th><th>Hồ sơ</th><th>Số dư còn lại</th><th></th></tr></thead><tbody>
           ${rows.map((r,i) => `<tr>
-            <td><code>${esc(r.maCN)}</code></td><td>${esc(r.tenDoiTuong)}</td><td>${esc(r.matHang||'')}</td>
+            <td><a class="mini-link" onclick="openDebtDetail('${esc(r.maCN)}')" title="Xem chi tiết & chứng từ">${esc(r.maCN)}</a></td><td>${esc(r.tenDoiTuong)}</td><td>${esc(r.matHang||'')}</td>
             <td>${esc(r.hanThanhToan||'—')}</td>
             <td>${r.hoSoDayDu ? '<span class="pill ok">Đủ</span>' : '<span class="pill warn">Thiếu</span>'}</td>
-            <td style="font-size:11px">BG: ${attachLinks(r.baoGia)}<br>NT: ${attachLinks(r.nghiemThuFiles)}</td>
             <td class="num-cell">${fmtMoney(r.soDuConLai)}</td>
-            <td><button class="secondary" onclick='addPayableRow(${JSON.stringify(r).replace(/'/g,"&#39;")}); toast("Đã thêm ${esc(r.maCN)}","ok");'>+ Thêm</button></td>
+            <td><button class="secondary" onclick="openDebtDetail('${esc(r.maCN)}')">Chi tiết</button> <button class="secondary" onclick='addPayableRow(${JSON.stringify(r).replace(/'/g,"&#39;")}); toast("Đã thêm ${esc(r.maCN)}","ok");'>+ Thêm</button></td>
           </tr>`).join('')}</tbody></table></div>`
           : '<p class="status">Không có khoản công nợ nào còn số dư. Với khoản trả trước chưa nhận hàng, hãy dùng "Thêm dòng tự nhập" kèm giải trình.</p>';
         openModal('Khoản đã lưu công nợ / đến hạn', body, null, null);
@@ -2571,6 +2584,36 @@
     }
     function addPayableRow(r) {
       addPayLine({ debtId: r.debtId, maCN: r.maCN, ncc: r.tenDoiTuong, keHoach: r.soDuConLai, soTien: r.soDuConLai, noiDung: r.matHang, tinhTrangHoSo: 'Đã có hồ sơ' });
+    }
+    // Popup chi tiết đầy đủ 1 khoản công nợ (dùng chung ở nhiều màn).
+    async function openDebtDetail(maCN) {
+      try {
+        const res = await call('rpc_get_debt_detail', { p_ma_cn: maCN });
+        const d = res.debt; if (!d) return;
+        openModal(`Chi tiết khoản ${esc(maCN)}`, `
+          <div class="detail-head">
+            <div><label>Mã CN</label><div><code>${esc(d.maCN)}</code></div></div>
+            <div><label>Phiếu đề xuất</label><div>${esc(d.maDeXuat || '—')}</div></div>
+            <div><label>Nhà cung cấp</label><div>${esc(d.tenDoiTuong || '')}</div></div>
+            <div><label>Bộ phận</label><div>${esc(d.boPhan || '—')}</div></div>
+            <div><label>Người đề nghị</label><div>${esc(d.nguoiDeNghi || '—')}</div></div>
+            <div><label>Mặt hàng</label><div>${esc(d.matHang || '')} (${esc(d.dvt || '—')})</div></div>
+            <div><label>SL đặt / thực nhận</label><div>${fmtMaybeMoney(d.slDat)} / <b>${fmtMaybeMoney(d.slThucNhan)}</b></div></div>
+            <div><label>Đơn giá · VAT</label><div>${fmtMoney(d.donGia)} · ${fmtPct(d.vatRate)}</div></div>
+            <div><label>Thành tiền thực nhận</label><div><b>${fmtMoney(d.thanhTienThucNhan)}đ</b></div></div>
+            <div><label>Đã thanh toán</label><div>${fmtMoney(d.daThanhToan)}đ</div></div>
+            <div><label>Số dư còn lại</label><div><b>${fmtMoney(d.soDuConLai)}đ</b></div></div>
+            <div><label>Hạn thanh toán</label><div>${esc(d.hanThanhToan || '—')}</div></div>
+            <div><label>Điều khoản TT</label><div>${esc(d.dieuKhoanTT || '—')}</div></div>
+            <div><label>STK ngân hàng NCC</label><div>${esc(d.soTk || '—')}</div></div>
+            <div><label>Chi nhánh ngân hàng</label><div>${esc(d.chiNhanh || '—')}</div></div>
+            <div><label>MST</label><div>${esc(d.mst || '—')}</div></div>
+            <div><label>Trạng thái</label><div>${esc(d.trangThai || '')}</div></div>
+          </div>
+          <div class="field"><label>Loại chứng từ đã tick</label><div>${(d.chungTuTypes || []).length ? (d.chungTuTypes || []).map(esc).join(', ') : '—'}</div></div>
+          <div class="field"><label>Chứng từ nghiệm thu (BBGN / VAT / ảnh vật tư)</label><div>${attachLinks(d.nghiemThuFiles)}</div></div>
+          <div class="field"><label>Báo giá gốc</label><div>${attachLinks(d.baoGia)}</div></div>`, null, null);
+      } catch (err) { toast(err.message || String(err), 'err'); }
     }
     async function savePayReq(status, btn) {
       const lines = getPayLines().filter(l => moneyNum({value:l.soTien}) > 0 || Number(l.soTien) > 0);
@@ -2593,15 +2636,42 @@
       try {
         const res = await call('rpc_get_my_payment_requests', { p_limit: 30 });
         const rows = res.rows || [];
+        state.myPayReq = rows;
         box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>
           <th>Mã</th><th>Ngày</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
-          ${rows.map(r => `<tr>
-            <td><code>${esc(r.MaDeXuatTT)}</code></td><td>${esc(r.Ngay)}</td>
+          ${rows.map((r, i) => `<tr>
+            <td><a class="mini-link" onclick="openMyPayReqLines(${i})" title="Xem các khoản trong phiếu"><code>${esc(r.MaDeXuatTT)}</code></a></td><td>${esc(r.Ngay)}</td>
             <td class="num-cell">${fmtMoney(r.TongTien)}</td>
             <td>${payReqPill(r.TrangThai)}</td>
-            <td>${r.TrangThai==='Đã duyệt' ? '<span class="status">Chờ thủ quỹ chi</span>' : (r.TrangThai==='Nháp' ? `<button class="secondary" onclick="editPayReq('${esc(r.MaDeXuatTT)}')">Sửa &amp; gửi lại</button>` : (r.TrangThai==='Từ chối' && r.LyDoTuChoi ? `<span class="status">Lý do: ${esc(r.LyDoTuChoi)}</span>` : '—'))}</td>
+            <td>
+              <button class="secondary" onclick="openMyPayReqLines(${i})">Xem khoản</button>
+              ${r.TrangThai==='Nháp' ? `<button class="secondary" onclick="editPayReq('${esc(r.MaDeXuatTT)}')">Sửa &amp; gửi lại</button>` : ''}
+              ${(r.TrangThai==='Chờ duyệt' || r.TrangThai==='Đã duyệt') ? `<button class="danger" onclick="withdrawPayReq('${esc(r.MaDeXuatTT)}')">Rút</button>` : ''}
+              ${r.TrangThai==='Đã duyệt' ? '<span class="status">· Chờ thủ quỹ chi</span>' : ''}
+              ${r.TrangThai==='Từ chối' && r.LyDoTuChoi ? `<span class="status">Lý do: ${esc(r.LyDoTuChoi)}</span>` : ''}
+            </td>
           </tr>`).join('')}</tbody></table></div>` : '<p class="status">Chưa có đề xuất nào.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    function openMyPayReqLines(i) {
+      const r = (state.myPayReq || [])[i]; if (!r) return;
+      const lines = (r.lines || []).map(l => `<tr>
+          <td>${l.maCN ? `<a class="mini-link" onclick="openDebtDetail('${esc(l.maCN)}')">${esc(l.maCN)}</a>` : '<span class="pill warn">ngoài PO</span>'}</td>
+          <td>${esc(l.ncc || '')}</td>
+          <td>${esc(l.noiDung || '')}</td>
+          <td class="num-cell">${fmtMoney(l.soTien)}</td>
+          <td>${l.maCN ? `<button class="secondary" onclick="openDebtDetail('${esc(l.maCN)}')">Chi tiết</button>` : (l.giaiTrinh ? esc(l.giaiTrinh) : '—')}</td>
+        </tr>`).join('');
+      openModal(`Phiếu ${esc(r.MaDeXuatTT)} — ${payReqPill(r.TrangThai)}`, `
+        <div class="ac-meta" style="margin-bottom:8px">Ngày ${esc(r.Ngay)} · Người lập: ${esc(r.NguoiLap || '—')} · Tổng: <b>${fmtMoney(r.TongTien)}đ</b></div>
+        <div class="table-wrap" style="max-height:none"><table><thead><tr><th>Mã CN</th><th>NCC</th><th>Nội dung</th><th>Số tiền</th><th></th></tr></thead><tbody>${lines}</tbody></table></div>
+        <p class="status" style="margin-top:6px">Bấm vào từng khoản (Mã CN / nút Chi tiết) để xem đầy đủ thông tin & chứng từ đính kèm.</p>`, null, null);
+    }
+    async function withdrawPayReq(ma) {
+      if (!confirm(`Rút đề xuất thanh toán ${ma}? Các khoản sẽ quay lại danh sách để lập phiếu khác.`)) return;
+      const r = prompt('Lý do rút (tùy chọn):', '') || '';
+      try { await call('rpc_withdraw_payment_request', { p_ma: ma, p_reason: r }); toast(`Đã rút ${ma}.`, 'ok'); loadMyPayReq(); }
+      catch (e) { toast(e.message || String(e), 'err'); }
     }
     function payReqPill(s) {
       if (s === 'Đã duyệt') return '<span class="pill ok">Đã duyệt</span>';
@@ -2632,12 +2702,14 @@
             <div class="ac-top"><strong>${esc(r.maDeXuatTT)}</strong><span class="pill ok">Đã duyệt</span></div>
             <div class="ac-obj">Ngày ${esc(r.ngay)} · Người lập: ${esc(r.nguoiLap || '—')} · Tổng: <b>${fmtMoney(r.tong)}đ</b> · Đã chuyển: <b>${fmtMoney(r.daChuyen)}đ</b></div>
             ${(r.lines || []).map(l => `<div class="cash-line" style="border-top:1px solid var(--line);padding:8px 0">
-              <div class="ac-meta"><b>${esc(l.ncc || '')}</b> · ${fmtMoney(l.soTien)}đ · ${esc(l.hinhThucTT || 'CK')}${l.maCN ? ' · CN: <code>' + esc(l.maCN) + '</code>' : ''}</div>
+              <div class="ac-meta"><b>${esc(l.ncc || '')}</b> · Đề xuất: ${fmtMoney(l.soTien)}đ · ${esc(l.hinhThucTT || 'CK')}${l.maCN ? ` · CN: <a class="mini-link" onclick="openDebtDetail('${esc(l.maCN)}')">${esc(l.maCN)}</a>` : ''}</div>
               <div class="ac-meta">STK: ${l.soTk ? '<b>' + esc(l.soTk) + '</b>' : '<span class="pill warn">thiếu STK</span>'}${l.chiNhanh ? ' · ' + esc(l.chiNhanh) : ''}${l.mst ? ' · MST: ' + esc(l.mst) : ''}</div>
               ${(l.chungTu || []).length ? `<div class="ac-meta">Chứng từ: ${attachLinks(l.chungTu)}</div>` : ''}
+              ${l.maCN ? `<div class="ac-meta"><button class="secondary" style="min-height:26px;padding:2px 10px" onclick="openDebtDetail('${esc(l.maCN)}')">Xem đầy đủ thông tin & chứng từ</button></div>` : ''}
               ${l.paid
-                ? `<div class="notice ok" style="margin:6px 0">✔ Đã chuyển. Ảnh: ${attachLinks(l.paidProof)}</div>`
-                : `<div class="actions" style="align-items:flex-end;margin-top:6px">
+                ? `<div class="notice ok" style="margin:6px 0">✔ Đã chuyển ${fmtMoney(l.soTienDaChuyen != null ? l.soTienDaChuyen : l.soTien)}đ. Ảnh: ${attachLinks(l.paidProof)}</div>`
+                : `<div class="actions" style="align-items:flex-end;margin-top:6px;flex-wrap:wrap">
+                    <div class="field" style="margin:0;max-width:180px"><label>Số tiền đã chuyển *</label><input id="camt_${esc(l.lineId)}" class="js-money hl-input" inputmode="decimal" value="${esc(moneyFormat(l.soTien))}"></div>
                     <div class="field" style="margin:0"><label>Ảnh chuyển khoản *</label><input id="clp_${esc(l.lineId)}" type="file" class="hl-input" multiple accept=".pdf,image/*"></div>
                     <button onclick="cashierPayLine('${esc(l.lineId)}', this)">✔ Xác nhận đã chuyển khoản này</button>
                   </div>`}
@@ -2647,10 +2719,12 @@
     }
     async function cashierPayLine(lineId, btn) {
       if (!(document.getElementById('clp_' + lineId)?.files.length)) { toast('Bắt buộc đính kèm ảnh chuyển khoản.', 'err'); return; }
-      if (!confirm('Xác nhận đã chuyển khoản này? Hệ thống sẽ trừ công nợ và báo NVMH.')) return;
+      const amt = Number(moneyRaw('camt_' + lineId));
+      if (!amt || amt <= 0) { toast('Nhập số tiền đã chuyển (> 0).', 'err'); return; }
+      if (!confirm(`Xác nhận đã chuyển ${fmtMoney(amt)}đ cho khoản này? Số này sẽ được ghi vào công nợ (KTTH/Admin có thể điều chỉnh sau).`)) return;
       try {
         const proof = await withBusy(btn, 'Đang tải ảnh...', () => uploadAttachments('clp_' + lineId, 'chi-tien/uy-nhiem'));
-        await withBusy(btn, 'Đang xác nhận...', () => call('rpc_cashier_pay_line', { p_line_id: lineId, p_proof: proof }));
+        await withBusy(btn, 'Đang xác nhận...', () => call('rpc_cashier_pay_line', { p_line_id: lineId, p_proof: proof, p_amount: amt }));
         toast('Đã xác nhận chuyển khoản.', 'ok'); loadCashierQueue();
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
@@ -2747,7 +2821,7 @@
           return `<div class="card" style="padding:12px;margin:8px 0;box-shadow:none;border:1px solid var(--line)">
               <div class="ac-top" style="justify-content:space-between"><strong>${esc(p.maDeXuatTT)}</strong><span>${esc(p.nguoiLap || '')} · <b>${fmtMoney(p.tong)}đ</b></span></div>
               <div class="table-wrap" style="max-height:none"><table><thead><tr><th>NCC</th><th>Bộ phận</th><th>Nội dung</th><th>Hồ sơ</th><th class="num-cell">Số tiền</th></tr></thead><tbody>${lines}</tbody></table></div>
-              <div class="actions" style="margin-top:6px"><button class="secondary" onclick="openPayReqDetail('${esc(p.maDeXuatTT)}')">Xem chi tiết đầy đủ</button><button class="danger" onclick="bouncePayReq('${esc(p.maDeXuatTT)}')">↩ Trả lại</button></div>
+              <div class="actions" style="margin-top:6px"><button onclick="approvePayReqOne('${esc(p.maDeXuatTT)}', this)">✔ Duyệt phiếu này</button><button class="secondary" onclick="openPayReqDetail('${esc(p.maDeXuatTT)}')">Xem chi tiết đầy đủ</button><button class="danger" onclick="bouncePayReq('${esc(p.maDeXuatTT)}')">↩ Trả lại</button></div>
             </div>`;
         }).join('');
         return `<section class="card" style="margin-bottom:14px">
@@ -2757,13 +2831,12 @@
             </div>
             ${bp ? `<div class="ac-meta">Theo bộ phận: ${bp}</div>` : ''}
             ${phieu}
-            <div class="actions" style="margin-top:8px"><button onclick="approvePayDay('${esc(d.ngay)}', this)">✔ Duyệt tất cả ${d.soPhieu} phiếu ngày ${esc(d.ngay)}</button></div>
           </section>`;
       }).join('');
     }
-    async function approvePayDay(ngay, btn) {
-      if (!confirm(`Duyệt TẤT CẢ phiếu thanh toán ngày ${ngay}?`)) return;
-      try { const r = await withBusy(btn, 'Đang duyệt...', () => call('rpc_approve_payreq_day', { p_ngay: ngay, p_note: '' })); toast(`Đã duyệt ${r.approved} phiếu ngày ${ngay}.`, 'ok'); loadPendingPayReq(); loadPayReqHistory && loadPayReqHistory(); }
+    async function approvePayReqOne(ma, btn) {
+      if (!confirm(`Duyệt phiếu thanh toán ${ma}? (Mỗi phiếu đã gồm nhiều khoản — duyệt từng phiếu một.)`)) return;
+      try { await withBusy(btn, 'Đang duyệt...', () => call('rpc_approve_payment_request', { p_ma: ma, p_note: '' })); toast(`Đã duyệt ${ma}.`, 'ok'); loadPendingPayReq(); loadPayReqHistory && loadPayReqHistory(); }
       catch (err) { toast(err.message || String(err), 'err'); }
     }
     function bouncePayReq(ma) {
@@ -3018,8 +3091,8 @@
           <div class="field"><label>Người đề nghị</label><input id="yNguoi" value="${esc(p.NguoiDeNghi||'')}"></div>
         </div>
         <div class="grid">
-          <div class="field"><label>Số tài khoản (tự lấy)</label><input value="${esc(p.SoTk||'(chưa có — bổ sung ở Danh mục)')}" disabled></div>
-          <div class="field"><label>Ngân hàng / chi nhánh (tự lấy)</label><input value="${esc(p.ChiNhanh||'')}" disabled></div>
+          <div class="field"><label>Số tài khoản (tự lấy — sửa/nhập được)</label><input id="yStk" class="${p.SoTk ? '' : 'hl-input'}" value="${esc(p.SoTk||'')}" placeholder="Tự nhập nếu chưa có trong danh mục"></div>
+          <div class="field"><label>Ngân hàng / chi nhánh (tự lấy — sửa/nhập được)</label><input id="yChiNhanh" class="${p.ChiNhanh ? '' : 'hl-input'}" value="${esc(p.ChiNhanh||'')}" placeholder="Tự nhập nếu chưa có"></div>
         </div>
         <h3>Chứng từ — theo số lượng nghiệm thu &amp; VAT (nhập số hóa đơn tay)</h3>
         <div class="table-wrap"><table class="line-table"><thead><tr><th>STT</th><th>Số chứng từ / hóa đơn</th><th>Diễn giải</th><th>SL nghiệm thu</th><th>Đơn giá</th><th>Thành tiền (sau VAT)</th></tr></thead><tbody>
@@ -3051,8 +3124,8 @@
           // Điền các ô cố định (giữ nguyên bố cục mẫu)
           ws.getCell('D5').value = val('yNguoi') || p.NguoiDeNghi || '';
           ws.getCell('D11').value = p.TenDoiTuong || '';
-          ws.getCell('D13').value = p.SoTk || '';
-          ws.getCell('D15').value = p.ChiNhanh || '';
+          ws.getCell('D13').value = val('yStk') || p.SoTk || '';
+          ws.getCell('D15').value = val('yChiNhanh') || p.ChiNhanh || '';
           // Giữ nguyên độ rộng cột của mẫu gốc (SL hiện, Đơn Giá ẩn như bản gốc).
           // Lấy style mẫu (clone) của vùng bảng + tổng + chữ ký TRƯỚC khi xóa
           const st = {
