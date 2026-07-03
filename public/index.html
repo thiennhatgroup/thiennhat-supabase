@@ -343,6 +343,8 @@
     /* Mobile: bảng dữ liệu (chỉ đọc) xếp DỌC thành thẻ, khỏi cuộn ngang.
        Bảng nhập liệu .line-table giữ nguyên (cho phép cuộn). */
     .detail-total { text-align: right; font-size: 16px; margin-top: 8px; padding-top: 8px; border-top: 2px solid var(--line); }
+    .hl-input { background: #FFF9DB !important; }
+    .locked-input { background: #EEF1F5; color: #667; }
     .to-top { display: none; position: fixed; right: 14px; bottom: 18px; z-index: 40; width: 46px; height: 46px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; }
     .to-top.show { display: block; }
     .back-fab { display: none; position: fixed; left: 12px; bottom: 18px; z-index: 40; align-items: center; gap: 6px; padding: 0 16px; height: 46px; border-radius: 24px; border: none; background: var(--ink); color: #fff; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; }
@@ -794,16 +796,12 @@
             <div class="mjump"><button class="secondary" onclick="jumpTo('qEntry')">↑ Lên form nhập báo giá</button></div>
             <h2>Theo dõi báo giá nhà cung cấp</h2>
             <div class="notice ok">
-              Chọn hoặc nhập mới mặt hàng. Hệ thống lấy giá mới nhất tại hoặc trước ngày so sánh, rồi xếp hạng NCC theo giá sau VAT.
+              Chọn mặt hàng đã có mã. Hệ thống lấy giá mới nhất tại hoặc trước ngày so sánh, rồi xếp hạng NCC theo giá sau VAT. (Muốn thêm mã mới, dùng "Nhập báo giá mới" bên phải.)
             </div>
             <div class="grid">
               <div class="field">
                 <label>Mặt hàng / vật tư</label>
-                <div class="combo-stack">
-                  <select id="qItem">${materialOptions(state.quote?.item || '')}</select>
-                  <input id="qItemNew" placeholder="Nhập mặt hàng mới nếu chưa có trong danh mục">
-                </div>
-                <small>Ô nhập mới được ưu tiên hơn dropdown.</small>
+                <select id="qItem" onchange="loadQuoteDashboard()">${materialOptions(state.quote?.item || '')}</select>
               </div>
               <div class="field">
                 <label>Ngày so sánh</label>
@@ -820,8 +818,8 @@
             <h2>Nhập báo giá mới</h2>
             <p class="status">Nhập báo giá trực tiếp tại đây; bảng bên trái sẽ cập nhật ngay ở lần làm mới kế tiếp.</p>
             <div class="field"><label>Ngày báo giá</label><input id="nqNgay" type="date" value="${todayStr()}"></div>
-            <div class="field"><label>Mặt hàng</label><div class="combo-stack"><select id="nqItem" onchange="onQuoteMatChange()">${materialOptions('')}</select><input id="nqItemNew" placeholder="Nhập mặt hàng mới" oninput="onQuoteMatChange()"></div></div>
-            <div class="field"><label>Nhà cung cấp</label><div class="combo-stack"><select id="nqNccSel">${supplierNameOptions()}</select><input id="nqNccNew" placeholder="Nhập NCC mới nếu chưa có"></div><small>Chọn từ danh mục, hoặc nhập mới ở ô dưới.</small></div>
+            <div class="field"><label>Mặt hàng</label><div class="combo-stack"><select id="nqItem" onchange="onQuoteMatChange()">${materialOptions('')}</select><button type="button" class="secondary" onclick="createMaterialPopup(quotePickNewMat)">＋ Tạo mặt hàng mới</button></div><small>Chỉ hiện mặt hàng thuộc bộ phận bạn. Chưa có thì bấm "Tạo mặt hàng mới".</small></div>
+            <div class="field"><label>Nhà cung cấp</label><div class="combo-stack"><select id="nqNccSel">${supplierNameOptions()}</select><button type="button" class="secondary" onclick="createSupplierPopup(quotePickNewNcc)">＋ Tạo NCC mới</button></div></div>
             <div class="grid">
               <div class="field"><label>Đơn vị tính (ĐVT)</label><input id="nqDvt" placeholder="vd: lít, kg, phuy"></div>
               <div class="field"><label>Giá chào (chưa VAT)</label><input id="nqGia" class="js-money" inputmode="decimal"></div>
@@ -933,9 +931,14 @@
     function objectFields(prefix='') {
       return `
         <div class="grid">
-          <div class="field"><label>Mã đối tượng</label><div class="combo-stack"><select id="${prefix}maDoiTuong" onchange="fillObjectName('${prefix}')">${objectOptions()}</select><input id="${prefix}maDoiTuongMoi" placeholder="Nhập mã mới nếu chưa có trong danh mục"></div><small>Ô nhập mới sẽ được ưu tiên nếu có nội dung.</small></div>
-          <div class="field"><label>Tên đối tượng</label><input id="${prefix}tenDoiTuong"></div>
+          <div class="field"><label>Nhà cung cấp</label><div class="combo-stack"><select id="${prefix}maDoiTuong" onchange="fillObjectName('${prefix}')">${objectOptions()}</select><button type="button" class="secondary" onclick="createSupplierPopup(r=>objectPickNewNcc('${prefix}', r))">＋ Tạo NCC mới</button></div><small>Chỉ hiện NCC thuộc bộ phận bạn. Chưa có thì bấm "Tạo NCC mới".</small></div>
+          <div class="field"><label>Tên nhà cung cấp</label><input id="${prefix}tenDoiTuong"></div>
         </div>`;
+    }
+    function objectPickNewNcc(prefix, r) {
+      const sel = document.getElementById(prefix + 'maDoiTuong');
+      if (sel) { sel.innerHTML = objectOptions(); sel.value = r.MaDoiTuong; }
+      fillObjectName(prefix);
     }
     function objectOptions() {
       return '<option value="">-- Chọn đối tượng / nhập mới --</option>' + state.doiTuong.map(d =>
@@ -943,6 +946,16 @@
       ).join('');
     }
 
+    function quotePickNewMat(r) {
+      const sel = document.getElementById('nqItem');
+      if (sel) { sel.innerHTML = materialOptions(r.ten); sel.value = r.ten; }
+      const dvt = document.getElementById('nqDvt'); if (dvt && r.dvt) dvt.value = r.dvt;
+      onQuoteMatChange();
+    }
+    function quotePickNewNcc(r) {
+      const sel = document.getElementById('nqNccSel');
+      if (sel) { sel.innerHTML = supplierNameOptions(r.TenDoiTuong); sel.value = r.TenDoiTuong; }
+    }
     function supplierNameOptions(selected) {
       const cur = String(selected || '').trim();
       return '<option value="">-- Chọn nhà cung cấp --</option>' + (state.doiTuong || []).map(d =>
@@ -2028,7 +2041,7 @@
     async function loadCatalog() {
       try {
         const res = await call('rpc_list_catalog');
-        state.catalog = { materials: res.materials || [], suppliers: res.suppliers || [], groups: res.groups || [] };
+        state.catalog = { materials: res.materials || [], suppliers: res.suppliers || [], groups: res.groups || [], canCreate: !!res.canCreate, canManage: !!res.canManage };
         drawCatalog();
       } catch (err) {
         document.getElementById('catBody').innerHTML = `<p class="status">Không tải được danh mục: ${esc(err.message || err)}</p>`;
@@ -2047,12 +2060,13 @@
     function drawCatalog() {
       const box = document.getElementById('catBody');
       if (!box) return;
-      const manage = can('catalog:manage');
+      const manage = !!(state.catalog && state.catalog.canManage) || can('catalog:manage');
+      const canCreate = !!(state.catalog && state.catalog.canCreate) || manage;
       if (state.catTab === 'mat') {
         const rows = state.catalog.materials;
         const noDvt = rows.filter(m => !String(m.dvt || '').trim()).length;
         const noNhom = rows.filter(m => !String(m.nhom || '').trim()).length;
-        const addBtn = manage ? `<button class="secondary" onclick="openGroupManager()">Nhóm hàng</button><button class="secondary" onclick="addProposerPrompt()">Người đề nghị</button><button onclick="openMaterialForm()">＋ Thêm mặt hàng</button>` : '';
+        const addBtn = (manage ? `<button class="secondary" onclick="openGroupManager()">Nhóm hàng</button><button class="secondary" onclick="addProposerPrompt()">Người đề nghị</button><button onclick="openMaterialForm()">＋ Thêm mặt hàng</button>` : (canCreate ? `<button onclick="createMaterialPopup(()=>loadCatalog())">＋ Thêm mặt hàng</button>` : ''));
         const warn = (noDvt || noNhom) ? `<div class="notice err" style="margin-bottom:10px">⚠ Cần chuẩn hoá danh mục: ${noDvt ? `<b>${noDvt}</b> mặt hàng chưa có ĐVT` : ''}${noDvt && noNhom ? ' · ' : ''}${noNhom ? `<b>${noNhom}</b> mặt hàng chưa gán nhóm` : ''}. <a href="#" onclick="filterMissingDvt(event)">Lọc mặt hàng thiếu ĐVT</a></div>` : `<div class="notice ok" style="margin-bottom:10px">✔ Mọi mặt hàng đều có ĐVT và nhóm hàng.</div>`;
         box.innerHTML = `
           ${warn}
@@ -2062,7 +2076,7 @@
           </div>
           <div class="table-wrap" style="margin-top:12px">
             <table><thead><tr>
-              <th>Mã VT</th><th>Tên mặt hàng</th><th>Nhóm hàng</th><th>ĐVT</th><th>Trạng thái</th>${manage ? '<th>Thao tác</th>' : ''}
+              <th>Mã VT</th><th>Tên mặt hàng</th><th>Nhóm hàng</th><th>ĐVT</th><th>Bộ phận</th><th>Trạng thái</th>${manage ? '<th>Thao tác</th>' : ''}
             </tr></thead><tbody id="catMatRows">
               ${rows.map(m => matRow(m, manage)).join('')}
             </tbody></table>
@@ -2070,7 +2084,7 @@
           <small>${rows.length} mặt hàng.</small>`;
       } else {
         const rows = state.catalog.suppliers;
-        const addBtn = manage ? `<button onclick="openSupplierForm()">＋ Thêm nhà cung cấp</button>` : '';
+        const addBtn = (manage ? `<button onclick="openSupplierForm()">＋ Thêm nhà cung cấp</button>` : (canCreate ? `<button onclick="createSupplierPopup(()=>loadCatalog())">＋ Thêm nhà cung cấp</button>` : ''));
         box.innerHTML = `
           <div class="cat-toolbar">
             <input id="catNccSearch" placeholder="Tìm theo mã / tên / MST..." oninput="drawCatalog._filter()">
@@ -2078,7 +2092,7 @@
           </div>
           <div class="table-wrap" style="margin-top:12px">
             <table><thead><tr>
-              <th>Mã ĐT</th><th>Tên đối tượng</th><th>Loại</th><th>Liên hệ</th><th>Điều khoản TT</th><th>Trạng thái</th>${manage ? '<th>Thao tác</th>' : ''}
+              <th>Mã ĐT</th><th>Tên đối tượng</th><th>Loại</th><th>Liên hệ</th><th>Điều khoản TT</th><th>Bộ phận</th><th>Trạng thái</th>${manage ? '<th>Thao tác</th>' : ''}
             </tr></thead><tbody id="catNccRows">
               ${rows.map(s => nccRow(s, manage)).join('')}
             </tbody></table>
@@ -2092,6 +2106,7 @@
         <td>${esc(m.ten || '')}</td>
         <td>${m.nhom ? esc(m.nhom) : '<span class="pill warn">Chưa gán</span>'}</td>
         <td>${m.dvt ? esc(m.dvt) : '<span class="pill err">Thiếu ĐVT</span>'}</td>
+        <td>${m.boPhan ? esc(m.boPhan) : '<span class="status">chung</span>'}</td>
         <td>${statusPill(m.trangThai)}</td>
         ${manage ? `<td><button class="secondary" onclick="openMaterialForm('${m.id}')">Sửa</button></td>` : ''}
       </tr>`;
@@ -2103,6 +2118,7 @@
         <td>${esc(s.loai || '')}</td>
         <td>${esc(s.contact || s.sdt || '')}</td>
         <td>${esc(s.dieuKhoan || '')}</td>
+        <td>${s.boPhan ? esc(s.boPhan) : '<span class="status">chung</span>'}</td>
         <td>${statusPill(s.trangThai)}</td>
         ${manage ? `<td><button class="secondary" onclick="openSupplierForm('${s.id}')">Sửa</button></td>` : ''}
       </tr>`;
@@ -2172,6 +2188,50 @@
           Promise.resolve(onConfirm(v)).catch(err => toast(err.message || String(err), 'err'));
         }, confirmLabel || 'Xác nhận');
       setTimeout(() => document.getElementById('reasonInput')?.focus(), 60);
+    }
+    // ---- Popup tạo nhanh vật tư / NCC (mã tự sinh, gắn bộ phận người tạo) ----
+    function createMaterialPopup(onDone) {
+      openModal('Tạo mặt hàng mới', `
+        <div class="notice">Mã vật tư do <b>hệ thống tự tạo</b>. Chỉ cần điền các ô <b>tô vàng</b>.</div>
+        <div class="field"><label>Tên mặt hàng *</label><input id="cmTen" class="hl-input"></div>
+        <div class="grid">
+          <div class="field"><label>Đơn vị tính (ĐVT) *</label><input id="cmDvt" class="hl-input" placeholder="lít, kg, phuy…"></div>
+          <div class="field"><label>Nhóm hàng</label><input id="cmNhom" class="hl-input" placeholder="(tùy chọn)"></div>
+        </div>`, async function () {
+          const ten = (val('cmTen') || '').trim(); if (!ten) { modalErr('Nhập tên mặt hàng.'); return; }
+          try {
+            const r = await call('rpc_create_material_quick', { p_ten: ten, p_dvt: val('cmDvt') || null, p_nhom: val('cmNhom') || null });
+            if (r.ten && !(state.vatTu || []).includes(r.ten)) state.vatTu.push(r.ten);
+            if (r.ten && !(state.vatTuInfo || []).some(x => x.ten === r.ten)) state.vatTuInfo.push({ ten: r.ten, dvt: r.dvt });
+            closeModal(); toast(r.existed ? 'Mặt hàng đã có — đã chọn.' : 'Đã tạo mặt hàng.', 'ok'); if (onDone) onDone(r);
+          } catch (e) { modalErr(e.message || String(e)); }
+        }, 'Tạo');
+      setTimeout(() => document.getElementById('cmTen')?.focus(), 60);
+    }
+    function createSupplierPopup(onDone) {
+      openModal('Tạo nhà cung cấp mới', `
+        <div class="notice">Mã NCC do <b>hệ thống tự tạo</b>. Điền các ô <b>tô vàng</b> (Tên bắt buộc).</div>
+        <div class="field"><label>Tên nhà cung cấp *</label><input id="csTen" class="hl-input"></div>
+        <div class="grid">
+          <div class="field"><label>MST</label><input id="csMst" class="hl-input"></div>
+          <div class="field"><label>Điều khoản thanh toán</label><input id="csDk" class="hl-input" placeholder="VD: NET30"></div>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Số TK ngân hàng</label><input id="csStk" class="hl-input"></div>
+          <div class="field"><label>Ngân hàng / chi nhánh</label><input id="csCn" class="hl-input"></div>
+        </div>
+        <div class="grid">
+          <div class="field"><label>Người liên hệ</label><input id="csContact" class="hl-input"></div>
+          <div class="field"><label>SĐT</label><input id="csSdt" class="hl-input"></div>
+        </div>`, async function () {
+          const ten = (val('csTen') || '').trim(); if (!ten) { modalErr('Nhập tên NCC.'); return; }
+          try {
+            const r = await call('rpc_create_supplier_quick', { p_payload: { ten, mst: val('csMst'), dieuKhoan: val('csDk'), soTk: val('csStk'), chiNhanh: val('csCn'), contact: val('csContact'), sdt: val('csSdt') } });
+            if (!(state.doiTuong || []).some(d => d.MaDoiTuong === r.MaDoiTuong)) state.doiTuong.push({ MaDoiTuong: r.MaDoiTuong, TenDoiTuong: r.TenDoiTuong, DieuKhoanTT_MacDinh: r.DieuKhoanTT_MacDinh });
+            closeModal(); toast(r.existed ? 'NCC đã có — đã chọn.' : 'Đã tạo NCC.', 'ok'); if (onDone) onDone(r);
+          } catch (e) { modalErr(e.message || String(e)); }
+        }, 'Tạo');
+      setTimeout(() => document.getElementById('csTen')?.focus(), 60);
     }
     function groupOptions(selected) {
       return ['<option value="">— Chưa gán —</option>']
