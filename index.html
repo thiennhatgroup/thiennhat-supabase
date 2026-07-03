@@ -1922,9 +1922,10 @@
         const res = await call('rpc_list_payments', { p_ma_doi_tuong: val('dpMa') || null, p_limit: 50 });
         const rows = res.rows || [];
         box.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>
-          <th>Mã TT</th><th>Ngày</th><th>Nhà cung cấp</th><th>Mã CN</th><th class="num-cell">Số tiền</th><th>Người ghi</th><th></th></tr></thead><tbody>
+          <th>Mã TT</th><th>Ngày</th><th>Nhà cung cấp</th><th>Mã CN</th><th class="num-cell">Số tiền</th><th>Người ghi</th><th>Ảnh chuyển khoản</th><th></th></tr></thead><tbody>
           ${rows.map(r => `<tr><td><code>${esc(r.maThanhToan)}</code></td><td>${esc(r.ngay||'')}</td><td>${esc(r.tenDoiTuong||'')}</td>
             <td>${esc(r.maCN||'')}</td><td class="num-cell">${fmtMoney(r.soTien)}</td><td>${esc(r.nguoi||'')}</td>
+            <td>${(r.anhChuyenKhoan||[]).length ? attachLinks(r.anhChuyenKhoan) : '—'}</td>
             <td><button class="danger" style="min-height:32px;padding:3px 10px" onclick="undoPayment('${esc(r.maThanhToan)}', this)">Hủy</button></td></tr>`).join('')}
           </tbody></table></div>` : '<p class="status">Chưa có lần thanh toán nào.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
@@ -3479,7 +3480,7 @@
       if (state.chatMode === 'group' && state.chatGroup) openGroup(state.chatGroup, state.chatGroupName);
       else if (state.chatWith) openChat(state.chatWith, state.chatWithName);
       if (state.chatTimer) clearInterval(state.chatTimer);
-      state.chatTimer = setInterval(() => { if (state.screen === 'chat') { loadContacts(); loadGroups(); if (state.chatWith || state.chatGroup) loadThread(); } }, 8000);
+      state.chatTimer = setInterval(() => { if (state.screen === 'chat' && (state.chatWith || state.chatGroup)) loadThread(); }, 15000);
     }
     async function loadGroups() {
       const box = document.getElementById('chatGroups'); if (!box) return;
