@@ -832,6 +832,7 @@
             <p id="nqMsg" class="status" style="margin-top:8px"></p>
           </aside>
         </div>`;
+      if (!can('quote:sync')) { document.getElementById('qEntry')?.remove(); }
       loadQuoteDashboard();
       addNqLine();
     }
@@ -1438,10 +1439,23 @@
       const box = document.getElementById('pendingBox');
       if (!box) return;
       const rows = state.pending || [];
-      if (!rows.length) { box.innerHTML = '<p class="status">Không có đề xuất nào chờ duyệt.</p>'; return; }
+      if (!rows.length) { box.innerHTML = '<div class="notice ok">✔ Không có đề xuất nào chờ duyệt. Bạn đã xử lý hết!</div>'; return; }
       const inPlan = rows.filter(r => r.TrongKeHoachTuan);
       const offPlan = rows.filter(r => !r.TrongKeHoachTuan);
       const sum = list => list.reduce((s, r) => s + Number(r.TongTien || 0), 0);
+      const THR = 10000000;
+      const big = rows.filter(r => Number(r.TongTien || 0) >= THR);
+      const dates = rows.map(r => r.NgayDeXuat).filter(Boolean).sort();
+      const byBp = {};
+      rows.forEach(r => { const k = r.BoPhan || '(không rõ)'; byBp[k] = (byBp[k] || 0) + Number(r.TongTien || 0); });
+      const bpTxt = Object.entries(byBp).map(([k, v]) => `${esc(k)}: <b>${fmtMoney(v)}đ</b>`).join(' · ');
+      const summary = `<div class="totals" style="margin-bottom:14px">
+          <div class="metric"><span>Cần duyệt</span><strong>${rows.length}<small>phiếu</small></strong></div>
+          <div class="metric"><span>Tổng tiền chờ duyệt</span><strong>${fmtMoney(sum(rows))}<small>đ</small></strong></div>
+          <div class="metric"><span>Ngoài kế hoạch</span><strong>${offPlan.length}<small>phiếu</small></strong></div>
+          <div class="metric"><span>Khoản ≥ 10 triệu</span><strong>${big.length}<small>phiếu</small></strong></div>
+        </div>
+        <div class="ac-meta" style="margin-bottom:10px">Phiếu sớm nhất chờ: <b>${esc(dates[0] || '—')}</b>${bpTxt ? ` · Theo bộ phận: ${bpTxt}` : ''}</div>`;
       const sec = (title, tone, list) => `
         <div class="approve-sec ${tone}">
           <div class="approve-sec-h">
@@ -1450,7 +1464,7 @@
           </div>
           ${list.length ? `<div class="approve-grid">${list.map(r => cardPending(r, tone)).join('')}</div>` : '<p class="status" style="padding:4px 2px">Không có phiếu.</p>'}
         </div>`;
-      box.innerHTML =
+      box.innerHTML = summary +
         sec('✔ Đã nằm trong kế hoạch chi tuần', 'ok', inPlan) +
         sec('⚠ Chưa nằm trong kế hoạch — khoản phát sinh (xem giải trình)', 'warn', offPlan);
     }
