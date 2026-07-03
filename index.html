@@ -2324,16 +2324,18 @@
 
     // ===== Đợt B: Đề xuất thanh toán (kế toán) =============================
     function renderPayReq() {
+      const ed = state.editingPayReq;
       document.getElementById('content').innerHTML = `
         <section class="card">
-          <h2>Đề xuất thanh toán</h2>
-          <div class="notice ok">Gom các khoản đến hạn thành một đề xuất trình lãnh đạo. Có thể nạp từ công nợ đã duyệt, hoặc tự thêm dòng (điện, vận hành…) kèm giải trình. Chỉ đi tiền được sau khi lãnh đạo duyệt.</div>
+          <h2>${ed ? 'Sửa đề xuất thanh toán ' + esc(ed.MaDeXuatTT) : 'Đề xuất thanh toán'}</h2>
+          <div class="notice ok">Gom các khoản đến hạn thành một đề xuất trình lãnh đạo. Nạp từ công nợ đã kế toán lưu, hoặc tự thêm dòng (điện, vận hành…) kèm giải trình. Chỉ đi tiền được sau khi lãnh đạo duyệt.</div>
+          ${ed && ed.LyDoTraLai ? `<div class="notice err">↩ Bị trả lại: ${esc(ed.LyDoTraLai)} — chỉnh lại rồi Gửi lại duyệt.</div>` : ''}
           <div class="grid">
-            <div class="field"><label>Ngày đề xuất</label><input id="prNgay" type="date" value="${todayStr()}"></div>
-            <div class="field"><label>Ghi chú</label><input id="prGhiChu" placeholder="VD: Đề xuất chi ngày ${todayStr()}"></div>
+            <div class="field"><label>Ngày đề xuất</label><input id="prNgay" type="date" value="${ed ? esc(ed.Ngay) : todayStr()}"></div>
+            <div class="field"><label>Ghi chú</label><input id="prGhiChu" value="${ed ? esc(ed.GhiChu || '') : ''}" placeholder="VD: Đề xuất chi ngày ${todayStr()}"></div>
           </div>
           <div class="actions">
-            <button class="secondary" onclick="openPayablePicker(this)">＋ Nạp phiếu đã nghiệm thu (đến hạn)</button>
+            <button class="secondary" onclick="openPayablePicker(this)">＋ Nạp phiếu đã lưu công nợ (đến hạn)</button>
             <button class="secondary" onclick="addPayLine()">＋ Thêm dòng tự nhập</button>
           </div>
           <div class="table-wrap"><table id="prTable" class="line-table"><thead><tr>
@@ -2343,16 +2345,23 @@
           </tr></thead><tbody></tbody></table></div>
           <div class="total-bar">Tổng đề xuất thanh toán: <strong id="prTotal">0 đ</strong></div>
           <div class="actions">
-            <button class="secondary" onclick="savePayReq('Nháp', this)">Lưu nháp</button>
-            <button onclick="savePayReq('Chờ duyệt', this)">Gửi duyệt</button>
+            <button class="secondary" onclick="savePayReq('Nháp', this)">${ed ? 'Lưu thay đổi' : 'Lưu nháp'}</button>
+            <button onclick="savePayReq('Chờ duyệt', this)">${ed ? 'Gửi lại duyệt →' : 'Gửi duyệt'}</button>
+            ${ed ? `<button class="secondary" onclick="state.editingPayReq=null; renderPayReq()">Huỷ sửa</button>` : ''}
           </div>
         </section>
         <section class="card" style="margin-top:16px">
           <h2>Đề xuất của tôi</h2>
           <div id="myPayReqBox">${loadingText('Đang tải...')}</div>
         </section>`;
-      addPayLine();
+      const tb = document.querySelector('#prTable tbody');
+      if (ed && (ed.lines || []).length) { tb.innerHTML = ''; ed.lines.forEach(l => addPayLine(l)); }
+      else addPayLine();
       loadMyPayReq();
+    }
+    async function editPayReq(ma) {
+      try { const res = await call('rpc_get_payment_request', { p_ma: ma }); state.editingPayReq = res.pr; renderPayReq(); toast('Đang sửa ' + ma, 'ok'); }
+      catch (err) { toast(err.message || String(err), 'err'); }
     }
     function payLineRow(d={}) {
       return `<tr data-debt-id="${esc(d.debtId || '')}">
@@ -2403,7 +2412,7 @@
             <td><button class="secondary" onclick='addPayableRow(${JSON.stringify(r).replace(/'/g,"&#39;")}); toast("Đã thêm ${esc(r.maCN)}","ok");'>+ Thêm</button></td>
           </tr>`).join('')}</tbody></table></div>`
           : '<p class="status">Không có khoản công nợ nào còn số dư. Với khoản trả trước chưa nhận hàng, hãy dùng "Thêm dòng tự nhập" kèm giải trình.</p>';
-        openModal('Khoản đã nghiệm thu / đến hạn', body, null, null);
+        openModal('Khoản đã lưu công nợ / đến hạn', body, null, null);
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
     function addPayableRow(r) {
@@ -2415,8 +2424,13 @@
       const bad = lines.find(l => !l.debtId && !l.giaiTrinh.trim());
       if (status === 'Chờ duyệt' && bad) { toast(`Dòng "${bad.ncc||'?'}" ngoài công nợ — cần giải trình.`, 'err'); return; }
       try {
-        const res = await withBusy(btn, 'Đang lưu...', () => call('rpc_create_payment_request', { p_payload: { status, ngay: val('prNgay'), ghiChu: val('prGhiChu'), lines } }));
+        const ed = state.editingPayReq;
+        const payload = { status, ngay: val('prNgay'), ghiChu: val('prGhiChu'), lines };
+        const res = ed
+          ? await withBusy(btn, 'Đang lưu...', () => call('rpc_update_payment_request', { p_ma: ed.MaDeXuatTT, p_payload: payload }))
+          : await withBusy(btn, 'Đang lưu...', () => call('rpc_create_payment_request', { p_payload: payload }));
         toast(`Đã lưu ${res.maDeXuatTT} (${res.status}).`, 'ok');
+        state.editingPayReq = null;
         renderPayReq();
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
@@ -2431,7 +2445,7 @@
             <td><code>${esc(r.MaDeXuatTT)}</code></td><td>${esc(r.Ngay)}</td>
             <td class="num-cell">${fmtMoney(r.TongTien)}</td>
             <td>${payReqPill(r.TrangThai)}</td>
-            <td>${r.TrangThai==='Đã duyệt' ? `<button onclick="executePayReq('${esc(r.MaDeXuatTT)}', this)">Đã chi tiền</button>` : (r.TrangThai==='Từ chối' && r.LyDoTuChoi ? `<span class="status">Lý do: ${esc(r.LyDoTuChoi)}</span>` : '—')}</td>
+            <td>${r.TrangThai==='Đã duyệt' ? `<button onclick="executePayReq('${esc(r.MaDeXuatTT)}', this)">Đã chi tiền</button>` : (r.TrangThai==='Nháp' ? `<button class="secondary" onclick="editPayReq('${esc(r.MaDeXuatTT)}')">Sửa &amp; gửi lại</button>` : (r.TrangThai==='Từ chối' && r.LyDoTuChoi ? `<span class="status">Lý do: ${esc(r.LyDoTuChoi)}</span>` : '—'))}</td>
           </tr>`).join('')}</tbody></table></div>` : '<p class="status">Chưa có đề xuất nào.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
     }
@@ -2483,22 +2497,46 @@
       const box = document.getElementById('payPendingBox');
       if (box) box.innerHTML = loadingText('Đang tải...');
       try {
-        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_get_pending_payment_requests'));
-        state.payPending = res.rows || [];
-        drawPendingPayReq();
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_get_pending_payreq_grouped'));
+        drawPendingPayDays(res.days || []);
       } catch (err) { if (box) box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
     }
-    function drawPendingPayReq() {
+    function drawPendingPayDays(days) {
       const box = document.getElementById('payPendingBox');
-      const rows = state.payPending || [];
-      if (!rows.length) { box.innerHTML = '<p class="status">Không có đề xuất thanh toán chờ duyệt.</p>'; return; }
-      box.innerHTML = `<div class="approve-grid">${rows.map(r => `
-        <div class="approve-card" onclick="openPayReqDetail('${esc(r.MaDeXuatTT)}')">
-          <div class="ac-top"><strong>${esc(r.MaDeXuatTT)}</strong><span class="pill">${(r.lines||[]).length} dòng</span></div>
-          <div class="ac-money">${fmtMoney(r.TongTien)} <small>đ</small></div>
-          <div class="ac-meta">${esc(r.Ngay)} · ${esc(r.NguoiLap||'')}</div>
-          <div class="ac-hint">Nhấp để xem &amp; duyệt →</div>
-        </div>`).join('')}</div>`;
+      if (!days.length) { box.innerHTML = '<p class="status">Không có đề xuất thanh toán chờ duyệt.</p>'; return; }
+      box.innerHTML = days.map(d => {
+        const bp = (d.boPhan || []).map(b => `${esc(b.boPhan)}: <b>${fmtMoney(b.tong)}đ</b>`).join(' · ');
+        const phieu = (d.phieu || []).map(p => {
+          const lines = (p.lines || []).map(l => `<tr>
+              <td>${esc(l.ncc || '')}${l.maCN ? ` <small class="status">CN:${esc(l.maCN)}</small>` : ' <span class="pill warn">ngoài PO</span>'}</td>
+              <td>${esc(l.boPhan || '—')}</td><td>${esc(l.matHang || l.noiDung || '')}</td>
+              <td>${esc(l.tinhTrangHoSo || '—')}</td><td class="num-cell">${fmtMoney(l.soTien)}</td></tr>`).join('');
+          return `<div class="card" style="padding:12px;margin:8px 0;box-shadow:none;border:1px solid var(--line)">
+              <div class="ac-top" style="justify-content:space-between"><strong>${esc(p.maDeXuatTT)}</strong><span>${esc(p.nguoiLap || '')} · <b>${fmtMoney(p.tong)}đ</b></span></div>
+              <div class="table-wrap" style="max-height:none"><table><thead><tr><th>NCC</th><th>Bộ phận</th><th>Nội dung</th><th>Hồ sơ</th><th class="num-cell">Số tiền</th></tr></thead><tbody>${lines}</tbody></table></div>
+              <div class="actions" style="margin-top:6px"><button class="secondary" onclick="openPayReqDetail('${esc(p.maDeXuatTT)}')">Xem chi tiết đầy đủ</button><button class="danger" onclick="bouncePayReq('${esc(p.maDeXuatTT)}')">↩ Trả lại</button></div>
+            </div>`;
+        }).join('');
+        return `<section class="card" style="margin-bottom:14px">
+            <div class="ac-top" style="justify-content:space-between;align-items:baseline">
+              <h3 style="margin:0">Ngày ${esc(d.ngay)} — ${d.soPhieu} phiếu</h3>
+              <div class="ac-money" style="margin:0">Tổng ngày: <b>${fmtMoney(d.tong)}</b> <small>đ</small></div>
+            </div>
+            ${bp ? `<div class="ac-meta">Theo bộ phận: ${bp}</div>` : ''}
+            ${phieu}
+            <div class="actions" style="margin-top:8px"><button onclick="approvePayDay('${esc(d.ngay)}', this)">✔ Duyệt tất cả ${d.soPhieu} phiếu ngày ${esc(d.ngay)}</button></div>
+          </section>`;
+      }).join('');
+    }
+    async function approvePayDay(ngay, btn) {
+      if (!confirm(`Duyệt TẤT CẢ phiếu thanh toán ngày ${ngay}?`)) return;
+      try { const r = await withBusy(btn, 'Đang duyệt...', () => call('rpc_approve_payreq_day', { p_ngay: ngay, p_note: '' })); toast(`Đã duyệt ${r.approved} phiếu ngày ${ngay}.`, 'ok'); loadPendingPayReq(); loadPayReqHistory && loadPayReqHistory(); }
+      catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    function bouncePayReq(ma) {
+      promptReason('Trả lại đề xuất thanh toán ' + ma, 'Nêu lý do để kế toán chỉnh & gửi lại...', async (r) => {
+        await call('rpc_bounce_payment_request', { p_ma: ma, p_reason: r }); toast(`Đã trả lại ${ma} cho kế toán.`, 'ok'); closeModal(); loadPendingPayReq();
+      }, 'Trả lại');
     }
     function payLineBlock(l, i) {
       const head = `<div class="ac-top" style="justify-content:space-between">
@@ -2556,7 +2594,8 @@
           <div class="field" style="margin-top:14px"><label>Ghi chú khi duyệt / lý do từ chối</label><textarea id="payApproveNote" placeholder="Bắt buộc khi từ chối."></textarea></div>
           <div class="actions">
             <button onclick="approvePayReq('${esc(ma)}', this)">✔ Duyệt chi</button>
-            <button class="danger" onclick="rejectPayReq('${esc(ma)}', this)">✘ Từ chối</button>
+            <button class="danger" onclick="bouncePayReq('${esc(ma)}')">↩ Trả lại kế toán</button>
+            <button class="secondary" onclick="rejectPayReq('${esc(ma)}', this)">✘ Từ chối</button>
           </div>` : `<div class="notice" style="margin-top:14px">Phiếu đã ở trạng thái <b>${esc(r.TrangThai)}</b>${r.GhiChu ? ' · ' + esc(r.GhiChu) : ''} — chỉ xem.</div>`}`, null, null);
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
