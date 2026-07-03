@@ -1,8 +1,11 @@
 name: Deploy frontend to GitHub Pages
 
-# Publishes the public/ folder to GitHub Pages every time main changes.
-# One-time setup: repo Settings -> Pages -> Source = "GitHub Actions".
-# After that, every push to main updates your live site automatically.
+# Xuất bản thư mục public/ lên nhánh gh-pages (phương án "Deploy from a branch").
+# Cách này ổn định, KHÔNG dính lỗi "in progress deployment" / "multiple artifacts"
+# của cơ chế Pages-Actions environment.
+#
+# One-time setup: Settings -> Pages -> Source = "Deploy from a branch"
+#   -> Branch: gh-pages / (root) -> Save.
 
 on:
   push:
@@ -12,25 +15,21 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: pages-branch
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - name: Publish public/ to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: 'public'
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          cname: muahang.thiennhatgroup.com
