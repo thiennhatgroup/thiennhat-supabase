@@ -1058,7 +1058,8 @@
             </div>
             <div class="plan-box">
               <label class="check-line"><input type="checkbox" id="pTruongBp"> Trưởng bộ phận đã duyệt đề xuất này</label>
-              <label class="check-line" style="margin-top:8px"><input type="checkbox" id="pPrepay"> Thanh toán TRƯỚC khi nhận hàng (công nợ hiện ngay khi duyệt)</label>
+              <label class="check-line" style="margin-top:8px"><input type="checkbox" id="pPrepay" onchange="togglePrepay()"> Thanh toán TRƯỚC khi nhận hàng (công nợ hiện ngay khi duyệt)</label>
+              <div id="pPrepayWrap" style="display:none;margin-top:6px"><div class="field"><label>% trả trước so với giá trị đơn</label><input id="pPrepayPct" class="hl-input" inputmode="decimal" placeholder="VD: 30" oninput="prepayHint()"><small id="pPrepayHint" class="status"></small></div></div>
             </div>
             <div class="plan-box">
               <label class="check-line"><input type="checkbox" id="pInPlan" onchange="togglePlanJustify()"> Khoản này đã có trong kế hoạch chi tuần đã duyệt</label>
@@ -1111,6 +1112,8 @@
         if (ed.TonKho != null) setVal('pTonKho', ed.TonKho);
         const tb = document.getElementById('pTruongBp'); if (tb) tb.checked = !!ed.TruongBpDuyet;
         const pp = document.getElementById('pPrepay'); if (pp) pp.checked = !!ed.Prepay;
+        if (ed.PrepayPercent != null) setVal('pPrepayPct', ed.PrepayPercent);
+        togglePrepay();
         const ip = document.getElementById('pInPlan'); if (ip) ip.checked = !!ed.TrongKeHoachTuan;
         setVal('pGiaiTrinh', ed.GiaiTrinhNgoaiKeHoach || ''); togglePlanJustify();
         const tb2 = document.querySelector('#lineTable tbody'); if (tb2) tb2.innerHTML = '';
@@ -1136,6 +1139,19 @@
       try { const res = await call('rpc_get_proposal', { p_ma_de_xuat: ma }); state.editingProposal = res.proposal; renderProposal(); toast('Đang sửa ' + ma, 'ok'); }
       catch (err) { toast(err.message || String(err), 'err'); }
     }
+    function togglePrepay() {
+      const on = document.getElementById('pPrepay')?.checked;
+      const wrap = document.getElementById('pPrepayWrap');
+      if (wrap) wrap.style.display = on ? 'block' : 'none';
+      prepayHint();
+    }
+    function prepayHint() {
+      const pct = Number(val('pPrepayPct')) || 0;
+      const totalTxt = document.getElementById('proposalTotal')?.textContent || '';
+      const total = Number(String(totalTxt).replace(/[^\d]/g, '')) || 0;
+      const el = document.getElementById('pPrepayHint');
+      if (el) el.textContent = pct ? `≈ ${fmtMoney(Math.round(total * pct / 100))} đ trả trước` : '';
+    }
     function togglePlanJustify() {
       const inPlan = document.getElementById('pInPlan')?.checked;
       const wrap = document.getElementById('pJustifyWrap');
@@ -1155,6 +1171,7 @@
         tonKho: val('pTonKho') || null,
         truongBpDuyet: document.getElementById('pTruongBp')?.checked || false,
         prepay: document.getElementById('pPrepay')?.checked || false,
+        prepayPercent: (document.getElementById('pPrepay')?.checked ? (Number(val('pPrepayPct')) || null) : null),
         doiTuong: { ma: comboValue('pmaDoiTuong', 'pmaDoiTuongMoi'), ten: val('ptenDoiTuong'), dieuKhoanTT: val('pDieuKhoanTT') },
         dieuKhoanTT: val('pDieuKhoanTT'),
         lines: getProposalLines().filter(l => l.matHang && l.slDat && l.donGia)
@@ -1278,6 +1295,7 @@
       setT('totalVat', Math.round((after - pre) * 100) / 100);
       const box = document.getElementById('proposalTotal');
       if (box) box.textContent = fmtMoney(after) + ' đ';
+      prepayHint();
     }
     // When a material is chosen on a proposal line, pull the best known quote
     // and auto-fill the unit price (only if empty) + show a price hint.
@@ -1491,7 +1509,7 @@
           <div><label>Điều khoản TT</label><div>${esc(p.DieuKhoanTT || '')}</div></div>
           <div><label>Hạn thanh toán</label><div>${esc(p.HanThanhToan || '—')}</div></div>
           <div><label>Trưởng BP đã duyệt</label><div>${p.TruongBpDuyet ? '<span class="pill ok">Đã duyệt</span>' : '<span class="pill warn">Chưa</span>'}</div></div>
-          <div><label>Trả trước khi nhận hàng</label><div>${p.Prepay ? '<span class="pill ok">Có</span>' : 'Không'}</div></div>
+          <div><label>Trả trước khi nhận hàng</label><div>${p.Prepay ? `<span class="pill ok">Có${p.PrepayPercent ? ` · ${esc(p.PrepayPercent)}% ≈ ${fmtMoney(Math.round((Number(p.TongTien) || 0) * Number(p.PrepayPercent) / 100))}đ` : ''}</span>` : 'Không'}</div></div>
           ${p.TonKho != null ? `<div><label>Tồn kho hiện tại</label><div>${fmtMaybeMoney(p.TonKho)}</div></div>` : ''}
         </div>
         <div class="field"><label>Báo giá đính kèm (bản gốc)</label><div>${attachLinks(p.Attachments)}</div></div>
