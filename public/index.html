@@ -464,7 +464,6 @@
       ['cashier', 'Chi tiền (thủ quỹ)', 'payment:execute'],
       ['leaderdash', 'Tổng quan điều hành', 'dashboard:read'],
       ['dashboard', 'Theo dõi công nợ', 'dashboard:read'],
-      ['debtpay', 'Cập nhật thanh toán', 'payment:create'],
       ['printpp', 'In đề xuất mua hàng', 'print:purchasing'],
       ['printyctt', 'In phiếu yêu cầu TT', 'print:purchasing'],
       ['catalog', 'Danh mục', 'catalog:read'],
@@ -728,7 +727,7 @@
       if (s) { state.histDepth = Math.max(0, (state.histDepth || 0) - 1); renderScreen(s); updateBackBtn(); }
     });
     const ROLE_MENU_ORDER = {
-      KeToanCongNo: ['oversight','congnoconfirm','payreq','payapprove','dashboard','debtpay','catalog','quotes'],
+      KeToanCongNo: ['oversight','congnoconfirm','payreq','payapprove','dashboard','catalog','quotes'],
       ThuQuy: ['cashier','leaderdash','dashboard'],
       ChuTich: ['leaderdash','approve','payapprove','dashboard','oversight','quotes'],
       TongGiamDoc: ['leaderdash','approve','dashboard','oversight','quotes'],
