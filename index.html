@@ -647,6 +647,7 @@
         try { history.replaceState({ screen: state.screen }, '', '#' + state.screen); } catch (e) {}
         updateBackBtn();
         refreshNotif();
+        subscribePush();
         if (!state.notifTimer) state.notifTimer = setInterval(refreshNotif, 45000);
       } catch (err) {
         document.getElementById('loginView').classList.remove('hidden');
@@ -3414,8 +3415,57 @@
           badge.textContent = res.unread || 0;
           badge.classList.toggle('hidden', !res.unread);
         }
+        // Thông báo hệ thống (điện thoại) khi có tin MỚI — bỏ qua lần tải đầu để không spam.
+        if (!state.notifSeen) state.notifSeen = new Set();
+        const fresh = (res.rows || []).filter(n => !n.daDoc && !state.notifSeen.has(n.id));
+        if (state.notifInit) fresh.forEach(showDeviceNotif);
+        (res.rows || []).forEach(n => state.notifSeen.add(n.id));
+        state.notifInit = true;
         if (!document.getElementById('notifPanel')?.classList.contains('hidden')) drawNotif();
       } catch (e) { /* im lặng: không chặn app nếu thông báo lỗi */ }
+    }
+    function showDeviceNotif(n) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      const opts = { body: n.noiDung || '', tag: 'tn-' + n.id, icon: './icon-192.png', badge: './icon-192.png',
+        data: { id: n.id, screen: n.manHinh, refId: n.refId, loai: n.loai } };
+      try {
+        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(reg => reg.showNotification(n.tieuDe || 'Thông báo', opts)).catch(() => {});
+        } else { new Notification(n.tieuDe || 'Thông báo', opts); }
+      } catch (e) {}
+    }
+    async function requestNotifPermission() {
+      if (!('Notification' in window)) { toast('Thiết bị/trình duyệt không hỗ trợ thông báo.', 'err'); return; }
+      try {
+        const p = await Notification.requestPermission();
+        toast(p === 'granted' ? 'Đã bật thông báo trên thiết bị này.' : 'Bạn chưa cho phép thông báo.', p === 'granted' ? 'ok' : 'err');
+        if (p === 'granted') subscribePush();
+        drawNotif();
+      } catch (e) {}
+    }
+    function urlB64ToUint8(b) {
+      const pad = '='.repeat((4 - b.length % 4) % 4);
+      const s = (b + pad).replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(s); const arr = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+      return arr;
+    }
+    async function subscribePush() {
+      try {
+        const key = (window.APP && APP.vapidPublicKey) || '';
+        if (!key || !('serviceWorker' in navigator) || !('PushManager' in window)) return; // chưa cấu hình VAPID -> dùng thông báo nội bộ
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8(key) });
+        const j = sub.toJSON();
+        await call('rpc_save_push_subscription', { p_endpoint: sub.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth });
+      } catch (e) { /* im lặng */ }
+    }
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.addEventListener('message', e => {
+        if (e.data && e.data.type === 'notif-click') { const d = e.data.data || {}; openNotif(d.id, d.screen, d.refId, d.loai); }
+      });
     }
     function toggleNotif() {
       const panel = document.getElementById('notifPanel');
@@ -3426,8 +3476,10 @@
     function drawNotif() {
       const panel = document.getElementById('notifPanel');
       const rows = state.notif || [];
+      const canAsk = ('Notification' in window) && Notification.permission === 'default';
       panel.innerHTML = `
         <div class="notif-head"><b>Thông báo</b>${rows.some(n=>!n.daDoc) ? '<button class="secondary" style="width:auto;min-height:32px;padding:4px 10px" onclick="markAllNotif()">Đánh dấu đã đọc</button>' : ''}</div>
+        ${canAsk ? '<div style="padding:8px 10px"><button class="secondary" style="width:100%" onclick="requestNotifPermission()">🔔 Bật thông báo trên thiết bị này</button></div>' : ''}
         ${rows.length ? rows.map(n => `<div class="notif-item ${n.daDoc?'':'unread'}" onclick="openNotif('${esc(n.id)}','${esc(n.manHinh||'')}','${esc(n.refId||'')}','${esc(n.loai||'')}')">
           <div class="nt-title">${esc(n.tieuDe)}</div>
           <div class="nt-body">${esc(n.noiDung||'')}</div>

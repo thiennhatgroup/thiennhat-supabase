@@ -32,3 +32,23 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
   );
 });
+
+// ---- Web Push (khi có VAPID/Edge Function) — nhận đẩy kể cả app đóng --------
+self.addEventListener('push', event => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (_) { d = { title: 'Thông báo', body: event.data ? event.data.text() : '' }; }
+  event.waitUntil(self.registration.showNotification(d.title || 'Thông báo Thiên Nhật', {
+    body: d.body || '', tag: d.tag || undefined, data: d.data || {}, icon: './icon-192.png', badge: './icon-192.png'
+  }));
+});
+
+// ---- Bấm vào thông báo -> focus app + điều hướng --------------------------
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const data = event.notification.data || {};
+  event.waitUntil((async () => {
+    const all = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of all) { if ('focus' in c) { await c.focus(); c.postMessage({ type: 'notif-click', data }); return; } }
+    if (clients.openWindow) await clients.openWindow('./#' + (data.screen || ''));
+  })());
+});
