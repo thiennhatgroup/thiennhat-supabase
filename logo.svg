@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 392 96" role="img" aria-label="Thiên Nhật Group">
+  <!-- Chữ M dạng ruy-băng: 2 đỉnh, nét trái xanh, nét phải cam -->
+  <!-- đỉnh trái (xanh) -->
+  <path d="M6,84 L34,12 L52,12 L38,50 L30,50 Z" fill="#0E5AA7"/>
+  <path d="M40,12 L58,12 L74,54 L60,54 Z" fill="#1E6BB8"/>
+  <!-- đỉnh phải (cam) -->
+  <path d="M56,12 L74,12 L64,40 L54,40 Z" fill="#EE5A1C"/>
+  <path d="M76,12 L94,12 L108,84 L90,84 Z" fill="#EE5A1C"/>
+  <path d="M74,12 L92,12 L74,58 L64,58 Z" fill="#F26A2E"/>
+  <!-- TN -->
+  <text x="120" y="66" font-family="Arial, sans-serif" font-size="58" font-weight="800" fill="#0E5AA7">TN</text>
+  <!-- Wordmark -->
+  <text x="122" y="90" font-family="Georgia, 'Times New Roman', serif" font-size="19" font-weight="700" fill="#333A44">ThienNhat Group</text>
+</svg>
