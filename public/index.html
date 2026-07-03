@@ -303,7 +303,8 @@
     .chat-contact.active { background: var(--accent-soft); }
     .chat-badge { background: var(--danger); color: #fff; border-radius: 999px; font-size: 11px; padding: 1px 7px; margin-left: 4px; }
     .chat-main { display: flex; flex-direction: column; }
-    .chat-head { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    .chat-head { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+    .chat-back { display: none; align-items: center; gap: 4px; width: auto; min-height: 34px; padding: 4px 12px; font-size: 13px; }
     .chat-thread { flex: 1; overflow-y: auto; padding: 14px; background: #F7F9FC; display: flex; flex-direction: column; gap: 8px; }
     .chat-bubble { max-width: 74%; padding: 8px 12px; border-radius: 14px; font-size: 14px; box-shadow: var(--shadow); word-break: break-word; }
     .chat-bubble.me { align-self: flex-end; background: var(--accent); color: #fff; }
@@ -318,8 +319,11 @@
     .chat-row button { width: auto; }
     @media (max-width: 920px) {
       .chat-wrap { grid-template-columns: 1fr; height: auto; }
-      .chat-side { max-height: 180px; }
-      .chat-thread { height: 52vh; }
+      .chat-side { max-height: none; }
+      .chat-thread { height: 56vh; }
+      .chat-wrap.chat-open .chat-side { display: none; }
+      .chat-wrap:not(.chat-open) .chat-main { display: none; }
+      .chat-wrap.chat-open .chat-back { display: inline-flex; }
       main { padding: 14px; padding-bottom: 74px; }
       header { padding: 10px 12px; }
       .tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0 -2px 10px rgba(0,0,0,.06); padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px)); }
@@ -344,6 +348,7 @@
        Bảng nhập liệu .line-table giữ nguyên (cho phép cuộn). */
     .detail-total { text-align: right; font-size: 16px; margin-top: 8px; padding-top: 8px; border-top: 2px solid var(--line); }
     .hl-input { background: #FFF9DB !important; }
+    .totals-2 { grid-template-columns: repeat(2, 1fr); }
     .chat-sender { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
     .chat-ref-chip { cursor: pointer; }
     .locked-input { background: #EEF1F5; color: #667; }
@@ -739,10 +744,6 @@
       const item = (id, label) => `<button class="drawer-item ${state.screen === id ? 'active' : ''}" onclick="navTo('${id}')">${label}</button>`;
       document.getElementById('drawer').innerHTML = `
         <div class="drawer-brand"><img src="./logo.png" onerror="this.onerror=null;this.src='./logo.svg'" alt="Thiên Nhật"><button class="drawer-x" onclick="closeDrawer()">✕</button></div>
-        ${item('account', '👤 Tài khoản')}
-        ${item('guide', '📘 Hướng dẫn')}
-        ${item('chat', '💬 Tin nhắn')}
-        ${item('improve', '💡 Đề xuất cải tiến')}
         <div class="drawer-group">
           <button class="drawer-group-h" onclick="toggleGroup(this)">Thao tác <span>▾</span></button>
           <div class="drawer-group-body">${features.map(([id, label]) => item(id, label)).join('')}</div>
@@ -751,6 +752,10 @@
           <button class="drawer-group-h" onclick="toggleGroup(this)">Tải dữ liệu <span>▾</span></button>
           <div class="drawer-group-body">${exps.map(([id, label]) => item(id, label)).join('')}</div>
         </div>` : ''}
+        ${item('chat', '💬 Tin nhắn')}
+        ${item('improve', '💡 Đề xuất cải tiến')}
+        ${item('guide', '📘 Hướng dẫn')}
+        ${item('account', '👤 Tài khoản')}
         <div class="drawer-note">Yêu cầu cụ thể liên hệ tới email <b>ahuyle.work@gmail.com</b></div>`;
     }
 
@@ -1465,13 +1470,11 @@
       const byBp = {};
       rows.forEach(r => { const k = r.BoPhan || '(không rõ)'; byBp[k] = (byBp[k] || 0) + Number(r.TongTien || 0); });
       const bpTxt = Object.entries(byBp).map(([k, v]) => `${esc(k)}: <b>${fmtMoney(v)}đ</b>`).join(' · ');
-      const summary = `<div class="totals" style="margin-bottom:14px">
+      const summary = `<div class="totals totals-2" style="margin-bottom:12px">
           <div class="metric"><span>Cần duyệt</span><strong>${rows.length}<small>phiếu</small></strong></div>
           <div class="metric"><span>Tổng tiền chờ duyệt</span><strong>${fmtMoney(sum(rows))}<small>đ</small></strong></div>
-          <div class="metric"><span>Ngoài kế hoạch</span><strong>${offPlan.length}<small>phiếu</small></strong></div>
-          <div class="metric"><span>Khoản ≥ 10 triệu</span><strong>${big.length}<small>phiếu</small></strong></div>
         </div>
-        <div class="ac-meta" style="margin-bottom:10px">Phiếu sớm nhất chờ: <b>${esc(dates[0] || '—')}</b>${bpTxt ? ` · Theo bộ phận: ${bpTxt}` : ''}</div>`;
+        <div class="ac-meta" style="margin-bottom:10px">Ngoài kế hoạch: <b>${offPlan.length}</b> · Khoản ≥ 10 triệu: <b>${big.length}</b> · Phiếu sớm nhất: <b>${esc(dates[0] || '—')}</b>${bpTxt ? `<br>Theo bộ phận: ${bpTxt}` : ''}</div>`;
       const sec = (title, tone, list) => `
         <div class="approve-sec ${tone}">
           <div class="approve-sec-h">
@@ -3129,22 +3132,22 @@
         <section class="card" style="max-width:820px">
           <h2>📘 Hướng dẫn sử dụng</h2>
           <div class="notice ok">Toàn bộ hướng dẫn gói gọn ở đây. Trong từng màn, mỗi ô nhập đã có gợi ý ngắn — không cần đọc thêm.</div>
-          <h3>Quy trình tổng thể</h3>
+          <h3>Quy trình tổng thể (mới)</h3>
           <ol class="hint-list">
-            <li><b>Mua hàng</b> lập <b>Đề xuất mua hàng/tạm ứng</b> (đính kèm báo giá, hạn TT) → Lưu nháp → Gửi duyệt.</li>
-            <li><b>Lãnh đạo</b> duyệt: <b>≥ 10 triệu → Chủ tịch</b>, <b>&lt; 10 triệu → Tổng giám đốc</b>. Chủ tịch xem &amp; override được mọi khoản.</li>
-            <li>Duyệt xong hệ thống sinh <b>công nợ</b>.</li>
-            <li><b>Mua hàng</b> <b>Nghiệm thu</b>: SL thực nhận + biên bản/phiếu cân (bắt buộc) + hóa đơn VAT → chốt số nợ.</li>
-            <li><b>Kế toán</b> lập <b>Đề xuất thanh toán</b> (nạp khoản đã nghiệm thu/đến hạn) → gửi duyệt.</li>
-            <li><b>Chủ tịch</b> duyệt đề xuất thanh toán → <b>Kế toán bấm "Đã chi tiền"</b>.</li>
+            <li><b>Mua hàng</b> lập <b>Đề xuất mua hàng/tạm ứng</b>: chọn mặt hàng, đính kèm báo giá (phiếu nhiều dòng cần ≥ 2 báo giá), hạn TT, % trả trước nếu có → Lưu nháp → Gửi duyệt. Có thể tự thêm nhanh <b>vật tư / nhà cung cấp</b> ngay trên form (ô vàng).</li>
+            <li><b>Lãnh đạo</b> duyệt: <b>Chủ tịch</b> nhận &amp; duyệt <b>mọi khoản</b>; <b>Tổng giám đốc</b> chỉ nhận khoản <b>dưới ngưỡng</b> (mặc định 10 triệu). Duyệt cả ngày một thể; có thể <b>trả lại kèm lý do</b> để mua hàng giải trình.</li>
+            <li>Duyệt xong → <b>Mua hàng Nghiệm thu</b>: nhập <b>SL thực nhận</b>, tick <b>loại chứng từ</b> (biên bản/phiếu cân/hóa đơn VAT…) + đính kèm. <u>Lúc này khoản CHƯA thành công nợ.</u></li>
+            <li><b>Kế toán duyệt chứng từ &amp; lưu công nợ</b>: kiểm tra chứng từ, nhập <b>số đã trả trước</b> (nếu có) rồi <b>"Lưu về công nợ"</b> — hoặc <b>Trả lại</b> mua hàng bổ sung chứng từ. Chỉ khoản đã lưu công nợ mới vào các màn thanh toán/theo dõi.</li>
+            <li><b>Kế toán</b> lập <b>Đề xuất thanh toán</b> (chỉ nạp được khoản đã lưu công nợ/đến hạn; khoản đã nằm trong một đề xuất đang chờ/đã duyệt <b>sẽ không hiện lại</b>) → gửi duyệt.</li>
+            <li><b>Chủ tịch</b> duyệt đề xuất thanh toán (<b>gộp theo ngày</b>), hoặc trả lại kế toán sửa → <b>Kế toán bấm "Đã chi tiền"</b> để trừ công nợ.</li>
             <li><b>Tất toán</b>: khoản trả đủ được lưu trữ.</li>
           </ol>
           <h3>Vai trò</h3>
           <ul class="hint-list">
-            <li><b>Nhân viên mua hàng</b>: báo giá, đề xuất mua/tạm ứng, nghiệm thu, in phiếu.</li>
-            <li><b>Tổng giám đốc</b>: duyệt đề xuất &lt; 10 triệu.</li>
-            <li><b>Chủ tịch</b>: duyệt đề xuất ≥ 10 triệu (và override), duyệt đề xuất thanh toán.</li>
-            <li><b>Kế toán công nợ</b>: lập &amp; đi tiền đề xuất thanh toán, theo dõi công nợ, tất toán.</li>
+            <li><b>Nhân viên mua hàng</b>: báo giá, đề xuất mua/tạm ứng, thêm nhanh danh mục, <b>nghiệm thu nhận hàng</b>, in phiếu. (Không còn ghi thanh toán.)</li>
+            <li><b>Tổng giám đốc</b>: duyệt đề xuất <b>dưới ngưỡng</b> (mặc định 10 triệu).</li>
+            <li><b>Chủ tịch</b>: duyệt <b>mọi</b> đề xuất mua hàng, và duyệt đề xuất thanh toán.</li>
+            <li><b>Kế toán công nợ</b>: <b>duyệt chứng từ &amp; lưu công nợ</b>, lập &amp; đi tiền đề xuất thanh toán, theo dõi công nợ, tất toán.</li>
             <li><b>Admin</b>: tạo tài khoản, phân quyền, danh mục.</li>
           </ul>
           <h3>Tính năng chung</h3>
@@ -3308,7 +3311,8 @@
     }
     function openGroup(id, name) {
       state.chatMode = 'group'; state.chatGroup = id; state.chatGroupName = name; state.chatWith = null;
-      document.getElementById('chatHead').innerHTML = `<b># ${esc(name || '')}</b>`;
+      document.getElementById('chatHead').innerHTML = `<button class="chat-back secondary" onclick="chatShowList()">← Danh sách</button><b># ${esc(name || '')}</b>`;
+      document.querySelector('.chat-wrap')?.classList.add('chat-open');
       document.getElementById('chatComposer').classList.remove('hidden');
       state.chatFiles = []; refreshChatRef();
       loadGroups(); loadContacts(); loadThread();
@@ -3342,7 +3346,8 @@
     }
     function openChat(id, name) {
       state.chatMode = 'user'; state.chatWith = id; state.chatWithName = name; state.chatGroup = null;
-      document.getElementById('chatHead').innerHTML = `<b>${esc(name||'')}</b>`;
+      document.getElementById('chatHead').innerHTML = `<button class="chat-back secondary" onclick="chatShowList()">← Danh sách</button><b>${esc(name||'')}</b>`;
+      document.querySelector('.chat-wrap')?.classList.add('chat-open');
       document.getElementById('chatComposer').classList.remove('hidden');
       state.chatFiles = []; refreshChatRef();
       loadContacts(); loadGroups(); loadThread();
@@ -3385,6 +3390,7 @@
     function pickRef(ma) { state.chatRef = ma; closeModal();
       const bar = document.getElementById('chatRefBar'); bar.classList.remove('hidden'); bar.innerHTML = `📄 Kèm phiếu <b>${esc(ma)}</b> <button class="secondary" style="min-height:26px;padding:2px 8px" onclick="clearChatRef()">✕</button>`; }
     function clearChatRef() { state.chatRef = null; const b = document.getElementById('chatRefBar'); if (b) { b.classList.add('hidden'); b.innerHTML=''; } }
+    function chatShowList() { document.querySelector('.chat-wrap')?.classList.remove('chat-open'); }
     function refreshChatRef() { const b = document.getElementById('chatRefBar'); if (!b) return; if (state.chatRef) { b.classList.remove('hidden'); b.innerHTML = `📄 Kèm phiếu <b>${esc(state.chatRef)}</b> <button class="secondary" style="min-height:26px;padding:2px 8px" onclick="clearChatRef()">✕</button>`; } else { b.classList.add('hidden'); b.innerHTML = ''; } }
     async function sendChat(btn) {
       if (!state.chatWith && !state.chatGroup) return;
