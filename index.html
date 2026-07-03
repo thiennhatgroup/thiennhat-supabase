@@ -349,6 +349,7 @@
     .detail-total { text-align: right; font-size: 16px; margin-top: 8px; padding-top: 8px; border-top: 2px solid var(--line); }
     .hl-input { background: #FFF9DB !important; }
     .totals-2 { grid-template-columns: repeat(2, 1fr); }
+    .quote-layout-solo { grid-template-columns: 1fr !important; }
     .chat-sender { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
     .chat-ref-chip { cursor: pointer; }
     .locked-input { background: #EEF1F5; color: #667; }
@@ -811,14 +812,15 @@
     }
 
     function renderQuotes() {
+      const canEntry = can('quote:sync');
       document.getElementById('content').innerHTML = `
-        <div class="mjump"><button class="secondary" onclick="jumpTo('qTrack')">📊 Bảng so sánh giá NCC</button></div>
-        <div class="quote-layout">
+        ${canEntry ? `<div class="mjump"><button class="secondary" onclick="jumpTo('qTrack')">📊 Bảng so sánh giá NCC</button></div>` : ''}
+        <div class="quote-layout${canEntry ? '' : ' quote-layout-solo'}">
           <section class="card" id="qTrack">
-            <div class="mjump"><button class="secondary" onclick="jumpTo('qEntry')">↑ Lên form nhập báo giá</button></div>
+            ${canEntry ? `<div class="mjump"><button class="secondary" onclick="jumpTo('qEntry')">↑ Lên form nhập báo giá</button></div>` : ''}
             <h2>Theo dõi báo giá nhà cung cấp</h2>
             <div class="notice ok">
-              Chọn mặt hàng đã có mã. Hệ thống lấy giá mới nhất tại hoặc trước ngày so sánh, rồi xếp hạng NCC theo giá sau VAT. (Muốn thêm mã mới, dùng "Nhập báo giá mới" bên phải.)
+              Chọn mặt hàng đã có mã. Hệ thống lấy giá mới nhất tại hoặc trước ngày so sánh, rồi xếp hạng NCC theo giá sau VAT.${canEntry ? ' (Muốn thêm mã mới, dùng "Nhập báo giá mới" bên phải.)' : ''}
             </div>
             <div class="grid">
               <div class="field">
@@ -836,7 +838,7 @@
             </div>
             <div id="quoteBox" style="margin-top:12px">${loadingText('Đang tải bảng báo giá...')}</div>
           </section>
-          <aside class="card entry-first" id="qEntry">
+          ${canEntry ? `<aside class="card entry-first" id="qEntry">
             <h2>Nhập báo giá mới</h2>
             <p class="status">Chọn 1 nhà cung cấp, thêm nhiều mặt hàng họ chào giá (mỗi dòng: giá · ĐVT · %VAT · có xuất VAT). Bấm Lưu để lưu cả loạt.</p>
             <div class="grid">
@@ -850,13 +852,12 @@
             <div class="table-wrap"><table class="line-table"><thead><tr>
               <th style="min-width:150px">Mặt hàng</th><th style="width:90px">ĐVT</th><th style="width:130px">Giá (chưa VAT)</th><th style="width:90px">%VAT</th><th style="width:110px">Có xuất VAT</th><th style="min-width:120px">Ghi chú</th><th style="width:56px"></th>
             </tr></thead><tbody id="nqLines"></tbody></table></div>
-            <button onclick="saveQuotes(this)" ${can('quote:sync') ? '' : 'disabled'}>Lưu báo giá</button>
+            <button onclick="saveQuotes(this)">Lưu báo giá</button>
             <p id="nqMsg" class="status" style="margin-top:8px"></p>
-          </aside>
+          </aside>` : ''}
         </div>`;
-      if (!can('quote:sync')) { document.getElementById('qEntry')?.remove(); }
       loadQuoteDashboard();
-      addNqLine();
+      if (canEntry) addNqLine();
     }
 
     async function loadQuoteDashboard(btn=null) {
