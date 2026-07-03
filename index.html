@@ -344,6 +344,8 @@
        Bảng nhập liệu .line-table giữ nguyên (cho phép cuộn). */
     .detail-total { text-align: right; font-size: 16px; margin-top: 8px; padding-top: 8px; border-top: 2px solid var(--line); }
     .hl-input { background: #FFF9DB !important; }
+    .chat-sender { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+    .chat-ref-chip { cursor: pointer; }
     .locked-input { background: #EEF1F5; color: #667; }
     .to-top { display: none; position: fixed; right: 14px; bottom: 18px; z-index: 40; width: 46px; height: 46px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; }
     .to-top.show { display: block; }
@@ -1545,7 +1547,12 @@
         ${planBlock}
         <h3>Dòng vật tư</h3>
         ${linesDetailTable(p.lines, {})}
-        ${p.GhiChu ? `<div class="field" style="margin-top:10px"><label>Ghi chú / lịch sử</label><div class="status">${esc(p.GhiChu)}</div></div>` : ''}`;
+        ${p.GhiChu ? `<div class="field" style="margin-top:10px"><label>Ghi chú / lịch sử</label><div class="status">${esc(p.GhiChu)}</div></div>` : ''}
+        <div class="actions" style="margin-top:10px"><button class="secondary" onclick="chatAboutProposal('${esc(p.MaDeXuat)}')">💬 Nhắn tin về phiếu này</button></div>`;
+    }
+    function chatAboutProposal(ma) {
+      state.chatRef = ma; closeModal(); navTo('chat');
+      toast(`Chọn người/nhóm để nhắn về phiếu ${ma}.`, 'ok');
     }
     async function openApprovedDetail(ma) {
       try {
@@ -3259,7 +3266,9 @@
         <section class="card" style="padding:0;overflow:hidden">
           <div class="chat-wrap">
             <div class="chat-side">
-              <div class="chat-side-h">Danh bạ</div>
+              <div class="chat-side-h">Nhóm <button class="secondary" style="min-height:24px;padding:1px 8px;float:right" onclick="openCreateGroup()">＋ Tạo</button></div>
+              <div id="chatGroups">${loadingText('...')}</div>
+              <div class="chat-side-h">Người</div>
               <div id="chatContacts">${loadingText('Đang tải...')}</div>
             </div>
             <div class="chat-main">
@@ -3280,10 +3289,44 @@
           </div>
         </section>`;
       state.chatWith = state.chatWith || null;
-      loadContacts();
-      if (state.chatWith) openChat(state.chatWith, state.chatWithName);
+      loadContacts(); loadGroups();
+      if (state.chatMode === 'group' && state.chatGroup) openGroup(state.chatGroup, state.chatGroupName);
+      else if (state.chatWith) openChat(state.chatWith, state.chatWithName);
       if (state.chatTimer) clearInterval(state.chatTimer);
-      state.chatTimer = setInterval(() => { if (state.screen === 'chat') { loadContacts(); if (state.chatWith) loadThread(); } }, 8000);
+      state.chatTimer = setInterval(() => { if (state.screen === 'chat') { loadContacts(); loadGroups(); if (state.chatWith || state.chatGroup) loadThread(); } }, 8000);
+    }
+    async function loadGroups() {
+      const box = document.getElementById('chatGroups'); if (!box) return;
+      try {
+        const res = await call('rpc_list_chat_groups'); state.groups = res.rows || [];
+        box.innerHTML = state.groups.map(g => `<div class="chat-contact ${state.chatGroup === g.id ? 'active' : ''}" onclick="openGroup('${g.id}','${esc(g.ten)}')">
+          <div><b># ${esc(g.ten)}</b> ${g.unread ? `<span class="chat-badge">${g.unread}</span>` : ''}</div>
+          <div class="status" style="font-size:12px">${g.soTv} thành viên${g.lastBody ? ' · ' + esc(String(g.lastBody).slice(0, 22)) : ''}</div>
+        </div>`).join('') || '<p class="status" style="padding:6px 8px">Chưa có nhóm. Bấm ＋ Tạo.</p>';
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    function openGroup(id, name) {
+      state.chatMode = 'group'; state.chatGroup = id; state.chatGroupName = name; state.chatWith = null;
+      document.getElementById('chatHead').innerHTML = `<b># ${esc(name || '')}</b>`;
+      document.getElementById('chatComposer').classList.remove('hidden');
+      state.chatFiles = []; refreshChatRef();
+      loadGroups(); loadContacts(); loadThread();
+    }
+    function openCreateGroup() {
+      const contacts = state.contacts || [];
+      openModal('Tạo nhóm chat', `
+        <div class="field"><label>Tên nhóm *</label><input id="cgTen" class="hl-input" placeholder="VD: Mua hàng - Kế toán"></div>
+        <div class="field"><label>Thành viên (từ danh bạ)</label>
+          <label class="check-line" style="font-weight:600"><input type="checkbox" onchange="document.querySelectorAll('.cg-mem').forEach(c=>c.checked=this.checked)"> Chọn tất cả</label>
+          <div style="max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:8px">
+            ${contacts.map(c => `<label class="check-line"><input type="checkbox" class="cg-mem" value="${c.id}"> ${esc(c.ten)} <span class="status">(${esc(ROLE_LABELS[c.vaiTro] || c.vaiTro || '')})</span></label>`).join('') || '<span class="status">Chưa có thành viên.</span>'}
+          </div></div>`, async function () {
+          const ten = (val('cgTen') || '').trim(); if (!ten) { modalErr('Đặt tên nhóm.'); return; }
+          const members = [...document.querySelectorAll('.cg-mem:checked')].map(c => c.value);
+          try { const r = await call('rpc_create_chat_group', { p_ten: ten, p_members: members }); closeModal(); toast('Đã tạo nhóm.', 'ok'); openGroup(r.id, ten); }
+          catch (e) { modalErr(e.message || String(e)); }
+        }, 'Tạo nhóm');
+      setTimeout(() => document.getElementById('cgTen')?.focus(), 60);
     }
     async function loadContacts() {
       const box = document.getElementById('chatContacts'); if (!box) return;
@@ -3297,19 +3340,24 @@
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
     }
     function openChat(id, name) {
-      state.chatWith = id; state.chatWithName = name;
+      state.chatMode = 'user'; state.chatWith = id; state.chatWithName = name; state.chatGroup = null;
       document.getElementById('chatHead').innerHTML = `<b>${esc(name||'')}</b>`;
       document.getElementById('chatComposer').classList.remove('hidden');
-      state.chatFiles = []; clearChatRef();
-      loadContacts(); loadThread();
+      state.chatFiles = []; refreshChatRef();
+      loadContacts(); loadGroups(); loadThread();
     }
     async function loadThread() {
-      const box = document.getElementById('chatThread'); if (!box || !state.chatWith) return;
+      const box = document.getElementById('chatThread'); if (!box) return;
       try {
-        const res = await call('rpc_get_conversation', { p_with: state.chatWith, p_limit: 200 });
-        const rows = res.rows || [];
+        let rows;
+        if (state.chatMode === 'group' && state.chatGroup) {
+          rows = (await call('rpc_get_group_conversation', { p_group_id: state.chatGroup, p_limit: 200 })).rows || [];
+        } else if (state.chatWith) {
+          rows = (await call('rpc_get_conversation', { p_with: state.chatWith, p_limit: 200 })).rows || [];
+        } else return;
         box.innerHTML = rows.map(m => `<div class="chat-bubble ${m.fromMe?'me':'them'}">
-          ${m.refMa ? `<div class="chat-ref-chip">📄 ${esc(m.refMa)}</div>` : ''}
+          ${!m.fromMe && m.senderName ? `<div class="chat-sender">${esc(m.senderName)}</div>` : ''}
+          ${m.refMa ? `<div class="chat-ref-chip" onclick="openProposalDetailRO('${esc(m.refMa)}')">📄 ${esc(m.refMa)} — xem</div>` : ''}
           ${m.body ? esc(m.body) : ''}
           ${(m.attachments||[]).map(a=>`<div>${attachLinks([a])}</div>`).join('')}
           <div class="chat-time">${esc(m.time)}</div>
@@ -3336,18 +3384,23 @@
     function pickRef(ma) { state.chatRef = ma; closeModal();
       const bar = document.getElementById('chatRefBar'); bar.classList.remove('hidden'); bar.innerHTML = `📄 Kèm phiếu <b>${esc(ma)}</b> <button class="secondary" style="min-height:26px;padding:2px 8px" onclick="clearChatRef()">✕</button>`; }
     function clearChatRef() { state.chatRef = null; const b = document.getElementById('chatRefBar'); if (b) { b.classList.add('hidden'); b.innerHTML=''; } }
+    function refreshChatRef() { const b = document.getElementById('chatRefBar'); if (!b) return; if (state.chatRef) { b.classList.remove('hidden'); b.innerHTML = `📄 Kèm phiếu <b>${esc(state.chatRef)}</b> <button class="secondary" style="min-height:26px;padding:2px 8px" onclick="clearChatRef()">✕</button>`; } else { b.classList.add('hidden'); b.innerHTML = ''; } }
     async function sendChat(btn) {
-      if (!state.chatWith) return;
+      if (!state.chatWith && !state.chatGroup) return;
       const body = val('chatBody').trim();
       const fileEl = document.getElementById('chatFile');
       const nFiles = fileEl?.files.length || 0;
       if (!body && !nFiles && !state.chatRef) { return; }
       try {
         const atts = await withBusy(btn, '...', () => uploadAttachments('chatFile', 'chat'));
-        await call('rpc_send_message', { p_to: state.chatWith, p_body: body, p_attachments: atts, p_ref_ma: state.chatRef || null });
+        if (state.chatMode === 'group' && state.chatGroup) {
+          await call('rpc_send_group_message', { p_group_id: state.chatGroup, p_body: body, p_attachments: atts, p_ref_ma: state.chatRef || null });
+        } else {
+          await call('rpc_send_message', { p_to: state.chatWith, p_body: body, p_attachments: atts, p_ref_ma: state.chatRef || null });
+        }
         document.getElementById('chatBody').value = ''; if (fileEl) fileEl.value = '';
         document.getElementById('chatFileHint').textContent = ''; clearChatRef();
-        loadThread(); loadContacts();
+        loadThread(); loadContacts(); loadGroups();
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
@@ -3387,8 +3440,9 @@
       document.getElementById('notifPanel')?.classList.add('hidden');
       refreshNotif();
       if (loai === 'proposal_bounced' && refId) { navTo('proposal'); editProposal(refId); return; }
+      if (loai === 'chat_group' && refId) { state.chatMode = 'group'; state.chatGroup = refId; state.chatWith = null; navTo('chat'); return; }
       if (!screen || !NAV_ALL.includes(screen)) return;
-      if (loai === 'chat' && refId) { state.chatWith = refId; state.chatWithName = ''; }
+      if (loai === 'chat' && refId) { state.chatMode = 'user'; state.chatWith = refId; state.chatWithName = ''; state.chatGroup = null; }
       navTo(screen);
     }
     async function markAllNotif() {
