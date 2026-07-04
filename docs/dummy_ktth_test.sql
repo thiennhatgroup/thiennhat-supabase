@@ -1,18 +1,31 @@
 -- ============================================================================
--- dummy_ktth_test.sql — DỮ LIỆU DUMMY để KẾ TOÁN (KTTH) kiểm thử bản mới.
--- Chạy trong Supabase → SQL Editor (KHÔNG phải migration). Idempotent.
+-- dummy_ktth_test.sql — DỮ LIỆU DUMMY để KẾ TOÁN (KTTH) kiểm thử.
+-- CÁCH DÙNG: mở Supabase → SQL Editor → dán TOÀN BỘ file này → Run.
+--   Chạy-một-phát: tự XÓA dummy cũ, tự NẠP mới, cuối cùng HIỆN bảng đếm.
+--   (An toàn chạy lại nhiều lần — không cần sửa/bỏ comment gì.)
 -- 4 bộ phận: Sản xuất · Kế hoạch-Vật tư · Sửa chữa máy móc · Văn phòng.
--- Mỗi bộ phận có đủ 3 giai đoạn để test thao tác kế toán:
---   (1) Đã nghiệm thu, CHỜ DUYỆT HỒ SƠ THANH TOÁN  (Duyệt hồ sơ thanh toán)
---   (2) Đã lưu công nợ, chưa vào ĐXTT              (Đề xuất thanh toán / Theo dõi công nợ)
---   (3) Đã lưu công nợ + ĐXTT CHỜ Chủ tịch duyệt   (Duyệt đề xuất thanh toán)
---   (4) Đã lưu công nợ + ĐXTT ĐÃ duyệt, chờ thủ quỹ (Theo dõi ĐXTT / Chi tiền)
--- Mã có tiền tố *-DUMMYK-* để dễ xóa (khối CLEANUP ở cuối).
+-- Mỗi bộ phận có 4 giai đoạn để KTTH thao tác đủ các bước:
+--   (1) Đã nghiệm thu, CHỜ DUYỆT HỒ SƠ  -> màn "Duyệt hồ sơ thanh toán"
+--   (2) Đã lưu công nợ                   -> màn "Đề xuất thanh toán" / "Theo dõi công nợ"
+--   (3) ĐXTT CHỜ Chủ tịch duyệt          -> màn "Duyệt đề xuất thanh toán"
+--   (4) ĐXTT ĐÃ duyệt (chờ thủ quỹ chi)  -> màn "Chi tiền" / "Theo dõi"
 -- ============================================================================
 
+-- ---- BƯỚC 1: XÓA dummy cũ (an toàn nếu chưa có) -----------------------------
+delete from payment_request_lines where request_id in (select id from payment_requests where ma_de_xuat_tt like 'PTK-DUMMYK-%');
+delete from payment_requests where ma_de_xuat_tt like 'PTK-DUMMYK-%';
+delete from payment_allocations where ma_cn like 'CNK-DUMMYK-%';
+delete from payments where ma_cn like 'CNK-DUMMYK-%';
+update proposal_lines set debt_id = null where ma_line like 'DXLK-DUMMYK-%';
+delete from debts where ma_cn like 'CNK-DUMMYK-%';
+delete from proposal_lines where ma_line like 'DXLK-DUMMYK-%';
+delete from proposals where ma_de_xuat like 'DXK-DUMMYK-%';
+delete from doi_tuong where ma_doi_tuong like 'DTK-DUMMYK-%';
+
+-- ---- BƯỚC 2: NẠP dummy ------------------------------------------------------
 do $$
 declare
-  v_buyer uuid;
+  v_buyer uuid; v_ktth uuid;
   v_depts text[] := array['Sản xuất','Kế hoạch-Vật tư','Sửa chữa máy móc','Văn phòng'];
   v_dept text; di int; st int; j int;
   v_dt uuid; v_pid uuid; v_debt uuid; v_req uuid;
@@ -22,29 +35,28 @@ declare
   v_mats text[] := array['Thép tấm','Dầu thủy lực','Vòng bi','Giấy A4','Que hàn','Băng keo'];
   v_mat text;
 begin
-  if exists (select 1 from proposals where ma_de_xuat like 'DXK-DUMMYK-%') then
-    raise notice 'Dummy KTTH đã tồn tại, bỏ qua.'; return; end if;
-
   select id into v_buyer from profiles where email = 'ahuyle.work@gmail.com';
   if v_buyer is null then select id into v_buyer from profiles order by created_at limit 1; end if;
-  if v_buyer is null then raise notice 'Chưa có profiles, bỏ qua.'; return; end if;
+  if v_buyer is null then raise exception 'Chưa có tài khoản (profiles) — hãy tạo tài khoản trước.'; end if;
+  -- ĐXTT gắn cho tài khoản Kế toán công nợ (nếu có) để KTTH thấy trong "Đề xuất của tôi".
+  select id into v_ktth from profiles where role = 'KeToanCongNo' and status = 'Hoạt động' order by created_at limit 1;
+  v_ktth := coalesce(v_ktth, v_buyer);
 
   for di in 1..array_length(v_depts,1) loop
     v_dept := v_depts[di];
-    -- NCC riêng cho bộ phận (có STK để thủ quỹ chuyển)
     insert into doi_tuong (ma_doi_tuong, ten_doi_tuong, loai, mst, so_tk_ngan_hang, chi_nhanh_ngan_hang, dieu_khoan_tt_mac_dinh, bo_phan, trang_thai)
     values ('DTK-DUMMYK-' || di, 'NCC ' || v_dept || ' (DUMMY)', 'NCC', '010000000' || di,
             '112233445' || di, 'Vietcombank CN Test', 'Thanh toán sau khi nhận hàng', v_dept, 'Hoạt động')
     returning id into v_dt;
 
     v_s3 := array[]::uuid[]; v_s4 := array[]::uuid[];
-    for st in 1..8 loop        -- 1-2: gđ1; 3-4: gđ2; 5-6: gđ3 (ĐXTT chờ duyệt); 7-8: gđ4 (ĐXTT đã duyệt)
+    for st in 1..8 loop        -- 1-2: gđ1; 3-4: gđ2; 5-6: gđ3; 7-8: gđ4
       v_seq := v_seq + 1;
       v_mat := v_mats[1 + (v_seq % array_length(v_mats,1))];
-      v_price := case when st % 2 = 1 then 300000 else 2500000 end; -- mix < / >= 10 triệu
+      v_price := case when st % 2 = 1 then 300000 else 2500000 end;
       v_han := current_date + (st * 3);
       v_tt := round(v_qty * v_price * 1.08, 2);
-      v_cnf := (st >= 3);       -- giai đoạn 2 & 3 đã lưu công nợ
+      v_cnf := (st >= 3);
 
       insert into proposals (ma_de_xuat, ngay_de_xuat, nguoi_de_nghi, bo_phan, doi_tuong_id, ten_doi_tuong,
         noi_dung, dieu_khoan_tt, trang_thai, nguoi_tao, ghi_chu, loai_de_xuat, trong_ke_hoach_tuan,
@@ -78,7 +90,7 @@ begin
       if st in (7,8) then v_s4 := array_append(v_s4, v_debt); end if;
     end loop;
 
-    -- Giai đoạn 3: ĐXTT CHỜ Chủ tịch duyệt (gộp 2 khoản)
+    -- Giai đoạn 3: ĐXTT CHỜ Chủ tịch duyệt
     v_reqseq := v_reqseq + 1;
     insert into payment_requests (ma_de_xuat_tt, ngay, nguoi_lap, trang_thai, ghi_chu)
     values ('PTK-DUMMYK-' || lpad(v_reqseq::text,3,'0'), current_date, v_buyer, 'Chờ duyệt', 'DUMMYK ' || v_dept)
@@ -92,7 +104,7 @@ begin
       from debts d where d.id = v_s3[j];
     end loop;
 
-    -- Giai đoạn 4: ĐXTT ĐÃ Chủ tịch duyệt (chờ thủ quỹ chi) — gộp 2 khoản
+    -- Giai đoạn 4: ĐXTT ĐÃ duyệt (chờ thủ quỹ chi)
     v_reqseq := v_reqseq + 1;
     insert into payment_requests (ma_de_xuat_tt, ngay, nguoi_lap, trang_thai, ghi_chu, nguoi_duyet, approved_at)
     values ('PTK-DUMMYK-' || lpad(v_reqseq::text,3,'0'), current_date, v_buyer, 'Đã duyệt', 'DUMMYK ' || v_dept, v_buyer, now() - interval '30 minutes')
@@ -106,20 +118,11 @@ begin
       from debts d where d.id = v_s4[j];
     end loop;
   end loop;
-
-  raise notice 'Đã tạo dummy KTTH cho 4 bộ phận (32 đơn + 8 ĐXTT: 4 chờ duyệt, 4 đã duyệt chờ thủ quỹ).';
 end $$;
 
--- ============================================================================
--- CLEANUP — chạy khối dưới (bỏ comment) trong SQL Editor khi muốn xóa DUMMYK:
--- delete from payment_request_lines where request_id in (select id from payment_requests where ma_de_xuat_tt like 'PTK-DUMMYK-%');
--- delete from payment_requests where ma_de_xuat_tt like 'PTK-DUMMYK-%';
--- delete from payment_allocations where ma_cn like 'CNK-DUMMYK-%';
--- delete from payments where ma_cn like 'CNK-DUMMYK-%';
--- update proposal_lines set debt_id = null where ma_line like 'DXLK-DUMMYK-%';
--- delete from debts where ma_cn like 'CNK-DUMMYK-%';
--- delete from proposal_lines where ma_line like 'DXLK-DUMMYK-%';
--- delete from proposals where ma_de_xuat like 'DXK-DUMMYK-%';
--- delete from doi_tuong where ma_doi_tuong like 'DTK-DUMMYK-%';
--- delete from notifications where ref_id like '%DUMMYK%';
--- ============================================================================
+-- ---- BƯỚC 3: KIỂM TRA (bảng này hiện ra là đã nạp thành công) --------------
+select 'Đơn (đã duyệt/nghiệm thu)' as muc, count(*) as so_luong from proposals where ma_de_xuat like 'DXK-DUMMYK-%'
+union all select '  → Chờ KTTH duyệt hồ sơ', count(*) from debts where ma_cn like 'CNK-DUMMYK-%' and cong_no_confirmed = false
+union all select '  → Đã lưu công nợ',       count(*) from debts where ma_cn like 'CNK-DUMMYK-%' and cong_no_confirmed = true
+union all select 'ĐXTT chờ Chủ tịch duyệt',  count(*) from payment_requests where ma_de_xuat_tt like 'PTK-DUMMYK-%' and trang_thai = 'Chờ duyệt'
+union all select 'ĐXTT đã duyệt (chờ thủ quỹ)', count(*) from payment_requests where ma_de_xuat_tt like 'PTK-DUMMYK-%' and trang_thai = 'Đã duyệt';

@@ -1836,9 +1836,16 @@
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>Duyệt hồ sơ thanh toán</h2>
-          <div class="notice ok">Đơn đã được NVMH nghiệm thu, đang chờ kế toán kiểm tra chứng từ. Xem đủ hồ sơ → nhập số đã trả trước (nếu có) → <b>Lưu về công nợ</b> (khi đó khoản mới vào theo dõi/đề xuất thanh toán). Thiếu thì bấm <b>Trả lại NVMH</b> bổ sung.</div>
-          <div class="actions"><button class="secondary" onclick="loadReceiptReview(this)">↻ Tải lại</button></div>
-          <div id="cnReviewBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
+          <div class="notice ok">Đơn đã NVMH nghiệm thu, chờ kế toán kiểm tra. Bấm vào <b>mã CN</b> để xổ chi tiết + chứng từ. Đủ hồ sơ → <b>Lưu về công nợ</b>; thiếu → <b>Trả lại NVMH</b>.</div>
+          <div class="actions" style="align-items:flex-end;flex-wrap:wrap">
+            <div class="field" style="margin:0"><label>Từ ngày nhận</label><input id="cnFrom" type="date" onchange="drawReceiptReview()"></div>
+            <div class="field" style="margin:0"><label>Đến ngày</label><input id="cnTo" type="date" onchange="drawReceiptReview()"></div>
+            <div class="field" style="margin:0"><label>Bộ phận</label><select id="cnBoPhan" onchange="drawReceiptReview()"><option value="">Tất cả</option></select></div>
+            <div class="field" style="margin:0"><label>Người đề nghị/nghiệm thu</label><select id="cnNguoi" onchange="drawReceiptReview()"><option value="">Tất cả</option></select></div>
+            <button class="secondary" onclick="loadReceiptReview(this)">↻ Tải lại</button>
+          </div>
+          <div id="cnSummary" class="ac-meta" style="margin-top:10px"></div>
+          <div id="cnReviewBox" style="margin-top:8px">${loadingText('Đang tải...')}</div>
         </section>`;
       loadReceiptReview();
     }
@@ -1848,24 +1855,39 @@
       try {
         const fn = () => call('rpc_get_receipt_review', {});
         const res = await (btn ? withBusy(btn, 'Đang tải...', fn) : fn());
-        const rows = res.rows || [];
-        box.innerHTML = rows.length ? rows.map(r => `<div class="approve-card" style="margin-bottom:12px">
-            <div class="ac-top"><strong>${esc(r.maCN)}</strong><span class="pill">${esc(r.maDeXuat||'')}</span></div>
-            <div class="ac-obj">NCC: ${esc(r.tenDoiTuong||'')}${r.boPhan?' · '+esc(r.boPhan):''} · Người đề nghị: ${esc(r.nguoiDeNghi||'—')}</div>
-            <div class="ac-meta">Mặt hàng: <b>${esc(r.matHang||'')}</b> · ĐVT: ${esc(r.dvt||'—')} · SL đặt ${fmtMaybeMoney(r.slDat)} · SL thực nhận <b>${fmtMaybeMoney(r.slThucNhan)}</b></div>
-            <div class="ac-meta">Đơn giá (chưa VAT): ${fmtMoney(r.donGia)} · VAT ${fmtPct(r.vatRate)} · Thành tiền thực nhận: <b>${fmtMoney(r.thanhTienThucNhan)}đ</b></div>
-            <div class="ac-meta">Hạn TT: ${esc(r.hanThanhToan||'—')} · Điều khoản: ${esc(r.dieuKhoanTT||'—')} · Ngày nhận: ${esc(r.ngayNhan||'—')}</div>
-            <div class="ac-meta">Chứng từ đã tick: ${(r.chungTuTypes||[]).length ? (r.chungTuTypes||[]).map(esc).join(', ') : '<span class="pill warn">chưa tick loại nào</span>'}</div>
-            <div class="field" style="margin-top:6px"><label>Biên bản / chứng từ đính kèm</label><div>${attachLinks(r.nghiemThuFiles)}</div></div>
-            <div class="field"><label>Báo giá gốc</label><div>${attachLinks(r.baoGia)}</div></div>
-            <div class="actions cn-row" style="margin-top:8px;align-items:flex-end">
-              <div class="field" style="margin:0;max-width:220px"><label>Đã thanh toán trước (nếu có)</label><input class="js-money cn-paid" inputmode="decimal" placeholder="0"></div>
-              <button onclick="confirmCongNo('${esc(r.maCN)}', this)">✔ Lưu về công nợ</button>
-              <button class="danger" onclick="returnReceipt('${esc(r.maCN)}')">↩ Trả lại NVMH bổ sung</button>
-              <button class="secondary" onclick="chatAboutProposal('${esc(r.maDeXuat||'')}')">💬 Nhắn tin NVMH</button>
-            </div>
-          </div>`).join('') : '<p class="status">Không có đơn nào chờ duyệt chứng từ.</p>';
+        state.receiptReview = res.rows || [];
+        // Nạp option bộ phận + người đề nghị từ dữ liệu.
+        const bpSel = document.getElementById('cnBoPhan'), nguoiSel = document.getElementById('cnNguoi');
+        const bps = [...new Set(state.receiptReview.map(r => r.boPhan).filter(Boolean))].sort();
+        const nguois = [...new Set(state.receiptReview.map(r => r.nguoiDeNghi).filter(Boolean))].sort();
+        if (bpSel) bpSel.innerHTML = '<option value="">Tất cả bộ phận</option>' + bps.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+        if (nguoiSel) nguoiSel.innerHTML = '<option value="">Tất cả người</option>' + nguois.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+        drawReceiptReview();
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message||err)}</p>`; }
+    }
+    function drawReceiptReview() {
+      const box = document.getElementById('cnReviewBox'); if (!box) return;
+      const all = state.receiptReview || [];
+      const bp = val('cnBoPhan'), ng = val('cnNguoi'), from = val('cnFrom'), to = val('cnTo');
+      const rows = all.filter(r =>
+        (!bp || r.boPhan === bp) && (!ng || r.nguoiDeNghi === ng) &&
+        (!from || (r.ngayNhan && r.ngayNhan >= from)) && (!to || (r.ngayNhan && r.ngayNhan <= to)));
+      const tong = rows.reduce((s, r) => s + Number(r.thanhTienThucNhan || 0), 0);
+      const sm = document.getElementById('cnSummary');
+      if (sm) sm.innerHTML = `Đang hiển thị <b>${rows.length}</b>/${all.length} đơn · Tổng thành tiền: <b>${fmtMoney(tong)}đ</b>`;
+      box.innerHTML = rows.length ? rows.map(r => `<div class="approve-card" style="margin-bottom:10px">
+          <div class="ac-top"><strong><a class="mini-link" onclick="openDebtDetail('${esc(r.maCN)}')" title="Xổ chi tiết + chứng từ">${esc(r.maCN)}</a></strong><span class="pill">${esc(r.maDeXuat||'')}</span></div>
+          <div class="ac-obj">${esc(r.tenDoiTuong||'')}${r.boPhan?' · '+esc(r.boPhan):''} · Đề nghị: ${esc(r.nguoiDeNghi||'—')}</div>
+          <div class="ac-meta"><b>${esc(r.matHang||'')}</b> · SL thực nhận <b>${fmtMaybeMoney(r.slThucNhan)}</b> · Thành tiền <b>${fmtMoney(r.thanhTienThucNhan)}đ</b> · Hạn TT: ${esc(r.hanThanhToan||'—')} · Nhận: ${esc(r.ngayNhan||'—')}</div>
+          <div class="ac-meta">Chứng từ: ${(r.chungTuTypes||[]).length ? (r.chungTuTypes||[]).map(esc).join(', ') : '<span class="pill warn">chưa tick</span>'} · Đính kèm: ${(r.nghiemThuFiles||[]).length ? attachLinks(r.nghiemThuFiles) : '<span class="pill warn">chưa có</span>'}</div>
+          <div class="actions cn-row" style="margin-top:8px;align-items:flex-end;flex-wrap:wrap">
+            <div class="field" style="margin:0;max-width:190px"><label>Đã trả trước (nếu có)</label><input class="js-money cn-paid" inputmode="decimal" placeholder="0"></div>
+            <button onclick="confirmCongNo('${esc(r.maCN)}', this)">✔ Lưu về công nợ</button>
+            <button class="danger" onclick="returnReceipt('${esc(r.maCN)}')">↩ Trả lại</button>
+            <button class="secondary" onclick="chatAboutProposal('${esc(r.maDeXuat||'')}')">💬 Nhắn tin</button>
+            <button class="secondary" onclick="openDebtDetail('${esc(r.maCN)}')">Xem chi tiết</button>
+          </div>
+        </div>`).join('') : '<p class="status">Không có đơn nào khớp bộ lọc.</p>';
     }
     async function confirmCongNo(maCN, btn) {
       const input = (btn.closest('.cn-row') || document).querySelector('.cn-paid');
@@ -3222,6 +3244,8 @@
                 <option value="Chờ duyệt">Chờ duyệt</option>
                 <option value="Đã duyệt">Đã duyệt</option>
               </select></div>
+            <div class="field" style="margin:0"><label>Bộ phận</label><select id="osBoPhan" onchange="drawOversight()"><option value="">Tất cả bộ phận</option></select></div>
+            <div class="field" style="margin:0"><label>Người đề nghị</label><select id="osNguoi" onchange="drawOversight()"><option value="">Tất cả người</option></select></div>
             <button onclick="loadOversight(this)">Cập nhật</button>
           </div>
           <div class="mjump"><button class="secondary" onclick="jumpTo('osProps')">📄 Đề xuất mua hàng</button><button class="secondary" onclick="jumpTo('osPays')">💳 Đề xuất thanh toán</button></div>
@@ -3235,15 +3259,21 @@
       try {
         const res = await withBusy(btn, 'Đang tải...', () => call('rpc_oversight', { p_from: val('osFrom') || null, p_to: val('osTo') || null }));
         state.osData = res;
+        const bpSel = document.getElementById('osBoPhan'), ngSel = document.getElementById('osNguoi');
+        const bps = [...new Set((res.proposals || []).map(p => p.BoPhan).filter(Boolean))].sort();
+        const ngs = [...new Set((res.proposals || []).map(p => p.NguoiDeNghi).filter(Boolean))].sort();
+        if (bpSel) bpSel.innerHTML = '<option value="">Tất cả bộ phận</option>' + bps.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+        if (ngSel) ngSel.innerHTML = '<option value="">Tất cả người</option>' + ngs.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
         drawOversight();
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
     }
     function drawOversight() {
       const box = document.getElementById('osBox'); if (!box) return;
       const res = state.osData; if (!res) return;
-      const st = val('osStatus') || '';
-      // Luôn ẩn phiếu Nháp (NVMH chưa trình); lọc thêm theo trạng thái nếu chọn.
-      const props = (res.proposals || []).filter(p => p.TrangThai !== 'Nháp' && (!st || p.TrangThai === st));
+      const st = val('osStatus') || '', bp = val('osBoPhan') || '', ng = val('osNguoi') || '';
+      // Luôn ẩn phiếu Nháp (NVMH chưa trình); lọc thêm theo trạng thái/bộ phận/người.
+      const props = (res.proposals || []).filter(p => p.TrangThai !== 'Nháp'
+        && (!st || p.TrangThai === st) && (!bp || p.BoPhan === bp) && (!ng || p.NguoiDeNghi === ng));
       const pays = res.paymentRequests || [];
       try {
         const canCancel = res.role === 'KeToanCongNo' || res.role === 'TruongPhong' || res.role === 'Admin';
@@ -3316,8 +3346,11 @@
           <h3>Dòng vật tư</h3>
           ${linesDetailTable(p.lines, {})}
           ${p.GhiChu ? `<div class="field" style="margin-top:10px"><label>Ghi chú / lịch sử</label><div class="status">${esc(p.GhiChu)}</div></div>` : ''}
-          ${canBounce ? `<div class="actions" style="margin-top:14px"><button class="danger" onclick="bounceProposalOs('${esc(ma)}', this)">↩ Trả lại kèm lý do</button></div>`
-            : `<div class="notice" style="margin-top:14px">Phiếu này không ở trạng thái có thể trả lại (chỉ trả lại được phiếu Chờ duyệt hoặc Đã duyệt chưa phát sinh thanh toán).</div>`}
+          <div class="actions" style="margin-top:14px">
+            <button class="secondary" onclick="chatAboutProposal('${esc(ma)}')">💬 Nhắn tin người đề nghị (dẫn chiếu phiếu ${esc(ma)})</button>
+            ${canBounce ? `<button class="danger" onclick="bounceProposalOs('${esc(ma)}', this)">↩ Trả lại kèm lý do</button>` : ''}
+          </div>
+          ${canBounce ? '' : `<div class="notice" style="margin-top:8px">Phiếu này không ở trạng thái có thể trả lại (chỉ trả lại được phiếu Chờ duyệt hoặc Đã duyệt chưa phát sinh thanh toán).</div>`}
         `, null, null);
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
