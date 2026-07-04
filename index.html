@@ -458,7 +458,7 @@
       ['oversight', 'Theo dõi đề xuất mua hàng & tạm ứng', 'oversight:read'],
       ['approve', 'Duyệt đề xuất mua hàng', 'proposal:approve'],
       ['receipt', 'Nghiệm thu đơn hàng', 'receipt:update'],
-      ['congnoconfirm', 'Duyệt hồ sơ thanh toán', 'congno:confirm'],
+      ['congnoconfirm', 'Duyệt hồ sơ thanh toán', 'receipt:review'],
       ['payreq', 'Đề xuất thanh toán', 'payment:request'],
       ['payapprove', 'Duyệt đề xuất thanh toán', 'payment:approve'],
       ['cashier', 'Chi tiền (thủ quỹ)', 'payment:execute'],
@@ -1883,10 +1883,11 @@
           <div class="ac-meta"><b>${esc(r.matHang||'')}</b> · SL thực nhận <b>${fmtMaybeMoney(r.slThucNhan)}</b> · Thành tiền <b>${fmtMoney(r.thanhTienThucNhan)}đ</b> · Hạn TT: ${esc(r.hanThanhToan||'—')} · Nhận: ${esc(r.ngayNhan||'—')}</div>
           <div class="ac-meta">Chứng từ: ${(r.chungTuTypes||[]).length ? (r.chungTuTypes||[]).map(esc).join(', ') : '<span class="pill warn">chưa tick</span>'} · Đính kèm: ${(r.nghiemThuFiles||[]).length ? attachLinks(r.nghiemThuFiles) : '<span class="pill warn">chưa có</span>'}</div>
           <div class="actions cn-row" style="margin-top:8px;align-items:flex-end;flex-wrap:wrap">
-            <div class="field" style="margin:0;max-width:190px"><label>Đã trả trước (nếu có)</label><input class="js-money cn-paid" inputmode="decimal" placeholder="0"></div>
-            <button onclick="confirmCongNo('${esc(r.maCN)}', this)">✔ Lưu về công nợ</button>
-            <button class="danger" onclick="returnReceipt('${esc(r.maCN)}')">↩ Trả lại</button>
-            <button class="secondary" onclick="chatAboutProposal('${esc(r.maDeXuat||'')}')">💬 Nhắn tin</button>
+            ${can('congno:confirm') ? `
+              <div class="field" style="margin:0;max-width:190px"><label>Đã trả trước (nếu có)</label><input class="js-money cn-paid" inputmode="decimal" placeholder="0"></div>
+              <button onclick="confirmCongNo('${esc(r.maCN)}', this)">✔ Lưu về công nợ</button>
+              <button class="danger" onclick="returnReceipt('${esc(r.maCN)}')">↩ Trả lại</button>
+              <button class="secondary" onclick="chatAboutProposal('${esc(r.maDeXuat||'')}')">💬 Nhắn tin</button>` : '<span class="status">Chỉ xem (quyền duyệt thuộc kế toán).</span>'}
             <button class="secondary" onclick="openDebtDetail('${esc(r.maCN)}')">Xem chi tiết</button>
           </div>
         </div>`).join('') : '<p class="status">Không có đơn nào khớp bộ lọc.</p>';
@@ -2662,7 +2663,8 @@
           </div>
           <div class="field"><label>Loại chứng từ đã tick</label><div>${(d.chungTuTypes || []).length ? (d.chungTuTypes || []).map(esc).join(', ') : '—'}</div></div>
           <div class="field"><label>Chứng từ nghiệm thu (BBGN / VAT / ảnh vật tư)</label><div>${attachLinks(d.nghiemThuFiles)}</div></div>
-          <div class="field"><label>Báo giá gốc</label><div>${attachLinks(d.baoGia)}</div></div>`, null, null);
+          <div class="field"><label>Báo giá gốc</label><div>${attachLinks(d.baoGia)}</div></div>
+          <div class="actions" style="margin-top:10px"><button onclick="exportYCTTForDebt('${esc(d.maCN)}', this)">⬇ Tạo &amp; tải phiếu YCTT khoản này</button></div>`, null, null);
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
     async function savePayReq(status, btn) {
@@ -3242,6 +3244,60 @@
         });
         toast('Đã tạo phiếu YCTT.', 'ok');
         closeModal();
+      } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    // Sinh phiếu YCTT cho 1 KHOẢN (dùng ở popup chi tiết — thủ quỹ/KTTH) theo dữ liệu NVMH đã nghiệm thu.
+    async function exportYCTTForDebt(maCN, btn) {
+      try {
+        const res = await call('rpc_get_debt_detail', { p_ma_cn: maCN });
+        const d = res.debt; if (!d) return;
+        await withBusy(btn, 'Đang tạo phiếu...', async () => {
+          const wb = await loadTemplateWb('./templates/yctt_template.xlsx');
+          const ws = wb.worksheets[0];
+          ws.getCell('D5').value = d.nguoiDeNghi || '';
+          ws.getCell('D11').value = d.tenDoiTuong || '';
+          ws.getCell('D13').value = d.soTk || '';
+          ws.getCell('D15').value = d.chiNhanh || '';
+          const st = {
+            a: clone(ws.getCell('A18').style), b: clone(ws.getCell('B18').style), d: clone(ws.getCell('D18').style),
+            e: clone(ws.getCell('E18').style), h: clone(ws.getCell('H18').style), i: clone(ws.getCell('I18').style), j: clone(ws.getCell('J18').style),
+            totL: clone(ws.getCell('E20').style), totV: clone(ws.getCell('J20').style),
+            date: clone(ws.getCell('G26').style), signT: clone(ws.getCell('A27').style), signN: clone(ws.getCell('A32').style)
+          };
+          ['B18:C18','E18:G18','E19:G19','E20:G20','A27:C27','D27:E27','G26:J26','G27:J27','G32:J32','G33:J33']
+            .forEach(m => { try { ws.unMergeCells(m); } catch (e) {} });
+          for (let r = 18; r <= 45; r++) { const row = ws.getRow(r); for (let c = 1; c <= 10; c++) { const cell = row.getCell(c); cell.value = null; cell.fill = { type: 'pattern', pattern: 'none' }; cell.border = {}; cell.font = {}; cell.alignment = {}; } }
+          const sl = Number(d.slThucNhan != null ? d.slThucNhan : d.slDat || 0);
+          const tt = Number(d.thanhTienThucNhan || 0);
+          ws.mergeCells('B18:C18'); ws.mergeCells('E18:G18');
+          applySt(ws.getCell('A18'), st.a); ws.getCell('A18').value = 1;
+          applySt(ws.getCell('B18'), st.b); ws.getCell('B18').value = d.soHoaDonVat || '';
+          applySt(ws.getCell('D18'), st.d); ws.getCell('D18').value = d.ngayNhan || '';
+          applySt(ws.getCell('E18'), st.e); ws.getCell('E18').value = d.matHang || '';
+          applySt(ws.getCell('H18'), st.h); ws.getCell('H18').value = sl;
+          applySt(ws.getCell('I18'), st.i); ws.getCell('I18').value = Number(d.donGia || 0);
+          applySt(ws.getCell('J18'), st.j); ws.getCell('J18').value = tt;
+          const r = 19, totR = r, truR = r + 2, nhanR = r + 4, dateR = r + 6, stR = r + 7, snR = r + 12;
+          const truTU = Number(d.daThanhToan || 0);
+          const setTot = (rr, label, v) => {
+            ws.mergeCells(`E${rr}:G${rr}`); applySt(ws.getCell(`E${rr}`), st.totL); ws.getCell(`E${rr}`).value = label;
+            applySt(ws.getCell(`J${rr}`), st.totV); ws.getCell(`J${rr}`).value = v;
+          };
+          setTot(totR, 'TỔNG CỘNG', tt);
+          setTot(truR, 'Trừ tạm ứng hoặc trả trước', truTU);
+          setTot(nhanR, 'Nhận từ công ty', tt - truTU);
+          ws.mergeCells(`G${dateR}:J${dateR}`); applySt(ws.getCell(`G${dateR}`), st.date);
+          ws.getCell(`G${dateR}`).value = `Liên Sơn, ngày ${new Date().toLocaleDateString('vi-VN')}`;
+          ws.mergeCells(`A${stR}:C${stR}`); ws.mergeCells(`D${stR}:E${stR}`); ws.mergeCells(`G${stR}:J${stR}`);
+          applySt(ws.getCell(`A${stR}`), st.signT); ws.getCell(`A${stR}`).value = 'Tổng Giám Đốc';
+          applySt(ws.getCell(`D${stR}`), st.signT); ws.getCell(`D${stR}`).value = 'Kế toán trưởng';
+          applySt(ws.getCell(`F${stR}`), st.signT); ws.getCell(`F${stR}`).value = 'Cán bộ theo dõi';
+          applySt(ws.getCell(`G${stR}`), st.signT); ws.getCell(`G${stR}`).value = 'Người đề nghị';
+          ws.mergeCells(`G${snR}:J${snR}`); applySt(ws.getCell(`G${snR}`), st.signN);
+          ws.getCell(`G${snR}`).value = d.nguoiDeNghi || '';
+          await saveWb(wb, `YCTT_${d.maCN}.xlsx`);
+        });
+        toast('Đã tạo phiếu YCTT.', 'ok');
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
 
