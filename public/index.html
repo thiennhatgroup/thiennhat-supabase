@@ -1287,7 +1287,7 @@
     }
     function proposalStatusPill(s) {
       if (s === 'Đã duyệt') return '<span class="pill ok">Đã duyệt</span>';
-      if (s === 'Từ chối') return '<span class="pill err">Từ chối / hủy duyệt</span>';
+      if (s === 'Từ chối' || s === 'Đã hủy') return '<span class="pill err">Từ chối / hủy</span>';
       if (s === 'Nháp') return '<span class="pill warn">Nháp</span>';
       return '<span class="pill warn">Chờ duyệt</span>';
     }
@@ -3304,7 +3304,7 @@
     // ===== Theo dõi & rà soát (Kế toán / Trưởng bộ phận) ===================
     function osStatusPill(s) {
       if (s === 'Đã duyệt') return '<span class="pill ok">Đã duyệt</span>';
-      if (s === 'Từ chối') return '<span class="pill err">Từ chối/Hủy</span>';
+      if (s === 'Từ chối' || s === 'Đã hủy') return '<span class="pill err">Từ chối/Hủy</span>';
       if (s === 'Đã chi') return '<span class="pill ok">Đã chi</span>';
       if (s === 'Nháp') return '<span class="pill warn">Nháp</span>';
       return '<span class="pill warn">Chờ duyệt</span>';
@@ -3352,9 +3352,8 @@
       const box = document.getElementById('osBox'); if (!box) return;
       const res = state.osData; if (!res) return;
       const st = val('osStatus') || '', bp = val('osBoPhan') || '', ng = val('osNguoi') || '';
-      // Luôn ẩn phiếu Nháp (NVMH chưa trình); lọc thêm theo trạng thái/bộ phận/người.
-      const props = (res.proposals || []).filter(p => p.TrangThai !== 'Nháp'
-        && (!st || p.TrangThai === st) && (!bp || p.BoPhan === bp) && (!ng || p.NguoiDeNghi === ng));
+      const props = (res.proposals || []).filter(p =>
+        (!st || p.TrangThai === st) && (!bp || p.BoPhan === bp) && (!ng || p.NguoiDeNghi === ng));
       const pays = res.paymentRequests || [];
       try {
         const canCancel = res.role === 'KeToanCongNo' || res.role === 'TruongPhong' || res.role === 'Admin';
