@@ -463,9 +463,9 @@
       ['payreq', 'Đề xuất thanh toán', 'payment:request'],
       ['payapprove', 'Duyệt đề xuất thanh toán', 'payment:approve'],
       ['cashier', 'Chi tiền (thủ quỹ)', 'payment:execute'],
-      ['leaderdash', 'Tổng quan điều hành', 'dashboard:read'],
+      ['leaderdash', 'Tổng quan điều hành', 'leaderdash:read'],
       ['dashboard', 'Theo dõi công nợ', 'dashboard:read'],
-      ['debtpay', 'Cập nhật thanh toán (thủ công)', 'payment:create'],
+      ['debtpay', 'Cập nhật thanh toán (thủ công)', 'payment:adjust'],
       ['printpp', 'In đề xuất mua hàng', 'print:purchasing'],
       ['printyctt', 'In phiếu yêu cầu TT', 'print:purchasing'],
       ['catalog', 'Danh mục', 'catalog:read'],
@@ -483,7 +483,7 @@
       Admin: 'Admin'
     };
     function can(perm) {
-      return state.permissions.includes('*') || state.permissions.includes(perm);
+      return state.permissions.includes(perm);
     }
     function visibleScreens() {
       return allScreens.filter(s => can(s[2]));
@@ -697,8 +697,8 @@
     // Menu "Tải dữ liệu" — xuất raw data phục vụ phân tích.
     const EXPORT_SCREENS = [
       ['exp_pp', 'Dữ liệu đề xuất mua hàng', 'recent:read'],
-      ['exp_tt', 'Dữ liệu đề xuất thanh toán', 'recent:read'],
-      ['exp_bg', 'Dữ liệu báo giá NCC', 'recent:read']
+      ['exp_tt', 'Dữ liệu đề xuất thanh toán', 'payment:request:read'],
+      ['exp_bg', 'Dữ liệu báo giá NCC', 'quote:read']
     ];
     function toggleDrawer() {
       const d = document.getElementById('drawer'); const b = document.getElementById('drawerBackdrop');
@@ -754,11 +754,12 @@
     });
     const ROLE_MENU_ORDER = {
       KeToanCongNo: ['oversight','congnoconfirm','payreq','payapprove','dashboard','debtpay','catalog','quotes'],
-      ThuQuy: ['cashier','dashboard','congnoconfirm','leaderdash'],
+      ThuQuy: ['cashier','congnoconfirm'],
       ChuTich: ['leaderdash','approve','payapprove','dashboard','oversight','quotes'],
       TongGiamDoc: ['leaderdash','approve','dashboard','oversight','quotes'],
       TruongPhong: ['oversight','dashboard','quotes'],
       NhanVienMuaHang: ['proposal','receipt','quotes','catalog','dashboard','printpp','printyctt'],
+      Admin: ['users']
     };
     function orderScreensForRole(list) {
       const pref = ROLE_MENU_ORDER[state.user && state.user.role] || [];
@@ -2827,7 +2828,7 @@
       if (!(document.getElementById('clp_' + lineId)?.files.length)) { toast(ht === 'Tiền mặt' ? 'Bắt buộc đính kèm phiếu chi.' : 'Bắt buộc đính kèm ảnh uỷ nhiệm chi.', 'err'); return; }
       const amt = Number(moneyRaw('camt_' + lineId));
       if (!amt || amt <= 0) { toast('Nhập số tiền đã chi (> 0).', 'err'); return; }
-      if (!confirm(`Xác nhận đã chi ${fmtMoney(amt)}đ (${ht}) cho khoản này? Số này ghi vào công nợ (KTTH/Admin điều chỉnh sau nếu cần).`)) return;
+      if (!confirm(`Xác nhận đã chi ${fmtMoney(amt)}đ (${ht}) cho khoản này? Số này ghi vào công nợ (KTTH điều chỉnh sau nếu cần).`)) return;
       try {
         const proof = await withBusy(btn, 'Đang tải chứng từ...', () => uploadAttachments('clp_' + lineId, ht === 'Tiền mặt' ? 'chi-tien/phieu-chi' : 'chi-tien/uy-nhiem'));
         await withBusy(btn, 'Đang xác nhận...', () => call('rpc_cashier_pay_line', { p_line_id: lineId, p_proof: proof, p_amount: amt, p_hinh_thuc: ht }));
@@ -3425,7 +3426,7 @@
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>Theo dõi đề xuất mua hàng &amp; tạm ứng</h2>
-          <div class="notice ok">Xem mọi khoản đang trình + đã duyệt/nghiệm thu/thanh toán. Phiếu <b>đang chờ duyệt</b> hoặc <b>đã duyệt (chưa thanh toán)</b> có thể <b>Trả lại</b> (kèm lý do) — công nợ đã sinh sẽ được gỡ, người lập nhận thông báo để giải trình và tạo lại. Trưởng bộ phận chỉ thấy phiếu bộ phận mình.</div>
+          <div class="notice ok">Xem các khoản đã trình + đã duyệt/nghiệm thu/thanh toán theo phạm vi quyền. Kế toán có thể <b>Trả lại</b> phiếu đang chờ duyệt hoặc đã duyệt chưa thanh toán; trưởng bộ phận chỉ thấy phiếu bộ phận mình.</div>
           <div class="actions" style="align-items:flex-end;flex-wrap:wrap">
             <div class="field" style="margin:0"><label>Từ ngày</label><input id="osFrom" type="date" value="${from7}"></div>
             <div class="field" style="margin:0"><label>Đến ngày</label><input id="osTo" type="date" value="${today}"></div>
@@ -3466,7 +3467,7 @@
         (!st || p.TrangThai === st) && (!bp || p.BoPhan === bp) && (!ng || p.NguoiDeNghi === ng));
       const pays = res.paymentRequests || [];
       try {
-        const canCancel = res.role === 'KeToanCongNo' || res.role === 'TruongPhong' || res.role === 'Admin';
+        const canCancel = can('oversight:cancel');
         const THR = 10000000;
         const propRows = props.length ? `<div class="table-wrap"><table><thead><tr>
           <th>Mã ĐX</th><th>Loại</th><th>Người/Bộ phận</th><th>NCC</th><th>Tổng tiền</th><th>Thẩm quyền</th><th>Submit</th><th>Duyệt</th><th>Trạng thái</th><th></th></tr></thead><tbody>
@@ -3511,7 +3512,7 @@
         const planBlock = p.TrongKeHoachTuan
           ? '<div class="notice ok" style="margin:0">✔ Đã có trong kế hoạch chi tuần.</div>'
           : `<div class="notice">⚠ Ngoài kế hoạch chi tuần. Giải trình:<br><b>${esc(p.GiaiTrinhNgoaiKeHoach || '(chưa nhập)')}</b></div>`;
-        const canBounce = (p.TrangThai === 'Chờ duyệt') || (p.TrangThai === 'Đã duyệt' && !p.DaPhatSinhTT);
+        const canBounce = can('oversight:cancel') && ((p.TrangThai === 'Chờ duyệt') || (p.TrangThai === 'Đã duyệt' && !p.DaPhatSinhTT));
         openModal(`Phiếu ${esc(ma)} — ${loai}`, `
           <div class="detail-head">
             <div><label>Trạng thái</label><div>${osStatusPill(p.TrangThai)}</div></div>
@@ -3564,7 +3565,7 @@
             <li>Duyệt xong → <b>Mua hàng Nghiệm thu</b>: nhập <b>SL thực nhận</b>, tick <b>loại chứng từ</b> (biên bản/phiếu cân/hóa đơn VAT…) + đính kèm. <u>Lúc này khoản CHƯA thành công nợ.</u></li>
             <li><b>Kế toán duyệt chứng từ &amp; lưu công nợ</b>: kiểm tra chứng từ, nhập <b>số đã trả trước</b> (nếu có) rồi <b>"Lưu về công nợ"</b> — hoặc <b>Trả lại</b> mua hàng bổ sung chứng từ. Chỉ khoản đã lưu công nợ mới vào các màn thanh toán/theo dõi.</li>
             <li><b>Kế toán</b> lập <b>Đề xuất thanh toán</b> (chỉ nạp được khoản đã lưu công nợ/đến hạn; khoản đã nằm trong một đề xuất đang chờ/đã duyệt <b>sẽ không hiện lại</b>) → gửi duyệt.</li>
-            <li><b>Chủ tịch</b> duyệt đề xuất thanh toán (<b>gộp theo ngày</b>), hoặc trả lại kế toán sửa → <b>Kế toán bấm "Đã chi tiền"</b> để trừ công nợ.</li>
+            <li><b>Chủ tịch</b> duyệt đề xuất thanh toán (<b>gộp theo ngày</b>), hoặc trả lại kế toán sửa → <b>Thủ quỹ xác nhận chi</b> để trừ công nợ và lưu chứng từ chi.</li>
             <li><b>Tất toán</b>: khoản trả đủ được lưu trữ.</li>
           </ol>
           <h3>Vai trò</h3>
@@ -3572,8 +3573,9 @@
             <li><b>Nhân viên mua hàng</b>: báo giá, đề xuất mua/tạm ứng, thêm nhanh danh mục, <b>nghiệm thu nhận hàng</b>, in phiếu. (Không còn ghi thanh toán.)</li>
             <li><b>Tổng giám đốc</b>: duyệt đề xuất <b>dưới ngưỡng</b> (mặc định 10 triệu).</li>
             <li><b>Chủ tịch</b>: duyệt <b>mọi</b> đề xuất mua hàng, và duyệt đề xuất thanh toán.</li>
-            <li><b>Kế toán công nợ</b>: <b>duyệt chứng từ &amp; lưu công nợ</b>, lập &amp; đi tiền đề xuất thanh toán, theo dõi công nợ, tất toán.</li>
-            <li><b>Admin</b>: tạo tài khoản, phân quyền, danh mục.</li>
+            <li><b>Kế toán công nợ</b>: <b>duyệt chứng từ &amp; lưu công nợ</b>, lập đề xuất thanh toán, theo dõi/điều chỉnh công nợ, tất toán.</li>
+            <li><b>Thủ quỹ</b>: chi các đề xuất thanh toán đã duyệt và đính kèm chứng từ chi.</li>
+            <li><b>Admin</b>: tạo tài khoản, phân quyền và quản lý bộ phận.</li>
           </ul>
           <h3>Tính năng chung</h3>
           <ul class="hint-list">
@@ -3592,28 +3594,31 @@
       'proposal:approve': 'Duyệt đề xuất mua hàng', 'proposal:reject': 'Từ chối đề xuất',
       'receipt:update': 'Nghiệm thu nhận hàng',
       'payment:request': 'Lập đề xuất thanh toán', 'payment:approve': 'Duyệt đề xuất thanh toán',
-      'payment:execute': 'Đi tiền theo đề xuất', 'payment:create': 'Ghi nhận chi',
+      'payment:execute': 'Đi tiền theo đề xuất',
+      'payment:read': 'Xem lịch sử thanh toán', 'payment:adjust': 'Điều chỉnh thanh toán thủ công',
+      'payment:request:read': 'Xem dữ liệu đề xuất thanh toán',
       'settlement:preview': 'Xem tất toán', 'settlement:confirm': 'Xác nhận tất toán',
-      'dashboard:read': 'Theo dõi công nợ', 'recent:read': 'Xem & tải dữ liệu tổng hợp',
+      'dashboard:read': 'Theo dõi công nợ', 'leaderdash:read': 'Tổng quan điều hành',
+      'recent:read': 'Xem & tải dữ liệu tổng hợp',
       'catalog:read': 'Xem danh mục', 'catalog:manage': 'Quản lý danh mục',
-      'user:manage': 'Quản lý tài khoản', 'print:purchasing': 'In phiếu mua hàng'
+      'user:manage': 'Quản lý tài khoản', 'department:manage': 'Quản lý bộ phận',
+      'print:purchasing': 'In phiếu mua hàng'
     };
     const DATA_ACCESS = {
       NhanVienMuaHang: 'Báo giá vật tư, đề xuất mua hàng của bạn, nghiệm thu, in phiếu.',
       ThuQuy: 'Đề xuất thanh toán đã duyệt để chuyển tiền, xác nhận chi + ảnh chuyển khoản.',
-      KeToanCongNo: 'Công nợ, đề xuất thanh toán, dữ liệu tổng hợp.',
+      KeToanCongNo: 'Công nợ, đề xuất thanh toán, lịch sử thanh toán, dữ liệu tổng hợp.',
       ChuTich: 'Đề xuất mua hàng ≥ 10 triệu, đề xuất thanh toán, theo dõi công nợ.',
       TongGiamDoc: 'Đề xuất mua hàng < 10 triệu, theo dõi công nợ.',
-      TruongPhong: 'Báo giá, dữ liệu tổng hợp.',
+      TruongPhong: 'Báo giá, đề xuất đã trình của bộ phận mình.',
       LanhDao: 'Theo dõi & báo giá.',
-      Admin: 'Toàn bộ dữ liệu và cấu hình hệ thống.'
+      Admin: 'Tài khoản người dùng và bộ phận.'
     };
     function renderAccount() {
       const u = state.user || {}; const perms = state.permissions || [];
-      const isAdmin = perms.includes('*');
-      const permHtml = isAdmin
-        ? '<span class="pill ok">Toàn quyền (Admin)</span>'
-        : (perms.length ? perms.map(p => `<span class="pill" style="margin:0 6px 6px 0">${esc(PERM_LABELS[p] || p)}</span>`).join('') : '<span class="status">Chưa có quyền.</span>');
+      const permHtml = perms.length
+        ? perms.map(p => `<span class="pill" style="margin:0 6px 6px 0">${esc(PERM_LABELS[p] || p)}</span>`).join('')
+        : '<span class="status">Chưa có quyền.</span>';
       document.getElementById('content').innerHTML = `
         <section class="card" style="max-width:640px">
           <h2>Tài khoản của tôi</h2>
@@ -3950,7 +3955,7 @@
           <div class="notice ok">Gán vai trò cho từng người ngay tại đây. Người dùng đăng nhập bằng email + mã PIN.</div>
           <div class="actions"><button onclick="openUserForm()">＋ Thêm tài khoản</button><button class="secondary" onclick="addDeptPrompt()">＋ Bộ phận</button><button class="secondary" onclick="loadUsers(this)">↻ Tải lại</button></div>
           <div id="usersBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
-          <div class="notice" style="margin-top:12px">Vai trò &amp; quyền: <b>Nhân viên mua hàng</b> tạo đề xuất/nghiệm thu · <b>Lãnh đạo</b> duyệt đề xuất &amp; thanh toán · <b>Kế toán công nợ</b> đề xuất/đi tiền, theo dõi công nợ · <b>Trưởng phòng</b> xem báo giá · <b>Admin</b> toàn quyền.</div>
+          <div class="notice" style="margin-top:12px">Vai trò &amp; quyền: <b>Nhân viên mua hàng</b> tạo đề xuất/nghiệm thu phiếu của mình · <b>Trưởng phòng</b> xem phiếu đã trình của bộ phận · <b>Kế toán công nợ</b> duyệt hồ sơ, lập đề xuất thanh toán và điều chỉnh công nợ · <b>Thủ quỹ</b> chi tiền đã duyệt · <b>Admin</b> quản lý tài khoản/bộ phận.</div>
         </section>`;
       loadUsers();
     }
