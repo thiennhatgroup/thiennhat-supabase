@@ -447,6 +447,7 @@
       user: null,
       doiTuong: [],
       vatTu: [],
+      departments: [],
       permissions: [],
       screen: 'quotes',
       quote: null
@@ -602,6 +603,29 @@
     }
     function val(id) { return document.getElementById(id)?.value || ''; }
     function setMsg(text) { document.querySelectorAll('.js-msg').forEach(el => el.textContent = text || ''); }
+    function needsDepartment(role) { return role === 'NhanVienMuaHang' || role === 'TruongPhong'; }
+    function normalizeDepartments(list) {
+      return (list || []).map(d => typeof d === 'string' ? { id: '', ten: d } : {
+        id: String(d.id || d.departmentId || ''),
+        ten: String(d.ten || d.name || d.boPhan || '')
+      }).filter(d => d.ten);
+    }
+    async function ensureDepartments() {
+      if ((state.departments || []).length) return state.departments;
+      const res = await call('rpc_list_catalog');
+      state.departments = normalizeDepartments(res.departments || []);
+      return state.departments;
+    }
+    function deptNameById(id) {
+      const d = (state.departments || []).find(x => String(x.id) === String(id || ''));
+      return d ? d.ten : '';
+    }
+    function deptOptions(selected) {
+      const cur = String(selected || '');
+      return '<option value="">— Chọn bộ phận —</option>' + (state.departments || []).map(d =>
+        `<option value="${esc(d.id)}" ${String(d.id) === cur ? 'selected' : ''}>${esc(d.ten)}</option>`
+      ).join('');
+    }
 
     // Login uses Supabase Auth directly: email + a PIN-derived password.
     // The "tn-pin::" prefix guarantees the real password meets Supabase's
@@ -644,7 +668,7 @@
         state.permissions = res.permissions || [];
         document.getElementById('loginView').classList.add('hidden');
         document.getElementById('appView').classList.remove('hidden');
-        const ub = document.getElementById('userBadge'); if (ub) ub.textContent = `${state.user.name} - ${state.user.role}`;
+        const ub = document.getElementById('userBadge'); if (ub) ub.textContent = `${state.user.name} - ${state.user.role}${state.user.boPhan ? ' - ' + state.user.boPhan : ''}`;
         renderLists();
         const allowed = visibleScreens();
         if (!allowed.some(s => s[0] === state.screen)) state.screen = allowed.length ? allowed[0][0] : 'quotes';
@@ -1074,7 +1098,7 @@
             </div>
             <div class="grid">
               <div class="field"><label>Người đề nghị *</label><select id="pNguoi"><option value="">Đang tải...</option></select></div>
-              <div class="field"><label>Bộ phận</label><select id="pBoPhan"><option value="">— Chọn bộ phận —</option></select></div>
+              <div class="field"><label>Bộ phận</label><input id="pBoPhan" value="${esc((ed && ed.BoPhan) || state.user?.boPhan || '')}" disabled><small>Tự lấy theo tài khoản; không chọn bộ phận khác.</small></div>
             </div>
             ${objectFields('p')}
             <div class="grid">
@@ -1122,20 +1146,24 @@
     }
     async function fillProposalLists() {
       const pn = document.getElementById('pNguoi'); const bp = document.getElementById('pBoPhan');
-      let proposers = [], depts = [];
-      try { const res = await call('rpc_list_catalog'); proposers = res.proposers || []; depts = res.departments || []; } catch (e) {}
+      let proposers = [];
+      try {
+        const res = await call('rpc_list_catalog');
+        proposers = res.proposers || [];
+        state.departments = normalizeDepartments(res.departments || []);
+      } catch (e) {}
       const cur = state.user?.name || '';
-      const names = Array.from(new Set([cur, ...proposers.map(x => x.ten)].filter(Boolean)));
+      const proposerName = x => typeof x === 'string' ? x : x.ten;
+      const names = Array.from(new Set([cur, ...proposers.map(proposerName)].filter(Boolean)));
       if (pn) { pn.innerHTML = names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join(''); pn.value = cur; }
-      if (bp) bp.innerHTML = '<option value="">— Chọn bộ phận —</option>' + depts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
-      if (pn && bp) pn.onchange = () => { const m = proposers.find(x => x.ten === pn.value); if (m && m.boPhan) bp.value = m.boPhan; };
+      if (bp) bp.value = state.editingProposal?.BoPhan || state.user?.boPhan || '';
       // Áp dữ liệu khi đang sửa nháp
       const ed = state.editingProposal;
       if (ed) {
         setVal('pLoai', ed.LoaiDeXuat === 'TamUng' ? 'TamUng' : 'MuaHang');
         if (ed.NgayDeXuat) setVal('pNgay', ed.NgayDeXuat);
         if (pn && ed.NguoiDeNghi) { if (!names.includes(ed.NguoiDeNghi)) pn.insertAdjacentHTML('afterbegin', `<option value="${esc(ed.NguoiDeNghi)}">${esc(ed.NguoiDeNghi)}</option>`); pn.value = ed.NguoiDeNghi; }
-        if (bp && ed.BoPhan) bp.value = ed.BoPhan;
+        if (bp) bp.value = ed.BoPhan || state.user?.boPhan || '';
         setVal('ptenDoiTuong', ed.TenDoiTuong || '');
         setVal('pDieuKhoanTT', ed.DieuKhoanTT || '');
         if (ed.HanThanhToan) setVal('pHan', ed.HanThanhToan);
@@ -1155,7 +1183,11 @@
     async function addDeptPrompt() {
       const t = (prompt('Tên bộ phận mới:', '') || '').trim();
       if (!t) return;
-      try { await call('rpc_add_department', { p_ten: t }); toast('Đã thêm bộ phận.', 'ok'); }
+      try {
+        const res = await call('rpc_add_department', { p_ten: t });
+        state.departments = normalizeDepartments(res.departments || []);
+        toast('Đã thêm bộ phận.', 'ok');
+      }
       catch (err) { toast(err.message || String(err), 'err'); }
     }
     async function addProposerPrompt() {
@@ -1211,6 +1243,7 @@
       const ed = state.editingProposal;
       const p = collectProposal('Nháp');
       if (!p.nguoiDeNghi.trim()) { toast('Cần chọn người đề nghị.', 'err'); return; }
+      if (needsDepartment(state.user?.role) && !String(state.user?.boPhan || '').trim()) { toast('Tài khoản chưa được Admin gán bộ phận.', 'err'); return; }
       if (!p.doiTuong.ten.trim()) { toast('Cần nhập tên đối tượng / NCC.', 'err'); return; }
       if (!p.lines.length) { toast('Cần ít nhất một dòng vật tư đầy đủ (mặt hàng, SL, đơn giá).', 'err'); return; }
       if (!p.trongKeHoachTuan && !p.giaiTrinhNgoaiKeHoach.trim()) { toast('Khoản ngoài kế hoạch tuần — cần nhập giải trình.', 'err'); return; }
@@ -2196,6 +2229,7 @@
     async function loadCatalog() {
       try {
         const res = await call('rpc_list_catalog');
+        state.departments = normalizeDepartments(res.departments || state.departments || []);
         state.catalog = { materials: res.materials || [], suppliers: res.suppliers || [], groups: res.groups || [], canCreate: !!res.canCreate, canManage: !!res.canManage };
         drawCatalog();
       } catch (err) {
@@ -3011,25 +3045,74 @@
       const sl = Number(l.SLThucNhan ?? l.SLDat ?? 0);
       return Math.round(sl * Number(l.DonGia || 0) * (1 + Number(l.VATRate || 0)));
     }
-    // ---- Tệp đính kèm (Supabase Storage, bucket 'attachments' công khai) ----
+    // ---- Tệp đính kèm ------------------------------------------------------
+    const BUSINESS_ATTACHMENTS_BUCKET = 'business-attachments';
+    const BUSINESS_ATTACHMENT_PREFIXES = ['bao-gia', 'nghiem-thu', 'chi-tien'];
+    function isBusinessAttachmentPrefix(prefix) {
+      return BUSINESS_ATTACHMENT_PREFIXES.some(p => prefix === p || String(prefix || '').startsWith(p + '/'));
+    }
+    async function currentUserId() {
+      if (state.session && state.session.user && state.session.user.id) return state.session.user.id;
+      const { data, error } = await sb.auth.getSession();
+      if (error) throw error;
+      state.session = data && data.session;
+      if (!state.session || !state.session.user || !state.session.user.id) throw new Error('Phiên đăng nhập đã hết hạn.');
+      return state.session.user.id;
+    }
     async function uploadAttachments(inputId, prefix) {
       const el = document.getElementById(inputId);
       const files = el && el.files ? [...el.files] : [];
       const out = [];
+      const privateUpload = isBusinessAttachmentPrefix(prefix);
+      const bucket = privateUpload ? BUSINESS_ATTACHMENTS_BUCKET : 'attachments';
+      const userId = privateUpload ? await currentUserId() : '';
       for (const f of files) {
         const safe = f.name.replace(/[^\w.\-]+/g, '_');
-        const path = `${prefix}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${safe}`;
-        const { error } = await sb.storage.from('attachments').upload(path, f, { upsert: false });
+        const pathPrefix = privateUpload ? `${userId}/${prefix}` : prefix;
+        const path = `${pathPrefix}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${safe}`;
+        const { error } = await sb.storage.from(bucket).upload(path, f, { upsert: false });
         if (error) throw new Error('Tải tệp lỗi: ' + (error.message || error));
-        const { data } = sb.storage.from('attachments').getPublicUrl(path);
-        out.push({ name: f.name, url: data.publicUrl });
+        if (privateUpload) {
+          out.push({ name: f.name, bucket, path, private: true, kind: prefix.split('/')[0] });
+        } else {
+          const { data } = sb.storage.from(bucket).getPublicUrl(path);
+          out.push({ name: f.name, url: data.publicUrl });
+        }
       }
       return out;
+    }
+    function attachmentToken(a) {
+      return encodeURIComponent(JSON.stringify(a || {}));
+    }
+    async function openAttachment(token) {
+      try {
+        const a = JSON.parse(decodeURIComponent(token || '%7B%7D'));
+        if (a.url) { window.open(a.url, '_blank', 'noopener'); return; }
+        if (a.bucket === BUSINESS_ATTACHMENTS_BUCKET && a.path) {
+          await call('rpc_check_business_attachment_access', { p_path: a.path });
+          const { data, error } = await sb.storage.from(a.bucket).createSignedUrl(a.path, 120);
+          if (error) throw error;
+          if (!data || !data.signedUrl) throw new Error('Không tạo được liên kết tạm thời.');
+          window.open(data.signedUrl, '_blank', 'noopener');
+          return;
+        }
+        throw new Error('Tệp đính kèm thiếu đường dẫn.');
+      } catch (err) {
+        toast(err.message || String(err), 'err');
+      }
     }
     function attachLinks(arr) {
       arr = arr || [];
       if (!arr.length) return '<span class="status">(không có)</span>';
-      return arr.map(a => `<a href="${esc(a.url)}" target="_blank" rel="noopener">📎 ${esc(a.name)}</a>`).join('<br>');
+      return arr.map(a => {
+        if (!a || typeof a !== 'object') return `<span class="status">${esc(a || '(tệp)')}</span>`;
+        const label = `📎 ${esc(a.name || 'Tệp đính kèm')}`;
+        if (a.url) return `<a href="${esc(a.url)}" target="_blank" rel="noopener">${label}</a>`;
+        if (a.bucket === BUSINESS_ATTACHMENTS_BUCKET && a.path) {
+          return `<a href="#" onclick="openAttachment('${attachmentToken(a)}');return false;">${label}</a>`;
+        }
+        return `<span class="status">${label}</span>`;
+      }).join('<br>');
     }
 
     async function loadPrintable(cb) {
@@ -3516,6 +3599,7 @@
           <div class="field"><label>Họ tên</label><input value="${esc(u.name || '')}" disabled></div>
           <div class="field"><label>Email</label><input value="${esc(u.email || '')}" disabled></div>
           <div class="field"><label>Vai trò</label><input value="${esc(ROLE_LABELS[u.role] || u.role || '')}" disabled></div>
+          <div class="field"><label>Bộ phận</label><input value="${esc(u.boPhan || 'Chưa gán')}" disabled></div>
           <h3>Quyền của bạn</h3>
           <div>${permHtml}</div>
           <h3>Dữ liệu được tiếp cận</h3>
@@ -3855,52 +3939,66 @@
         const res = await withBusy(btn, 'Đang tải...', () => call('rpc_admin_list_users'));
         const rows = res.rows || [];
         box.innerHTML = `<div class="table-wrap"><table><thead><tr>
-          <th>Email</th><th>Tên</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+          <th>Email</th><th>Tên</th><th>Vai trò</th><th>Bộ phận</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
           ${rows.map(u => `<tr>
             <td>${esc(u.email)}</td><td>${esc(u.name||'')}</td>
             <td>${esc(ROLE_LABELS[u.role]||u.role)}</td>
+            <td>${esc(u.boPhan || '—')}</td>
             <td>${u.status==='Ngừng'?'<span class="pill err">Ngừng</span>':'<span class="pill ok">Hoạt động</span>'}</td>
             <td><button class="secondary" onclick='openUserEdit(${JSON.stringify(u).replace(/'/g,"&#39;")})'>Sửa</button>
                 <button class="secondary" onclick="resetPin('${esc(u.id)}','${esc(u.email)}', this)">Đặt lại PIN</button></td>
           </tr>`).join('')}</tbody></table></div>`;
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
     }
-    function openUserForm() {
+    function updateUserDeptHint(prefix) {
+      const role = val(prefix + 'Role');
+      const hint = document.getElementById(prefix + 'DeptHint');
+      if (hint) hint.textContent = needsDepartment(role) ? 'Bắt buộc với Nhân viên mua hàng và Trưởng phòng.' : 'Không bắt buộc với vai trò này.';
+    }
+    async function openUserForm() {
+      try { await ensureDepartments(); } catch (e) { toast(e.message || String(e), 'err'); return; }
       openModal('Thêm tài khoản', `
         <div class="field"><label>Email *</label><input id="uEmail" placeholder="nguoidung@congty.com"></div>
         <div class="field"><label>Họ tên *</label><input id="uName"></div>
         <div class="grid">
-          <div class="field"><label>Vai trò</label><select id="uRole">${roleOptions('NhanVienMuaHang')}</select></div>
+          <div class="field"><label>Vai trò</label><select id="uRole" onchange="updateUserDeptHint('u')">${roleOptions('NhanVienMuaHang')}</select></div>
           <div class="field"><label>Mã PIN (≥4 số)</label><input id="uPin" placeholder="VD: 1234"></div>
         </div>
+        <div class="field"><label>Bộ phận</label><select id="uDepartmentId">${deptOptions('')}</select><small id="uDeptHint">Bắt buộc với Nhân viên mua hàng và Trưởng phòng.</small></div>
         <small>Người dùng đăng nhập bằng email + PIN này. Có thể đổi PIN sau bằng “Đặt lại PIN”.</small>`,
         saveNewUser, 'Tạo tài khoản');
     }
     async function saveNewUser(btn) {
       const email = val('uEmail').trim(), name = val('uName').trim(), role = val('uRole'), pin = val('uPin').trim();
+      const departmentId = val('uDepartmentId') || null;
       if (!email || !name) { modalErr('Cần nhập email và họ tên.'); return; }
       if (pin.length < 4) { modalErr('PIN cần ít nhất 4 ký tự.'); return; }
+      if (needsDepartment(role) && !departmentId) { modalErr('Vai trò này bắt buộc chọn bộ phận.'); return; }
       try {
-        await withBusy(btn, 'Đang tạo...', () => call('rpc_admin_create_user', { p_email: email, p_name: name, p_role: role, p_pin: pin }));
+        await withBusy(btn, 'Đang tạo...', () => call('rpc_admin_create_user', { p_email: email, p_name: name, p_role: role, p_pin: pin, p_department_id: departmentId }));
         closeModal(); toast('Đã tạo tài khoản.', 'ok'); loadUsers();
       } catch (err) { modalErr(err.message || String(err)); }
     }
-    function openUserEdit(u) {
+    async function openUserEdit(u) {
+      try { await ensureDepartments(); } catch (e) { toast(e.message || String(e), 'err'); return; }
       openModal('Sửa tài khoản', `
         <div class="field"><label>Email</label><input value="${esc(u.email)}" disabled></div>
         <div class="field"><label>Họ tên</label><input id="ueName" value="${esc(u.name||'')}"></div>
         <div class="grid">
-          <div class="field"><label>Vai trò</label><select id="ueRole">${roleOptions(u.role)}</select></div>
+          <div class="field"><label>Vai trò</label><select id="ueRole" onchange="updateUserDeptHint('ue')">${roleOptions(u.role)}</select></div>
           <div class="field"><label>Trạng thái</label><select id="ueStatus">
             <option ${u.status==='Ngừng'?'':'selected'}>Hoạt động</option>
             <option ${u.status==='Ngừng'?'selected':''}>Ngừng</option>
           </select></div>
         </div>
-        <div class="field"><label>Bộ phận (dùng cho Trưởng bộ phận rà soát)</label><input id="ueBoPhan" value="${esc(u.boPhan||'')}" placeholder="VD: Vật tư, Kỹ thuật..."></div>`, () => saveUserEdit(u.id), 'Lưu thay đổi');
+        <div class="field"><label>Bộ phận</label><select id="ueDepartmentId">${deptOptions(u.departmentId || '')}</select><small id="ueDeptHint">${needsDepartment(u.role) ? 'Bắt buộc với Nhân viên mua hàng và Trưởng phòng.' : 'Không bắt buộc với vai trò này.'}</small></div>`, () => saveUserEdit(u.id), 'Lưu thay đổi');
     }
     async function saveUserEdit(id, btn) {
+      const role = val('ueRole');
+      const departmentId = val('ueDepartmentId') || null;
+      if (needsDepartment(role) && val('ueStatus') === 'Hoạt động' && !departmentId) { modalErr('Vai trò này bắt buộc chọn bộ phận khi tài khoản hoạt động.'); return; }
       try {
-        await call('rpc_admin_update_user', { p_id: id, p_role: val('ueRole'), p_status: val('ueStatus'), p_name: val('ueName'), p_bo_phan: val('ueBoPhan') });
+        await call('rpc_admin_update_user', { p_id: id, p_role: role, p_status: val('ueStatus'), p_name: val('ueName'), p_department_id: departmentId, p_bo_phan: departmentId ? null : '' });
         closeModal(); toast('Đã cập nhật.', 'ok'); loadUsers();
       } catch (err) { modalErr(err.message || String(err)); }
     }

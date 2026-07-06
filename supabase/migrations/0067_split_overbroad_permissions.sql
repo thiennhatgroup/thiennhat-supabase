@@ -53,6 +53,7 @@ declare
   v_perms jsonb;
   v_all boolean;
   v_can_catalog boolean;
+  v_department_name text;
 begin
   select * into v_profile from profiles where id = auth.uid();
   if v_profile is null then
@@ -61,6 +62,9 @@ begin
   if v_profile.status <> 'Hoạt động' then
     raise exception 'Tài khoản chưa ở trạng thái Hoạt động.';
   end if;
+  if v_profile.role in ('NhanVienMuaHang','TruongPhong') and app_profile_department_id(v_profile) is null then
+    raise exception 'Tài khoản cần được Admin gán bộ phận trước khi sử dụng.';
+  end if;
 
   select coalesce(jsonb_agg(permission order by permission), '[]'::jsonb)
     into v_perms
@@ -68,6 +72,7 @@ begin
   where role = v_profile.role;
 
   v_all := v_profile.role not in ('NhanVienMuaHang','TruongPhong');
+  v_department_name := app_profile_department_name(v_profile);
   v_can_catalog := has_permission(v_profile.role, 'catalog:read')
                 or has_permission(v_profile.role, 'proposal:create')
                 or has_permission(v_profile.role, 'payment:request')
@@ -79,7 +84,8 @@ begin
       'email', v_profile.email,
       'name', v_profile.name,
       'role', v_profile.role,
-      'boPhan', v_profile.bo_phan
+      'departmentId', app_profile_department_id(v_profile),
+      'boPhan', v_department_name
     ),
     'doiTuong', case when v_can_catalog then (
       select coalesce(jsonb_agg(jsonb_build_object(
@@ -89,17 +95,17 @@ begin
       ) order by ten_doi_tuong), '[]'::jsonb)
       from doi_tuong
       where trang_thai = 'Hoạt động'
-        and (v_all or bo_phan is null or normalize_text(bo_phan) = normalize_text(v_profile.bo_phan))
+        and (v_all or bo_phan is null or normalize_text(bo_phan) = normalize_text(v_department_name))
     ) else '[]'::jsonb end,
     'vatTu', case when v_can_catalog then (
       select coalesce(jsonb_agg(ten order by ten), '[]'::jsonb)
       from materials
-      where v_all or bo_phan is null or normalize_text(bo_phan) = normalize_text(v_profile.bo_phan)
+      where v_all or bo_phan is null or normalize_text(bo_phan) = normalize_text(v_department_name)
     ) else '[]'::jsonb end,
     'vatTuInfo', case when v_can_catalog then (
       select coalesce(jsonb_agg(jsonb_build_object('ten', ten, 'dvt', dvt) order by ten), '[]'::jsonb)
       from materials
-      where v_all or bo_phan is null or normalize_text(bo_phan) = normalize_text(v_profile.bo_phan)
+      where v_all or bo_phan is null or normalize_text(bo_phan) = normalize_text(v_department_name)
     ) else '[]'::jsonb end,
     'permissions', v_perms
   );
@@ -287,7 +293,7 @@ begin
   perform write_audit(v_actor, 'ADD_DEPARTMENT', 'departments', v_ten, null, jsonb_build_object('ten', v_ten), 'OK', '');
   return jsonb_build_object(
     'ok', true,
-    'departments', (select coalesce(jsonb_agg(ten order by ten), '[]'::jsonb) from departments)
+    'departments', (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'ten', ten) order by ten), '[]'::jsonb) from departments)
   );
 end;
 $$;
@@ -305,6 +311,7 @@ begin
         'name', p.name,
         'role', p.role,
         'status', p.status,
+        'departmentId', p.department_id,
         'boPhan', app_profile_department_name(p),
         'createdAt', to_char(p.created_at, 'YYYY-MM-DD HH24:MI')
       ) order by p.created_at desc), '[]'::jsonb)
@@ -321,6 +328,7 @@ declare
   v_actor profiles;
   v_all boolean;
   v_can_sensitive boolean;
+  v_can_catalog_read boolean;
   v_actor_bp text;
   v_actor_department_id uuid;
   v_materials jsonb;
@@ -329,53 +337,75 @@ declare
   v_depts jsonb;
   v_props jsonb;
 begin
-  v_actor := require_permission('catalog:read');
+  select * into v_actor from profiles where id = auth.uid();
+  if v_actor is null then
+    raise exception 'Tài khoản chưa được cấp quyền truy cập hệ thống.';
+  end if;
+  if v_actor.status <> 'Hoạt động' then
+    raise exception 'Tài khoản chưa ở trạng thái Hoạt động.';
+  end if;
+  if not has_permission(v_actor.role, 'catalog:read')
+     and not has_permission(v_actor.role, 'department:manage') then
+    raise exception 'Bạn không có quyền thực hiện thao tác này (catalog:read).';
+  end if;
+
+  v_can_catalog_read := has_permission(v_actor.role, 'catalog:read');
   v_all := v_actor.role not in ('NhanVienMuaHang','TruongPhong');
   v_can_sensitive := app_can_view_sensitive_payment_evidence(v_actor);
   v_actor_bp := app_profile_department_name(v_actor);
   v_actor_department_id := app_profile_department_id(v_actor);
 
-  select coalesce(jsonb_agg(ten order by stt, ten), '[]'::jsonb)
-    into v_groups
-  from material_groups;
-
-  select coalesce(jsonb_agg(d.ten order by d.ten), '[]'::jsonb)
+  select coalesce(jsonb_agg(jsonb_build_object('id', d.id, 'ten', d.ten) order by d.ten), '[]'::jsonb)
     into v_depts
   from departments d
   where v_all
      or d.id = v_actor_department_id
      or (v_actor_bp is not null and normalize_text(d.ten) = normalize_text(v_actor_bp));
 
-  select coalesce(jsonb_agg(jsonb_build_object('ten', p.ten, 'boPhan', p.bo_phan) order by p.ten), '[]'::jsonb)
-    into v_props
-  from proposers p
-  where v_all
-     or p.bo_phan is null
-     or (v_actor_bp is not null and normalize_text(p.bo_phan) = normalize_text(v_actor_bp));
+  if not v_can_catalog_read then
+    v_groups := '[]'::jsonb;
+    v_props := '[]'::jsonb;
+    v_materials := '[]'::jsonb;
+    v_suppliers := '[]'::jsonb;
+  else
+    select coalesce(jsonb_agg(ten order by stt, ten), '[]'::jsonb)
+      into v_groups
+    from material_groups;
 
-  select coalesce(jsonb_agg(jsonb_build_object(
-      'id', m.id, 'ma', m.ma_vat_tu, 'ten', m.ten, 'dvt', m.dvt, 'nhom', m.nhom,
-      'boPhan', m.bo_phan, 'trangThai', m.trang_thai
-    ) order by m.nhom nulls last, m.ten), '[]'::jsonb)
-    into v_materials
-  from materials m
-  where v_all
-     or m.bo_phan is null
-     or (v_actor_bp is not null and normalize_text(m.bo_phan) = normalize_text(v_actor_bp));
+    select coalesce(jsonb_agg(jsonb_build_object(
+        'id', p.id, 'ten', p.ten, 'departmentId', p.department_id, 'boPhan', coalesce(d.ten, p.bo_phan)
+      ) order by p.ten), '[]'::jsonb)
+      into v_props
+    from proposers p
+    left join departments d on d.id = p.department_id
+    where v_all
+       or coalesce(d.ten, p.bo_phan) is null
+       or (v_actor_bp is not null and normalize_text(coalesce(d.ten, p.bo_phan)) = normalize_text(v_actor_bp));
 
-  select coalesce(jsonb_agg(jsonb_build_object(
-      'id', dt.id, 'ma', dt.ma_doi_tuong, 'ten', dt.ten_doi_tuong, 'loai', dt.loai,
-      'mst', dt.mst, 'diaChi', dt.dia_chi, 'contact', dt.contact, 'sdt', dt.sdt,
-      'dieuKhoan', dt.dieu_khoan_tt_mac_dinh, 'moq', dt.moq,
-      'soTk', case when v_can_sensitive then dt.so_tk_ngan_hang else null end,
-      'chiNhanh', case when v_can_sensitive then dt.chi_nhanh_ngan_hang else null end,
-      'boPhan', dt.bo_phan, 'trangThai', dt.trang_thai
-    ) order by dt.ten_doi_tuong), '[]'::jsonb)
-    into v_suppliers
-  from doi_tuong dt
-  where v_all
-     or dt.bo_phan is null
-     or (v_actor_bp is not null and normalize_text(dt.bo_phan) = normalize_text(v_actor_bp));
+    select coalesce(jsonb_agg(jsonb_build_object(
+        'id', m.id, 'ma', m.ma_vat_tu, 'ten', m.ten, 'dvt', m.dvt, 'nhom', m.nhom,
+        'boPhan', m.bo_phan, 'trangThai', m.trang_thai
+      ) order by m.nhom nulls last, m.ten), '[]'::jsonb)
+      into v_materials
+    from materials m
+    where v_all
+       or m.bo_phan is null
+       or (v_actor_bp is not null and normalize_text(m.bo_phan) = normalize_text(v_actor_bp));
+
+    select coalesce(jsonb_agg(jsonb_build_object(
+        'id', dt.id, 'ma', dt.ma_doi_tuong, 'ten', dt.ten_doi_tuong, 'loai', dt.loai,
+        'mst', dt.mst, 'diaChi', dt.dia_chi, 'contact', dt.contact, 'sdt', dt.sdt,
+        'dieuKhoan', dt.dieu_khoan_tt_mac_dinh, 'moq', dt.moq,
+        'soTk', case when v_can_sensitive then dt.so_tk_ngan_hang else null end,
+        'chiNhanh', case when v_can_sensitive then dt.chi_nhanh_ngan_hang else null end,
+        'boPhan', dt.bo_phan, 'trangThai', dt.trang_thai
+      ) order by dt.ten_doi_tuong), '[]'::jsonb)
+      into v_suppliers
+    from doi_tuong dt
+    where v_all
+       or dt.bo_phan is null
+       or (v_actor_bp is not null and normalize_text(dt.bo_phan) = normalize_text(v_actor_bp));
+  end if;
 
   return jsonb_build_object(
     'ok', true,
@@ -949,6 +979,103 @@ begin
 end;
 $$;
 
+-- ---- Private storage: keep evidence rules narrow after 0065 ----------------
+create or replace function can_insert_business_attachment(p_object_name text) returns boolean
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare
+  v_actor profiles;
+  v_owner text;
+  v_kind text;
+begin
+  select * into v_actor from profiles where id = auth.uid() and status = 'Hoạt động';
+  if v_actor is null then
+    return false;
+  end if;
+
+  v_owner := split_part(coalesce(p_object_name, ''), '/', 1);
+  v_kind := split_part(coalesce(p_object_name, ''), '/', 2);
+  return v_owner = v_actor.id::text
+     and (
+       (v_kind = 'bao-gia' and has_permission(v_actor.role, 'proposal:create'))
+       or (v_kind = 'nghiem-thu' and has_permission(v_actor.role, 'receipt:update'))
+       or (v_kind = 'chi-tien' and has_permission(v_actor.role, 'payment:execute'))
+     );
+end;
+$$;
+
+create or replace function can_read_business_attachment(p_object_name text) returns boolean
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare
+  v_actor profiles;
+begin
+  select * into v_actor from profiles where id = auth.uid() and status = 'Hoạt động';
+  if v_actor is null or nullif(trim(coalesce(p_object_name, '')), '') is null then
+    return false;
+  end if;
+
+  if exists (
+    select 1
+    from proposals p
+    where business_attachment_json_has_path(p.attachments, p_object_name)
+      and app_can_view_proposal(p, v_actor)
+  ) then
+    return true;
+  end if;
+
+  if exists (
+    select 1
+    from debts d
+    left join proposals p on p.id = d.proposal_id
+    where business_attachment_json_has_path(d.nghiem_thu_files, p_object_name)
+      and (
+        app_can_view_debt_evidence(d, v_actor)
+        or (
+          v_actor.role in ('ChuTich', 'TongGiamDoc', 'LanhDao')
+          and exists (
+            select 1
+            from payment_request_lines l
+            join payment_requests pr on pr.id = l.request_id
+            where l.debt_id = d.id
+              and pr.trang_thai in ('Chờ duyệt', 'Đã duyệt', 'Đã chi')
+          )
+        )
+      )
+  ) then
+    return true;
+  end if;
+
+  if exists (
+    select 1
+    from payment_request_lines l
+    left join debts d on d.id = l.debt_id
+    left join proposals p on p.id = d.proposal_id
+    where business_attachment_json_has_path(l.proof_files, p_object_name)
+      and (
+        v_actor.role in ('ThuQuy', 'KeToanCongNo', 'ChuTich', 'TongGiamDoc', 'LanhDao')
+        or (l.paid = true and p.nguoi_tao = v_actor.id)
+      )
+  ) then
+    return true;
+  end if;
+
+  if exists (
+    select 1
+    from payments pm
+    left join debts d on d.ma_cn = pm.ma_cn
+    left join proposals p on p.id = d.proposal_id
+    where business_attachment_json_has_path(pm.proof_files, p_object_name)
+      and (
+        v_actor.role in ('ThuQuy', 'KeToanCongNo', 'ChuTich', 'TongGiamDoc', 'LanhDao')
+        or p.nguoi_tao = v_actor.id
+      )
+  ) then
+    return true;
+  end if;
+
+  return false;
+end;
+$$;
+
 grant execute on function rpc_bootstrap() to authenticated;
 grant execute on function rpc_add_department(text) to authenticated;
 grant execute on function rpc_admin_list_users() to authenticated;
@@ -963,3 +1090,5 @@ grant execute on function rpc_get_recent(text, jsonb) to authenticated;
 grant execute on function rpc_export_payment_requests(date, date) to authenticated;
 grant execute on function rpc_export_quotes(date, date) to authenticated;
 grant execute on function rpc_leader_dashboard(date, date) to authenticated;
+grant execute on function can_insert_business_attachment(text) to authenticated;
+grant execute on function can_read_business_attachment(text) to authenticated;
