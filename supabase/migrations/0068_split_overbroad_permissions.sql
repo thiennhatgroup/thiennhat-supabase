@@ -1,5 +1,5 @@
 -- ============================================================================
--- 0067_split_overbroad_permissions.sql
+-- 0068_split_overbroad_permissions.sql
 --  Split broad role permissions into narrower actions.
 --
 --  Security goals:
