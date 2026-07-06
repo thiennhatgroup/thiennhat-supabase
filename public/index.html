@@ -469,7 +469,8 @@
       ['printpp', 'In đề xuất mua hàng', 'print:purchasing'],
       ['printyctt', 'In phiếu yêu cầu TT', 'print:purchasing'],
       ['catalog', 'Danh mục', 'catalog:read'],
-      ['users', 'Tài khoản', 'user:manage']
+      ['users', 'Tài khoản', 'user:manage'],
+      ['audit', 'Nhật ký hệ thống', 'user:manage']
     ];
     const ROLE_LABELS = {
       NhanVienMuaHang: 'Nhân viên mua hàng',
@@ -710,9 +711,9 @@
       document.getElementById('drawerBackdrop').classList.add('hidden');
     }
     function toggleGroup(el) { el.closest('.drawer-group').classList.toggle('collapsed'); }
-    const TAB_ICON = { proposal:'➕', approve:'✅', payapprove:'💳', payreq:'🧾', cashier:'💸', leaderdash:'📈', debtpay:'💵', receipt:'📦', congnoconfirm:'📋', oversight:'🔍', dashboard:'📊', quotes:'🏷️', settlement:'✔️', catalog:'📚', users:'👥' };
-    const TAB_LABEL = { proposal:'Tạo ĐX', approve:'Duyệt ĐX', payapprove:'Duyệt TT', payreq:'ĐX chi', cashier:'Chi tiền', leaderdash:'Điều hành', debtpay:'Ghi TT', receipt:'Nghiệm thu', congnoconfirm:'Duyệt HS', oversight:'Theo dõi ĐX', dashboard:'Công nợ', quotes:'Báo giá', catalog:'Danh mục', users:'Tài khoản' };
-    const TAB_ORDER = ['proposal','approve','payapprove','oversight','congnoconfirm','payreq','debtpay','receipt','dashboard','quotes','catalog','users'];
+    const TAB_ICON = { proposal:'➕', approve:'✅', payapprove:'💳', payreq:'🧾', cashier:'💸', leaderdash:'📈', debtpay:'💵', receipt:'📦', congnoconfirm:'📋', oversight:'🔍', dashboard:'📊', quotes:'🏷️', settlement:'✔️', catalog:'📚', users:'👥', audit:'🧾' };
+    const TAB_LABEL = { proposal:'Tạo ĐX', approve:'Duyệt ĐX', payapprove:'Duyệt TT', payreq:'ĐX chi', cashier:'Chi tiền', leaderdash:'Điều hành', debtpay:'Ghi TT', receipt:'Nghiệm thu', congnoconfirm:'Duyệt HS', oversight:'Theo dõi ĐX', dashboard:'Công nợ', quotes:'Báo giá', catalog:'Danh mục', users:'Tài khoản', audit:'Nhật ký' };
+    const TAB_ORDER = ['proposal','approve','payapprove','oversight','congnoconfirm','payreq','debtpay','receipt','dashboard','quotes','catalog','users','audit'];
     function renderTabBar() {
       let bar = document.getElementById('tabbar');
       if (!bar) { bar = document.createElement('nav'); bar.id = 'tabbar'; bar.className = 'tabbar'; document.body.appendChild(bar); }
@@ -836,6 +837,7 @@
       if (id === 'settlement') return renderSettlement();
       if (id === 'catalog') return renderCatalog();
       if (id === 'users') return renderUsers();
+      if (id === 'audit') return renderAudit();
       if (id === 'printpp') return renderPrintPP();
       if (id === 'printyctt') return renderPrintYCTT();
     }
@@ -3058,6 +3060,52 @@
       if (!state.session || !state.session.user || !state.session.user.id) throw new Error('Phiên đăng nhập đã hết hạn.');
       return state.session.user.id;
     }
+    function attachmentToken(a) {
+      return encodeURIComponent(JSON.stringify(a || {})).replace(/'/g, '%27');
+    }
+    function storagePathFromUrl(url, bucket) {
+      try {
+        const u = new URL(url);
+        const cleanBucket = bucket || 'attachments';
+        const markers = [`/storage/v1/object/public/${cleanBucket}/`, `/storage/v1/object/sign/${cleanBucket}/`];
+        for (const marker of markers) {
+          const i = u.pathname.indexOf(marker);
+          if (i >= 0) return decodeURIComponent(u.pathname.slice(i + marker.length));
+        }
+      } catch (_) {}
+      return '';
+    }
+    async function openAttachment(token) {
+      let win = null;
+      try {
+        const a = JSON.parse(decodeURIComponent(token || '%7B%7D'));
+        const bucket = a.bucket || 'attachments';
+        const path = a.path || storagePathFromUrl(a.url || '', bucket);
+        win = window.open('', '_blank', 'noopener');
+        await call('rpc_audit_sensitive_file_link', {
+          p_bucket: bucket,
+          p_path: path || null,
+          p_url: a.url || null,
+          p_name: a.name || null,
+          p_context: state.screen || null
+        });
+        let href = a.url || '';
+        if (bucket === BUSINESS_ATTACHMENTS_BUCKET && path) {
+          const { data, error } = await sb.storage.from(bucket).createSignedUrl(path, 120);
+          if (error) throw error;
+          href = data && data.signedUrl;
+        } else if (!href && bucket && path) {
+          const { data } = sb.storage.from(bucket).getPublicUrl(path);
+          href = data && data.publicUrl;
+        }
+        if (!href) throw new Error('Không tạo được liên kết tệp.');
+        if (win) win.location.href = href;
+        else window.open(href, '_blank', 'noopener');
+      } catch (err) {
+        if (win) win.close();
+        toast(err.message || String(err), 'err');
+      }
+    }
     async function uploadAttachments(inputId, prefix) {
       const el = document.getElementById(inputId);
       const files = el && el.files ? [...el.files] : [];
@@ -3075,30 +3123,10 @@
           out.push({ name: f.name, bucket, path, private: true, kind: prefix.split('/')[0] });
         } else {
           const { data } = sb.storage.from(bucket).getPublicUrl(path);
-          out.push({ name: f.name, url: data.publicUrl });
+          out.push({ name: f.name, bucket, path, url: data.publicUrl });
         }
       }
       return out;
-    }
-    function attachmentToken(a) {
-      return encodeURIComponent(JSON.stringify(a || {}));
-    }
-    async function openAttachment(token) {
-      try {
-        const a = JSON.parse(decodeURIComponent(token || '%7B%7D'));
-        if (a.url) { window.open(a.url, '_blank', 'noopener'); return; }
-        if (a.bucket === BUSINESS_ATTACHMENTS_BUCKET && a.path) {
-          await call('rpc_check_business_attachment_access', { p_path: a.path });
-          const { data, error } = await sb.storage.from(a.bucket).createSignedUrl(a.path, 120);
-          if (error) throw error;
-          if (!data || !data.signedUrl) throw new Error('Không tạo được liên kết tạm thời.');
-          window.open(data.signedUrl, '_blank', 'noopener');
-          return;
-        }
-        throw new Error('Tệp đính kèm thiếu đường dẫn.');
-      } catch (err) {
-        toast(err.message || String(err), 'err');
-      }
     }
     function attachLinks(arr) {
       arr = arr || [];
@@ -3106,8 +3134,7 @@
       return arr.map(a => {
         if (!a || typeof a !== 'object') return `<span class="status">${esc(a || '(tệp)')}</span>`;
         const label = `📎 ${esc(a.name || 'Tệp đính kèm')}`;
-        if (a.url) return `<a href="${esc(a.url)}" target="_blank" rel="noopener">${label}</a>`;
-        if (a.bucket === BUSINESS_ATTACHMENTS_BUCKET && a.path) {
+        if (a.url || (a.bucket && a.path)) {
           return `<a href="#" onclick="openAttachment('${attachmentToken(a)}');return false;">${label}</a>`;
         }
         return `<span class="status">${label}</span>`;
@@ -3892,7 +3919,7 @@
           <div class="nt-time">${esc(n.thoiGian)}</div>
         </div>`).join('') : '<p class="status" style="padding:10px">Chưa có thông báo.</p>'}`;
     }
-    const NAV_ALL = ['quotes','proposal','approve','receipt','congnoconfirm','payreq','payapprove','cashier','leaderdash','dashboard','settlement','catalog','users','printpp','printyctt','account','chat','improve','exp_pp','exp_tt','exp_bg','oversight','debtpay'];
+    const NAV_ALL = ['quotes','proposal','approve','receipt','congnoconfirm','payreq','payapprove','cashier','leaderdash','dashboard','settlement','catalog','users','audit','printpp','printyctt','account','chat','improve','exp_pp','exp_tt','exp_bg','oversight','debtpay'];
     async function openNotif(id, screen, refId, loai) {
       try { await call('rpc_mark_notification_read', { p_id: id }); } catch (e) {}
       document.getElementById('notifPanel')?.classList.add('hidden');
@@ -4005,6 +4032,52 @@
         await withBusy(btn, 'Đang đặt lại...', () => call('rpc_admin_reset_pin', { p_id: id, p_pin: pin }));
         toast('Đã đặt lại PIN.', 'ok');
       } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+
+    // ===== Nhật ký hệ thống (Admin) ========================================
+    function renderAudit() {
+      document.getElementById('content').innerHTML = `
+        <section class="card">
+          <h2>Nhật ký hệ thống</h2>
+          <div class="grid">
+            <div class="field"><label>Số dòng</label><select id="auditLimit"><option>50</option><option selected>100</option><option>200</option><option>500</option></select></div>
+            <div class="field"><label>Hành động</label><input id="auditAction" placeholder="VD: APPROVE_PROPOSAL"></div>
+            <div class="field"><label>Loại dữ liệu</label><input id="auditEntity" placeholder="VD: proposals"></div>
+            <div class="field"><label>Từ ngày</label><input id="auditFrom" type="date"></div>
+            <div class="field"><label>Đến ngày</label><input id="auditTo" type="date"></div>
+          </div>
+          <div class="actions"><button onclick="loadAudit(this)">↻ Tải nhật ký</button></div>
+          <div id="auditBox" class="table-wrap" style="margin-top:12px">${loadingText('Đang tải...')}</div>
+        </section>`;
+      loadAudit();
+    }
+    async function loadAudit(btn) {
+      const box = document.getElementById('auditBox');
+      if (box) box.innerHTML = loadingText('Đang tải...');
+      try {
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_admin_list_audit_log', {
+          p_limit: Number(val('auditLimit') || 100),
+          p_action: val('auditAction').trim() || null,
+          p_entity_type: val('auditEntity').trim() || null,
+          p_from: val('auditFrom') || null,
+          p_to: val('auditTo') || null
+        }));
+        const rows = res.rows || [];
+        box.innerHTML = rows.length ? `<table><thead><tr>
+          <th>Thời gian</th><th>Người thao tác</th><th>Hành động</th><th>Dữ liệu</th><th>Kết quả</th><th>Ghi chú</th>
+        </tr></thead><tbody>
+          ${rows.map(r => `<tr>
+            <td>${esc(r.time || '')}</td>
+            <td>${esc(r.actor || '')}<br><span class="status">${esc(r.role || '')}</span></td>
+            <td><code>${esc(r.action || '')}</code></td>
+            <td>${esc(r.entity || '')}${r.entityId ? '<br><code>' + esc(r.entityId) + '</code>' : ''}</td>
+            <td>${r.result === 'OK' ? '<span class="pill ok">OK</span>' : '<span class="pill err">' + esc(r.result || '') + '</span>'}</td>
+            <td>${esc(r.message || '')}</td>
+          </tr>`).join('')}
+        </tbody></table>` : '<p class="status">Chưa có nhật ký phù hợp.</p>';
+      } catch (err) {
+        box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`;
+      }
     }
 
     // Resume an existing Supabase session on page load/refresh, mirroring
