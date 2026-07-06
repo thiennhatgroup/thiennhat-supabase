@@ -1,5 +1,5 @@
 -- ============================================================================
--- 0067_upload_limits_file_type_guardrails.sql
+-- 0069_upload_limits_file_type_guardrails.sql
 --  Add upload guardrails for business attachments:
 --    * max 5 MB per file
 --    * max 20 MB per persisted upload batch

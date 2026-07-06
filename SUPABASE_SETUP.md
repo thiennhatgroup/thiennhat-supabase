@@ -65,7 +65,7 @@ That's it — your database now has every table, security rule, and business-log
 
 ### Storage guardrails for attachments
 
-Migration `0067_upload_limits_file_type_guardrails.sql` tries to configure the Supabase Storage bucket named `attachments` automatically:
+Migration `0069_upload_limits_file_type_guardrails.sql` tries to configure the Supabase Storage bucket named `attachments` automatically:
 
 - Public access: **off** (the app opens stored files through short-lived signed links)
 - Maximum file size: **5 MB**
