@@ -1,16 +1,38 @@
 // Edge Function: gửi Web Push khi có 1 dòng notifications mới.
-// Kích hoạt bằng Database Webhook (Database → Webhooks → Insert on `notifications`).
-// Secrets cần đặt: VAPID_PUBLIC, VAPID_PRIVATE (SUPABASE_URL & SUPABASE_SERVICE_ROLE_KEY có sẵn).
+// Kích hoạt bởi trigger tg_push_on_notify().
+// Secrets cần đặt: VAPID_PUBLIC, VAPID_PRIVATE, PUSH_WEBHOOK_SECRET
+// (SUPABASE_URL & SUPABASE_SERVICE_ROLE_KEY có sẵn).
 import webpush from "npm:web-push@3.6.7";
 
 const VAPID_PUBLIC = Deno.env.get("VAPID_PUBLIC")!;
 const VAPID_PRIVATE = Deno.env.get("VAPID_PRIVATE")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const PUSH_WEBHOOK_SECRET = Deno.env.get("PUSH_WEBHOOK_SECRET")?.trim() ?? "";
+const SECRET_HEADER = "x-push-webhook-secret";
 
 webpush.setVapidDetails("mailto:admin@thiennhatgroup.com", VAPID_PUBLIC, VAPID_PRIVATE);
 
+function timingSafeEqual(a: string, b: string) {
+  const encoder = new TextEncoder();
+  const aBytes = encoder.encode(a);
+  const bBytes = encoder.encode(b);
+  let diff = aBytes.length ^ bBytes.length;
+  const length = Math.max(aBytes.length, bBytes.length);
+
+  for (let i = 0; i < length; i += 1) {
+    diff |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+  }
+
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
+  const requestSecret = req.headers.get(SECRET_HEADER)?.trim() ?? "";
+  if (!PUSH_WEBHOOK_SECRET || !requestSecret || !timingSafeEqual(requestSecret, PUSH_WEBHOOK_SECRET)) {
+    return new Response("unauthorized", { status: 401 });
+  }
+
   try {
     const payload = await req.json();
     const record = payload?.record ?? payload; // Database Webhook gửi { record }
@@ -47,7 +69,8 @@ Deno.serve(async (req) => {
       ),
     );
     return new Response("ok", { status: 200 });
-  } catch (e) {
-    return new Response("err: " + (e as Error).message, { status: 200 });
+  } catch (_) {
+    console.error("send-push failed");
+    return new Response("err", { status: 200 });
   }
 });
