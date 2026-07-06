@@ -3010,25 +3010,74 @@
       const sl = Number(l.SLThucNhan ?? l.SLDat ?? 0);
       return Math.round(sl * Number(l.DonGia || 0) * (1 + Number(l.VATRate || 0)));
     }
-    // ---- Tệp đính kèm (Supabase Storage, bucket 'attachments' công khai) ----
+    // ---- Tệp đính kèm ------------------------------------------------------
+    const BUSINESS_ATTACHMENTS_BUCKET = 'business-attachments';
+    const BUSINESS_ATTACHMENT_PREFIXES = ['bao-gia', 'nghiem-thu', 'chi-tien'];
+    function isBusinessAttachmentPrefix(prefix) {
+      return BUSINESS_ATTACHMENT_PREFIXES.some(p => prefix === p || String(prefix || '').startsWith(p + '/'));
+    }
+    async function currentUserId() {
+      if (state.session && state.session.user && state.session.user.id) return state.session.user.id;
+      const { data, error } = await sb.auth.getSession();
+      if (error) throw error;
+      state.session = data && data.session;
+      if (!state.session || !state.session.user || !state.session.user.id) throw new Error('Phiên đăng nhập đã hết hạn.');
+      return state.session.user.id;
+    }
     async function uploadAttachments(inputId, prefix) {
       const el = document.getElementById(inputId);
       const files = el && el.files ? [...el.files] : [];
       const out = [];
+      const privateUpload = isBusinessAttachmentPrefix(prefix);
+      const bucket = privateUpload ? BUSINESS_ATTACHMENTS_BUCKET : 'attachments';
+      const userId = privateUpload ? await currentUserId() : '';
       for (const f of files) {
         const safe = f.name.replace(/[^\w.\-]+/g, '_');
-        const path = `${prefix}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${safe}`;
-        const { error } = await sb.storage.from('attachments').upload(path, f, { upsert: false });
+        const pathPrefix = privateUpload ? `${userId}/${prefix}` : prefix;
+        const path = `${pathPrefix}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${safe}`;
+        const { error } = await sb.storage.from(bucket).upload(path, f, { upsert: false });
         if (error) throw new Error('Tải tệp lỗi: ' + (error.message || error));
-        const { data } = sb.storage.from('attachments').getPublicUrl(path);
-        out.push({ name: f.name, url: data.publicUrl });
+        if (privateUpload) {
+          out.push({ name: f.name, bucket, path, private: true, kind: prefix.split('/')[0] });
+        } else {
+          const { data } = sb.storage.from(bucket).getPublicUrl(path);
+          out.push({ name: f.name, url: data.publicUrl });
+        }
       }
       return out;
+    }
+    function attachmentToken(a) {
+      return encodeURIComponent(JSON.stringify(a || {}));
+    }
+    async function openAttachment(token) {
+      try {
+        const a = JSON.parse(decodeURIComponent(token || '%7B%7D'));
+        if (a.url) { window.open(a.url, '_blank', 'noopener'); return; }
+        if (a.bucket === BUSINESS_ATTACHMENTS_BUCKET && a.path) {
+          await call('rpc_check_business_attachment_access', { p_path: a.path });
+          const { data, error } = await sb.storage.from(a.bucket).createSignedUrl(a.path, 120);
+          if (error) throw error;
+          if (!data || !data.signedUrl) throw new Error('Không tạo được liên kết tạm thời.');
+          window.open(data.signedUrl, '_blank', 'noopener');
+          return;
+        }
+        throw new Error('Tệp đính kèm thiếu đường dẫn.');
+      } catch (err) {
+        toast(err.message || String(err), 'err');
+      }
     }
     function attachLinks(arr) {
       arr = arr || [];
       if (!arr.length) return '<span class="status">(không có)</span>';
-      return arr.map(a => `<a href="${esc(a.url)}" target="_blank" rel="noopener">📎 ${esc(a.name)}</a>`).join('<br>');
+      return arr.map(a => {
+        if (!a || typeof a !== 'object') return `<span class="status">${esc(a || '(tệp)')}</span>`;
+        const label = `📎 ${esc(a.name || 'Tệp đính kèm')}`;
+        if (a.url) return `<a href="${esc(a.url)}" target="_blank" rel="noopener">${label}</a>`;
+        if (a.bucket === BUSINESS_ATTACHMENTS_BUCKET && a.path) {
+          return `<a href="#" onclick="openAttachment('${attachmentToken(a)}');return false;">${label}</a>`;
+        }
+        return `<span class="status">${label}</span>`;
+      }).join('<br>');
     }
 
     async function loadPrintable(cb) {
