@@ -482,6 +482,17 @@
       LanhDao: 'Lãnh đạo (cũ)',
       Admin: 'Admin'
     };
+    const ATTACHMENT_BUCKET = 'attachments';
+    const UPLOAD_MAX_FILE_BYTES = 5 * 1024 * 1024;
+    const UPLOAD_MAX_BATCH_BYTES = 20 * 1024 * 1024;
+    const UPLOAD_ALLOWED_EXTS = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif'];
+    const UPLOAD_ALLOWED_MIME_TYPES = new Set([
+      'application/pdf', 'application/x-pdf',
+      'image/jpeg', 'image/jpg', 'image/pjpeg',
+      'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'
+    ]);
+    const UPLOAD_ACCEPT = '.pdf,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,application/pdf,image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif';
+    const UPLOAD_RULE_TEXT = 'Chỉ nhận PDF/ảnh (JPG, PNG, WebP, GIF, HEIC); tối đa 5 MB/tệp và 20 MB/lần tải.';
     function can(perm) {
       return state.permissions.includes(perm);
     }
@@ -1109,8 +1120,8 @@
             </div>
             <div class="field"><label>Điều khoản thanh toán</label><textarea id="pDieuKhoanTT"></textarea></div>
             <div class="field"><label>Báo giá đính kèm <span style="color:var(--danger)">*</span></label>
-              <input id="pFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*">
-              <small>Báo giá gốc của lô (PDF/Word/ảnh) — lãnh đạo xem khi duyệt. ${ed && (ed.Attachments||[]).length ? 'Đã có ' + ed.Attachments.length + ' tệp; chọn tệp mới để thay.' : 'Bắt buộc với đề xuất Mua hàng.'}</small>
+              <input id="pFiles" type="file" multiple accept="${UPLOAD_ACCEPT}">
+              <small>Báo giá gốc của lô (PDF/ảnh) — lãnh đạo xem khi duyệt. ${UPLOAD_RULE_TEXT} ${ed && (ed.Attachments||[]).length ? 'Đã có ' + ed.Attachments.length + ' tệp; chọn tệp mới để thay.' : 'Bắt buộc với đề xuất Mua hàng.'}</small>
             </div>
             <div class="plan-box">
               <label class="check-line"><input type="checkbox" id="pTruongBp"> Trưởng bộ phận đã duyệt đề xuất này</label>
@@ -1253,6 +1264,7 @@
       const hasOld = ed && (ed.Attachments || []).length > 0;
       if (p.loaiDeXuat === 'MuaHang' && !nFiles && !hasOld) { toast('Đề xuất mua hàng cần đính kèm báo giá.', 'err'); return; }
       try {
+        validateUploadInputs('pFiles');
         p.attachments = await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('pFiles', 'bao-gia'));
         if (ed) {
           await call('rpc_update_proposal', { p_ma_de_xuat: ed.MaDeXuat, p_payload: p });
@@ -1766,9 +1778,11 @@
               <label class="check-line"><input type="checkbox" class="ct-type" value="Chứng từ khác"> Chứng từ khác</label>
             </div>
             <div class="field"><label>Hóa đơn VAT * (đính kèm — PDF/ảnh)</label>
-              <input id="rHoaDon" type="file" class="hl-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"></div>
+              <input id="rHoaDon" type="file" class="hl-input" multiple accept="${UPLOAD_ACCEPT}">
+              <small>${UPLOAD_RULE_TEXT}</small></div>
             <div class="field"><label>BBGN / phiếu cân / ảnh chụp vật tư * (đính kèm)</label>
-              <input id="rFiles" type="file" class="hl-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"></div>
+              <input id="rFiles" type="file" class="hl-input" multiple accept="${UPLOAD_ACCEPT}">
+              <small>${UPLOAD_RULE_TEXT}</small></div>
             <div class="field"><label>Ghi chú nghiệm thu (chất lượng, sai lệch…)</label><textarea id="rGhiChu"></textarea></div>
             <button onclick="saveReceipt(this)">Lưu — gửi kế toán duyệt hồ sơ</button>
           </section>
@@ -1856,6 +1870,7 @@
       if (!val('rSoHoaDon').trim()) { setMsg('Bắt buộc nhập Số hóa đơn VAT.'); toast('Thiếu số hóa đơn VAT.', 'err'); return; }
       const chungTuTypes = [...document.querySelectorAll('.ct-type:checked')].map(c => c.value);
       try {
+        validateUploadInputs(['rFiles', 'rHoaDon']);
         const files = await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('rFiles', 'nghiem-thu/chung-tu'));
         const hoaDon = await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('rHoaDon', 'nghiem-thu/vat'));
         await withBusy(btn, 'Đang lưu...', () => call('rpc_update_receipt', { p_payload: {
@@ -2812,7 +2827,7 @@
                 : `<div class="actions" style="align-items:flex-end;margin-top:6px;flex-wrap:wrap">
                     <div class="field" style="margin:0;max-width:140px"><label>Hình thức</label><select id="htf_${esc(l.lineId)}" onchange="cashierLabel('${esc(l.lineId)}')"><option ${l.hinhThucTT==='Tiền mặt'?'':'selected'}>CK</option><option ${l.hinhThucTT==='Tiền mặt'?'selected':''}>Tiền mặt</option></select></div>
                     <div class="field" style="margin:0;max-width:180px"><label>Số tiền đã chi *</label><input id="camt_${esc(l.lineId)}" class="js-money hl-input" inputmode="decimal" value="${esc(moneyFormat(l.soTien))}"></div>
-                    <div class="field" style="margin:0"><label id="clbl_${esc(l.lineId)}">${(l.hinhThucTT==='Tiền mặt')?'Phiếu chi *':'Ảnh uỷ nhiệm chi *'}</label><input id="clp_${esc(l.lineId)}" type="file" class="hl-input" multiple accept=".pdf,image/*"></div>
+                    <div class="field" style="margin:0"><label id="clbl_${esc(l.lineId)}">${(l.hinhThucTT==='Tiền mặt')?'Phiếu chi *':'Ảnh uỷ nhiệm chi *'}</label><input id="clp_${esc(l.lineId)}" type="file" class="hl-input" multiple accept="${UPLOAD_ACCEPT}"><small>${UPLOAD_RULE_TEXT}</small></div>
                     <button onclick="cashierPayLine('${esc(l.lineId)}', this)">✔ Xác nhận đã chi khoản này</button>
                   </div>`}
             </div>`).join('')}
@@ -2830,6 +2845,7 @@
       if (!amt || amt <= 0) { toast('Nhập số tiền đã chi (> 0).', 'err'); return; }
       if (!confirm(`Xác nhận đã chi ${fmtMoney(amt)}đ (${ht}) cho khoản này? Số này ghi vào công nợ (KTTH điều chỉnh sau nếu cần).`)) return;
       try {
+        validateUploadInputs('clp_' + lineId);
         const proof = await withBusy(btn, 'Đang tải chứng từ...', () => uploadAttachments('clp_' + lineId, ht === 'Tiền mặt' ? 'chi-tien/phieu-chi' : 'chi-tien/uy-nhiem'));
         await withBusy(btn, 'Đang xác nhận...', () => call('rpc_cashier_pay_line', { p_line_id: lineId, p_proof: proof, p_amount: amt, p_hinh_thuc: ht }));
         toast('Đã xác nhận chi khoản.', 'ok'); loadCashierQueue();
@@ -3047,7 +3063,44 @@
       const sl = Number(l.SLThucNhan ?? l.SLDat ?? 0);
       return Math.round(sl * Number(l.DonGia || 0) * (1 + Number(l.VATRate || 0)));
     }
-    // ---- Tệp đính kèm ------------------------------------------------------
+    // ---- Tệp đính kèm (Supabase Storage) -----------------------------------
+    function uploadExt(name) {
+      const m = String(name || '').toLowerCase().match(/\.([a-z0-9]+)$/);
+      return m ? m[1] : '';
+    }
+    function uploadSizeText(bytes) {
+      const n = Number(bytes || 0);
+      if (n >= 1024 * 1024) return (n / (1024 * 1024)).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) + ' MB';
+      return Math.ceil(n / 1024).toLocaleString('vi-VN') + ' KB';
+    }
+    function selectedUploadFiles(inputIds) {
+      const ids = Array.isArray(inputIds) ? inputIds : [inputIds];
+      return ids.flatMap(id => {
+        const el = typeof id === 'string' ? document.getElementById(id) : id;
+        return el && el.files ? [...el.files] : [];
+      });
+    }
+    function validateUploadFiles(files) {
+      let total = 0;
+      for (const f of files) {
+        const ext = uploadExt(f.name);
+        const type = String(f.type || '').toLowerCase();
+        if (!UPLOAD_ALLOWED_EXTS.includes(ext) || (type && !UPLOAD_ALLOWED_MIME_TYPES.has(type))) {
+          throw new Error(`Tệp "${f.name}" không đúng định dạng. ${UPLOAD_RULE_TEXT}`);
+        }
+        if (f.size > UPLOAD_MAX_FILE_BYTES) {
+          throw new Error(`Tệp "${f.name}" vượt ${uploadSizeText(UPLOAD_MAX_FILE_BYTES)}. Vui lòng chọn tệp nhỏ hơn.`);
+        }
+        total += f.size || 0;
+      }
+      if (total > UPLOAD_MAX_BATCH_BYTES) {
+        throw new Error(`Tổng dung lượng ${uploadSizeText(total)} vượt ${uploadSizeText(UPLOAD_MAX_BATCH_BYTES)} cho một lần tải.`);
+      }
+      return files;
+    }
+    function validateUploadInputs(inputIds) {
+      return validateUploadFiles(selectedUploadFiles(inputIds));
+    }
     const BUSINESS_ATTACHMENTS_BUCKET = 'business-attachments';
     const BUSINESS_ATTACHMENT_PREFIXES = ['bao-gia', 'nghiem-thu', 'chi-tien'];
     function isBusinessAttachmentPrefix(prefix) {
@@ -3109,22 +3162,22 @@
     }
     async function uploadAttachments(inputId, prefix) {
       const el = document.getElementById(inputId);
-      const files = el && el.files ? [...el.files] : [];
+      const files = validateUploadFiles(el && el.files ? [...el.files] : []);
       const out = [];
       const privateUpload = isBusinessAttachmentPrefix(prefix);
-      const bucket = privateUpload ? BUSINESS_ATTACHMENTS_BUCKET : 'attachments';
+      const bucket = privateUpload ? BUSINESS_ATTACHMENTS_BUCKET : ATTACHMENT_BUCKET;
       const userId = privateUpload ? await currentUserId() : '';
       for (const f of files) {
         const safe = f.name.replace(/[^\w.\-]+/g, '_');
         const pathPrefix = privateUpload ? `${userId}/${prefix}` : prefix;
         const path = `${pathPrefix}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${safe}`;
-        const { error } = await sb.storage.from(bucket).upload(path, f, { upsert: false });
+        const { error } = await sb.storage.from(bucket).upload(path, f, { upsert: false, contentType: f.type || undefined });
         if (error) throw new Error('Tải tệp lỗi: ' + (error.message || error));
         if (privateUpload) {
-          out.push({ name: f.name, bucket, path, private: true, kind: prefix.split('/')[0] });
+          out.push({ name: f.name, bucket, path, private: true, kind: prefix.split('/')[0], size: f.size, type: f.type || '', ext: uploadExt(f.name) });
         } else {
           const { data } = sb.storage.from(bucket).getPublicUrl(path);
-          out.push({ name: f.name, bucket, path, url: data.publicUrl });
+          out.push({ name: f.name, bucket, path, url: data.publicUrl, size: f.size, type: f.type || '', ext: uploadExt(f.name) });
         }
       }
       return out;
@@ -3696,7 +3749,6 @@
     }
 
     // ===== Chat nội bộ =====================================================
-    const CHAT_MAX = 5 * 1024 * 1024; // 5MB/tệp
     function renderChat() {
       document.getElementById('content').innerHTML = `
         <section class="card" style="padding:0;overflow:hidden">
@@ -3714,8 +3766,8 @@
                 <div id="chatRefBar" class="chat-ref hidden"></div>
                 <div class="chat-row">
                   <input id="chatBody" placeholder="Nhập tin nhắn..." onkeydown="if(event.key==='Enter')sendChat(this)">
-                  <input id="chatFile" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" style="display:none" onchange="chatFilePicked()">
-                  <button class="secondary" title="Đính kèm tệp (≤5MB)" onclick="document.getElementById('chatFile').click()">📎</button>
+                  <input id="chatFile" type="file" multiple accept="${UPLOAD_ACCEPT}" style="display:none" onchange="chatFilePicked()">
+                  <button class="secondary" title="Đính kèm tệp (${UPLOAD_RULE_TEXT})" onclick="document.getElementById('chatFile').click()">📎</button>
                   <button class="secondary" title="Đính kèm phiếu ĐX" onclick="openRefPicker()">📄</button>
                   <button onclick="sendChat(this)">Gửi</button>
                 </div>
@@ -3805,9 +3857,14 @@
     }
     function chatFilePicked() {
       const f = document.getElementById('chatFile').files;
-      const over = [...f].find(x => x.size > CHAT_MAX);
       const hint = document.getElementById('chatFileHint');
-      if (over) { hint.textContent = `Tệp "${over.name}" vượt 5MB — vui lòng chọn tệp nhỏ hơn.`; document.getElementById('chatFile').value = ''; return; }
+      try {
+        validateUploadFiles([...f]);
+      } catch (err) {
+        hint.textContent = err.message || String(err);
+        document.getElementById('chatFile').value = '';
+        return;
+      }
       hint.textContent = f.length ? `Đã chọn ${f.length} tệp.` : '';
     }
     async function openRefPicker() {

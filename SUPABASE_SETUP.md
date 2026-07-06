@@ -63,6 +63,16 @@ You have two options. **Do Option A first** — it always works and takes 10 min
 
 That's it — your database now has every table, security rule, and business-logic function the app needs.
 
+### Storage guardrails for attachments
+
+Migration `0069_upload_limits_file_type_guardrails.sql` tries to configure the Supabase Storage bucket named `attachments` automatically:
+
+- Public access: **off** (the app opens stored files through short-lived signed links)
+- Maximum file size: **5 MB**
+- Allowed MIME types: PDF plus JPG/JPEG, PNG, WebP, GIF, HEIC/HEIF images
+
+If Supabase prints a notice that the migration could not update `storage.buckets`, set those values manually in **Storage → attachments → Configuration**. Keep the insert/select policies from the migration in place so only logged-in users can upload/open files through the app.
+
 ### Option B — automatic deploy from GitHub Actions (detailed, step-by-step)
 
 This repo includes `.github/workflows/deploy-db.yml`. Once set up, it runs `supabase db push` automatically every time you push a change under `supabase/migrations/` to `main` — no manual SQL Editor pasting needed. Setup is a one-time process:
