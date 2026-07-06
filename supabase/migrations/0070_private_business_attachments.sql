@@ -1,5 +1,5 @@
 -- ============================================================================
--- 0065_private_business_attachments.sql
+-- 0070_private_business_attachments.sql
 --  Vertical slice 4: Move new business evidence files to private storage.
 --   * Keep the legacy public "attachments" bucket untouched for old URLs.
 --   * New quote / VAT / BBGN / receipt / payment-proof files use a private
