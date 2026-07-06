@@ -46,8 +46,9 @@ Two adaptations were necessary because there's no spreadsheet underneath anymore
 
 | Role | Meaning | Permissions |
 | --- | --- | --- |
-| `NhanVienMuaHang` | Purchasing staff | quote:read, quote:sync, proposal:create, proposal:submit, receipt:update, recent:read, dashboard:read |
-| `TruongPhong` | Department head | quote:read, proposal:approve, proposal:reject, recent:read, dashboard:read |
-| `KeToanCongNo` | AP accountant | quote:read, receipt:update, payment:create, settlement:preview, settlement:confirm, recent:read, dashboard:read |
-| `LanhDao` | Leadership | quote:read, recent:read, dashboard:read |
-| `Admin` | Administrator | everything |
+| `NhanVienMuaHang` | Purchasing staff | quote:read, quote:sync, proposal:create, proposal:submit, receipt:update, recent:read, dashboard:read, catalog:read/create, print:purchasing |
+| `TruongPhong` | Department head | quote:read, oversight:read, recent:read, dashboard:read |
+| `KeToanCongNo` | AP accountant | quote:read, receipt:review, congno:confirm, payment:request/read/adjust, settlement:preview/confirm, oversight:read/cancel, recent:read, dashboard:read |
+| `ThuQuy` | Cashier | payment:execute, receipt:review |
+| `ChuTich` / `TongGiamDoc` | Leadership | proposal/payment approvals as routed, quote:read, recent:read, dashboard:read, leaderdash:read |
+| `Admin` | Administrator | user:manage, department:manage |
