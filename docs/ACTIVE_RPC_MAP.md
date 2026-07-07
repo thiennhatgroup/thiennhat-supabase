@@ -16,11 +16,11 @@ node scripts/generate_active_rpc_map.mjs --check
 
 ## Summary
 
-- Migrations scanned: 73
-- Active RPC signatures: 89
-- Active RPC signatures granted to `authenticated`: 89
+- Migrations scanned: 74
+- Active RPC signatures: 93
+- Active RPC signatures granted to `authenticated`: 93
 - Active RPC signatures with prior duplicate definitions: 44
-- Retired/dropped RPC signatures: 10
+- Retired/dropped RPC signatures: 11
 
 ## Active RPCs
 
@@ -35,8 +35,10 @@ node scripts/generate_active_rpc_map.mjs --check
 | `rpc_add_proposer(text,text,uuid)` | supabase/migrations/0071_department_assignment_admin_fields.sql:47 | Yes (supabase/migrations/0071_department_assignment_admin_fields.sql:196) | - |
 | `rpc_admin_create_user(text,text,text,text,uuid)` | supabase/migrations/0071_department_assignment_admin_fields.sql:94 | Yes (supabase/migrations/0071_department_assignment_admin_fields.sql:197) | - |
 | `rpc_admin_list_audit_log(int,text,text,date,date)` | supabase/migrations/0067_audit_sensitive_actions.sql:241 | Yes (supabase/migrations/0067_audit_sensitive_actions.sql:481) | - |
+| `rpc_admin_list_cashier_correction_requests(int)` | supabase/migrations/0074_cashier_filters_history_corrections.sql:469 | Yes (supabase/migrations/0074_cashier_filters_history_corrections.sql:596) | - |
 | `rpc_admin_list_users()` | supabase/migrations/0068_split_overbroad_permissions.sql:301 | Yes (supabase/migrations/0068_split_overbroad_permissions.sql:1081) | supabase/migrations/0022_admin_users.sql:64 |
 | `rpc_admin_reset_pin(uuid,text)` | supabase/migrations/0022_admin_users.sql:100 | Yes (supabase/migrations/0022_admin_users.sql:118) | - |
+| `rpc_admin_return_cashier_payment(uuid,text)` | supabase/migrations/0074_cashier_filters_history_corrections.sql:508 | Yes (supabase/migrations/0074_cashier_filters_history_corrections.sql:597) | - |
 | `rpc_admin_update_user(uuid,text,text,text,text,uuid)` | supabase/migrations/0071_department_assignment_admin_fields.sql:136 | Yes (supabase/migrations/0071_department_assignment_admin_fields.sql:198) | - |
 | `rpc_approve_payment_request(text,text)` | supabase/migrations/0018_rpc_payment_requests.sql:168 | Yes (supabase/migrations/0018_rpc_payment_requests.sql:252) | - |
 | `rpc_approve_payreq_day(date,text)` | supabase/migrations/0048_payreq_day_batch.sql:60 | Yes (supabase/migrations/0048_payreq_day_batch.sql:150) | - |
@@ -47,7 +49,7 @@ node scripts/generate_active_rpc_map.mjs --check
 | `rpc_bounce_proposal(text,text)` | supabase/migrations/0065_proposal_ownership_visibility.sql:795 | Yes (supabase/migrations/0065_proposal_ownership_visibility.sql:1243) | supabase/migrations/0039_bounce_proposal.sql:13<br>supabase/migrations/0042_oversight_detail.sql:56 |
 | `rpc_cancel_payment_request(text,text)` | supabase/migrations/0034_oversight.sql:79 | Yes (supabase/migrations/0034_oversight.sql:118) | - |
 | `rpc_cancel_proposal(text,text)` | supabase/migrations/0065_proposal_ownership_visibility.sql:764 | Yes (supabase/migrations/0065_proposal_ownership_visibility.sql:1242) | supabase/migrations/0034_oversight.sql:61 |
-| `rpc_cashier_pay_line(uuid,jsonb,numeric,text)` | supabase/migrations/0062_cashier_ux_and_vat.sql:107 | Yes (supabase/migrations/0062_cashier_ux_and_vat.sql:176) | - |
+| `rpc_cashier_pay_line(uuid,jsonb,numeric,text)` | supabase/migrations/0074_cashier_filters_history_corrections.sql:234 | Yes (supabase/migrations/0074_cashier_filters_history_corrections.sql:593) | supabase/migrations/0062_cashier_ux_and_vat.sql:107 |
 | `rpc_check_business_attachment_access(text)` | supabase/migrations/0070_private_business_attachments.sql:158 | Yes (supabase/migrations/0070_private_business_attachments.sql:171) | supabase/migrations/0067_audit_sensitive_actions.sql:234 |
 | `rpc_confirm_cong_no(text,numeric)` | supabase/migrations/0047_receipt_accounting_gate.sql:132 | Yes (supabase/migrations/0047_receipt_accounting_gate.sql:248) | - |
 | `rpc_confirm_settlement(text)` | supabase/migrations/0009_rpc_dashboard_settlement.sql:177 | Yes (supabase/migrations/0037_prepay_settlement.sql:185) | - |
@@ -63,7 +65,8 @@ node scripts/generate_active_rpc_map.mjs --check
 | `rpc_export_proposals(date,date)` | supabase/migrations/0065_proposal_ownership_visibility.sql:1130 | Yes (supabase/migrations/0065_proposal_ownership_visibility.sql:1248) | supabase/migrations/0027_export_and_improvements.sql:36<br>supabase/migrations/0038_link_material_supplier.sql:70 |
 | `rpc_export_quotes(date,date)` | supabase/migrations/0068_split_overbroad_permissions.sql:850 | Yes (supabase/migrations/0068_split_overbroad_permissions.sql:1091) | supabase/migrations/0027_export_and_improvements.sql:99<br>supabase/migrations/0038_link_material_supplier.sql:108 |
 | `rpc_get_approved_proposals(date)` | supabase/migrations/0065_proposal_ownership_visibility.sql:981 | Yes (supabase/migrations/0065_proposal_ownership_visibility.sql:1246) | supabase/migrations/0019_approved_and_unapprove.sql:14<br>supabase/migrations/0029_rpc_attachments_flow.sql:181<br>supabase/migrations/0030_proposal_edit_dept.sql:197<br>supabase/migrations/0033_history_rpcs.sql:8 |
-| `rpc_get_cashier_queue()` | supabase/migrations/0058_cashier_per_line_and_nvmh_proof.sql:77 | Yes (supabase/migrations/0058_cashier_per_line_and_nvmh_proof.sql:105) | supabase/migrations/0057_cashier_and_dashboard.sql:146 |
+| `rpc_get_cashier_paid_history(date,date)` | supabase/migrations/0074_cashier_filters_history_corrections.sql:352 | Yes (supabase/migrations/0074_cashier_filters_history_corrections.sql:594) | - |
+| `rpc_get_cashier_queue(date,date)` | supabase/migrations/0074_cashier_filters_history_corrections.sql:174 | Yes (supabase/migrations/0074_cashier_filters_history_corrections.sql:592) | - |
 | `rpc_get_conversation(uuid,int)` | supabase/migrations/0031_chat.sql:40 | Yes (supabase/migrations/0031_chat.sql:78) | - |
 | `rpc_get_debt_dashboard(jsonb)` | supabase/migrations/0068_split_overbroad_permissions.sql:654 | Yes (supabase/migrations/0068_split_overbroad_permissions.sql:1088) | supabase/migrations/0009_rpc_dashboard_settlement.sql:22<br>supabase/migrations/0047_receipt_accounting_gate.sql:255 |
 | `rpc_get_debt_detail(text)` | supabase/migrations/0072_harden_debt_detail_access.sql:58 | Yes (supabase/migrations/0072_harden_debt_detail_access.sql:121) | supabase/migrations/0059_detail_withdraw_cashier_amount.sql:10<br>supabase/migrations/0062_cashier_ux_and_vat.sql:69<br>supabase/migrations/0066_restrict_debt_payment_evidence_access.sql:301 |
@@ -82,7 +85,7 @@ node scripts/generate_active_rpc_map.mjs --check
 | `rpc_get_proposal(text)` | supabase/migrations/0065_proposal_ownership_visibility.sql:480 | Yes (supabase/migrations/0065_proposal_ownership_visibility.sql:1236) | supabase/migrations/0030_proposal_edit_dept.sql:94<br>supabase/migrations/0040_get_proposal_reason.sql:7<br>supabase/migrations/0051_prepay_percent.sql:87 |
 | `rpc_get_quote_dashboard(text,date,int)` | supabase/migrations/0050_quote_multi_covat.sql:10 | Yes (supabase/migrations/0050_quote_multi_covat.sql:204) | supabase/migrations/0006_rpc_bootstrap_quotes.sql:56<br>supabase/migrations/0011_fix_quote_dashboard.sql:15<br>supabase/migrations/0044_quote_vat_rate.sql:11 |
 | `rpc_get_receipt_history(int)` | supabase/migrations/0066_restrict_debt_payment_evidence_access.sql:195 | Yes (supabase/migrations/0066_restrict_debt_payment_evidence_access.sql:552) | supabase/migrations/0033_history_rpcs.sql:51 |
-| `rpc_get_receipt_review(int)` | supabase/migrations/0063_cashier_view_only_receipt.sql:12 | Yes (supabase/migrations/0063_cashier_view_only_receipt.sql:40) | supabase/migrations/0047_receipt_accounting_gate.sql:102 |
+| `rpc_get_receipt_review(int)` | supabase/migrations/0074_cashier_filters_history_corrections.sql:126 | Yes (supabase/migrations/0074_cashier_filters_history_corrections.sql:591) | supabase/migrations/0047_receipt_accounting_gate.sql:102<br>supabase/migrations/0063_cashier_view_only_receipt.sql:12 |
 | `rpc_get_recent(text,jsonb)` | supabase/migrations/0068_split_overbroad_permissions.sql:723 | Yes (supabase/migrations/0068_split_overbroad_permissions.sql:1089) | supabase/migrations/0010_rpc_recent.sql:8<br>supabase/migrations/0065_proposal_ownership_visibility.sql:1038 |
 | `rpc_leader_dashboard(date,date)` | supabase/migrations/0068_split_overbroad_permissions.sql:878 | Yes (supabase/migrations/0068_split_overbroad_permissions.sql:1092) | supabase/migrations/0057_cashier_and_dashboard.sql:174<br>supabase/migrations/0060_hardening.sql:144<br>supabase/migrations/0066_restrict_debt_payment_evidence_access.sql:442 |
 | `rpc_list_catalog()` | supabase/migrations/0068_split_overbroad_permissions.sql:325 | Yes (supabase/migrations/0068_split_overbroad_permissions.sql:1082) | supabase/migrations/0014_rpc_catalog.sql:10<br>supabase/migrations/0021_rpc_groups_bank_acceptance.sql:8<br>supabase/migrations/0030_proposal_edit_dept.sql:40<br>supabase/migrations/0049_dept_catalog_selfservice.sql:85<br>supabase/migrations/0066_restrict_debt_payment_evidence_access.sql:78 |
@@ -101,6 +104,7 @@ node scripts/generate_active_rpc_map.mjs --check
 | `rpc_reject_payment_request(text,text)` | supabase/migrations/0018_rpc_payment_requests.sql:184 | Yes (supabase/migrations/0018_rpc_payment_requests.sql:253) | - |
 | `rpc_reject_proposal(text,text)` | supabase/migrations/0065_proposal_ownership_visibility.sql:954 | Yes (supabase/migrations/0065_proposal_ownership_visibility.sql:1245) | supabase/migrations/0007_rpc_proposals.sql:184 |
 | `rpc_rename_material_group(text,text)` | supabase/migrations/0021_rpc_groups_bank_acceptance.sql:108 | Yes (supabase/migrations/0021_rpc_groups_bank_acceptance.sql:191) | - |
+| `rpc_request_cashier_payment_correction(uuid,text)` | supabase/migrations/0074_cashier_filters_history_corrections.sql:424 | Yes (supabase/migrations/0074_cashier_filters_history_corrections.sql:595) | - |
 | `rpc_return_receipt(text,text)` | supabase/migrations/0047_receipt_accounting_gate.sql:149 | Yes (supabase/migrations/0047_receipt_accounting_gate.sql:249) | - |
 | `rpc_save_push_subscription(text,text,text)` | supabase/migrations/0055_push_subscriptions.sql:20 | Yes (supabase/migrations/0055_push_subscriptions.sql:39) | - |
 | `rpc_send_group_message(uuid,text,jsonb,text)` | supabase/migrations/0054_chat_groups.sql:106 | Yes (supabase/migrations/0054_chat_groups.sql:130) | - |
@@ -155,6 +159,11 @@ node scripts/generate_active_rpc_map.mjs --check
 - supabase/migrations/0034_oversight.sql:61 - superseded
 - supabase/migrations/0065_proposal_ownership_visibility.sql:764 - active owner
 
+### `rpc_cashier_pay_line(uuid,jsonb,numeric,text)`
+
+- supabase/migrations/0062_cashier_ux_and_vat.sql:107 - superseded
+- supabase/migrations/0074_cashier_filters_history_corrections.sql:234 - active owner
+
 ### `rpc_check_business_attachment_access(text)`
 
 - supabase/migrations/0067_audit_sensitive_actions.sql:234 - superseded
@@ -204,11 +213,6 @@ node scripts/generate_active_rpc_map.mjs --check
 - supabase/migrations/0030_proposal_edit_dept.sql:197 - superseded
 - supabase/migrations/0033_history_rpcs.sql:8 - superseded
 - supabase/migrations/0065_proposal_ownership_visibility.sql:981 - active owner
-
-### `rpc_get_cashier_queue()`
-
-- supabase/migrations/0057_cashier_and_dashboard.sql:146 - superseded
-- supabase/migrations/0058_cashier_per_line_and_nvmh_proof.sql:77 - active owner
 
 ### `rpc_get_debt_dashboard(jsonb)`
 
@@ -282,7 +286,8 @@ node scripts/generate_active_rpc_map.mjs --check
 ### `rpc_get_receipt_review(int)`
 
 - supabase/migrations/0047_receipt_accounting_gate.sql:102 - superseded
-- supabase/migrations/0063_cashier_view_only_receipt.sql:12 - active owner
+- supabase/migrations/0063_cashier_view_only_receipt.sql:12 - superseded
+- supabase/migrations/0074_cashier_filters_history_corrections.sql:126 - active owner
 
 ### `rpc_get_recent(text,jsonb)`
 
@@ -417,3 +422,4 @@ node scripts/generate_active_rpc_map.mjs --check
 | `rpc_cashier_pay_line(uuid,jsonb)` | supabase/migrations/0058_cashier_per_line_and_nvmh_proof.sql:13 | supabase/migrations/0059_detail_withdraw_cashier_amount.sql:85 |
 | `rpc_execute_payment_request(text,jsonb)` | supabase/migrations/0057_cashier_and_dashboard.sql:87 | supabase/migrations/0073_retire_batch_payment_request.sql:13 |
 | `rpc_execute_payment_request(text)` | supabase/migrations/0036_unify_payments.sql:10 | supabase/migrations/0073_retire_batch_payment_request.sql:12 |
+| `rpc_get_cashier_queue()` | supabase/migrations/0058_cashier_per_line_and_nvmh_proof.sql:77 | supabase/migrations/0074_cashier_filters_history_corrections.sql:125 |

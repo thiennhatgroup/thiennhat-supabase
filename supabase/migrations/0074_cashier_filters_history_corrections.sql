@@ -376,6 +376,9 @@ begin
     'paidAt', to_char(l.paid_at, 'YYYY-MM-DD HH24:MI'),
     'maThanhToan', pm.ma_thanh_toan,
     'proof', coalesce(l.proof_files, pm.proof_files, '[]'::jsonb),
+    'soTk', dt.so_tk_ngan_hang,
+    'chiNhanh', dt.chi_nhanh_ngan_hang,
+    'mst', dt.mst,
     'correctionStatus', l.cashier_correction_status,
     'correctionReason', l.cashier_correction_reason,
     'correctionRequestedAt', to_char(l.cashier_correction_requested_at, 'YYYY-MM-DD HH24:MI'),
@@ -404,6 +407,7 @@ begin
   from payment_request_lines l
   join payment_requests pr on pr.id = l.request_id
   left join payments pm on pm.id = l.cashier_payment_id
+  left join doi_tuong dt on dt.id = l.doi_tuong_id
   left join profiles lap on lap.id = pr.nguoi_lap
   left join debts d on d.id = l.debt_id
   left join proposals p on p.id = d.proposal_id
