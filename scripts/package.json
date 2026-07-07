@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "create-staff": "node bulk_create_staff.mjs"
+    "create-staff": "node bulk_create_staff.mjs",
+    "rpc-map": "node generate_active_rpc_map.mjs",
+    "rpc-map:check": "node generate_active_rpc_map.mjs --check"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"
