@@ -4012,14 +4012,13 @@
           <div class="nt-time">${esc(n.thoiGian)}</div>
         </div>`).join('') : '<p class="status" style="padding:10px">Chưa có thông báo.</p>'}`;
     }
-    const NAV_ALL = ['quotes','proposal','approve','receipt','congnoconfirm','payreq','payapprove','cashier','leaderdash','dashboard','settlement','catalog','users','audit','printpp','printyctt','account','chat','improve','exp_pp','exp_tt','exp_bg','oversight','debtpay'];
     async function openNotif(id, screen, refId, loai) {
       try { await call('rpc_mark_notification_read', { p_id: id }); } catch (e) {}
       document.getElementById('notifPanel')?.classList.add('hidden');
       refreshNotif();
-      if (loai === 'proposal_bounced' && refId) { navTo('proposal'); editProposal(refId); return; }
-      if (loai === 'chat_group' && refId) { state.chatMode = 'group'; state.chatGroup = refId; state.chatWith = null; navTo('chat'); return; }
-      if (!screen || !NAV_ALL.includes(screen)) return;
+      if (loai === 'proposal_bounced' && refId && canOpenScreen('proposal')) { navTo('proposal'); editProposal(refId); return; }
+      if (loai === 'chat_group' && refId && canOpenScreen('chat')) { state.chatMode = 'group'; state.chatGroup = refId; state.chatWith = null; navTo('chat'); return; }
+      if (!screen || !isDeepLinkScreen(screen) || !canOpenScreen(screen)) return;
       if (loai === 'chat' && refId) { state.chatMode = 'user'; state.chatWith = refId; state.chatWithName = ''; state.chatGroup = null; }
       navTo(screen);
     }
