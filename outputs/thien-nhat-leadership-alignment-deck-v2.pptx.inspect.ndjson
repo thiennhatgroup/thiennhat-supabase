@@ -1,0 +1,569 @@
+{"kind":"deck","id":"pr/a18u9x","name":"Deck"}
+{"kind":"layout","layoutId":"b2a93fac-16c3-4995-ae49-60030d5ff9ce","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"041199ac-d948-4132-b593-c4f191ecbc4f","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/7em95b","slide":1,"title":"Thiên Nhật","textShapes":10}
+{"kind":"textbox","id":"sh/9cvixcze","slide":1,"text":"Thiên Nhật","textPreview":"Thiên Nhật","textChars":10,"textLines":1,"bbox":[64,56,260,26]}
+{"kind":"textbox","id":"sh/ylc7u54z","slide":1,"text":"Phần mềm\nMua hàng & Công nợ","textPreview":"Phần mềm | Mua hàng & Công nợ","textChars":27,"textLines":2,"bbox":[64,158,520,150]}
+{"kind":"textbox","id":"sh/r65wjudg","slide":1,"text":"Tài liệu trao đổi với lãnh đạo\nMục tiêu: thống nhất bước thử có kiểm soát","textPreview":"Tài liệu trao đổi với lãnh đạo | Mục tiêu: thống nhất bước thử có kiểm soát","textChars":73,"textLines":2,"bbox":[66,330,520,64]}
+{"kind":"shape","id":"sh/g3ex0nux","slide":1,"bbox":[742,276,22,2]}
+{"kind":"shape","id":"sh/5o7qpg3e","slide":1,"bbox":[896,276,22,2]}
+{"kind":"shape","id":"sh/yxobm58z","slide":1,"bbox":[1050,276,22,2]}
+{"kind":"textbox","id":"sh/nih4byhg","slide":1,"text":"Hiện trạng","textPreview":"Hiện trạng","textChars":10,"textLines":1,"bbox":[610,245,132,64]}
+{"kind":"textbox","id":"sh/g7adsji5","slide":1,"text":"Vấn đề","textPreview":"Vấn đề","textChars":6,"textLines":1,"bbox":[764,245,132,64]}
+{"kind":"textbox","id":"sh/9s36hcrm","slide":1,"text":"Giải pháp","textPreview":"Giải pháp","textChars":9,"textLines":1,"bbox":[918,245,132,64]}
+{"kind":"textbox","id":"sh/d8v6psfi","slide":1,"text":"Bước tiếp theo","textPreview":"Bước tiếp theo","textChars":14,"textLines":1,"bbox":[1072,245,132,64]}
+{"kind":"textbox","id":"sh/onyd0z61","slide":1,"text":"Deck này không nhằm thuyết phục bằng khẩu hiệu.\nMỗi phần chỉ trả lời một câu hỏi vận hành.","textPreview":"Deck này không nhằm thuyết phục bằng khẩu hiệu. | Mỗi phần chỉ trả lời một câu hỏi vận hành.","textChars":90,"textLines":2,"bbox":[610,335,430,70]}
+{"kind":"textbox","id":"sh/z25kb6xk","slide":1,"text":"MỞ ĐẦU","textPreview":"MỞ ĐẦU","textChars":6,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/6hcrmhk3","slide":1,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/dg7adsji","slide":1,"bbox":[64,674,96,1]}
+{"kind":"notes","id":"nt/7em95b","slide":1,"text":""}
+{"kind":"slide","id":"sl/cm5ogx","slide":2,"title":"MỤC LỤC","textShapes":16}
+{"kind":"textbox","id":"sh/7mp0bi9s","slide":2,"text":"MỤC LỤC","textPreview":"MỤC LỤC","textChars":7,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/w7mp0bi9","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/psfil0rq","slide":2,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/epkzupwb","slide":2,"text":"Nội dung đi từ hiện trạng đến quyết định pilot","textPreview":"Nội dung đi từ hiện trạng đến quyết định pilot","textChars":46,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/7adsji5s","slide":2,"text":"Bốn phần này giúp giữ cuộc họp đi theo thứ tự: quan sát, xác định vấn đề, chọn cách xử lý, rồi chốt bước thử.","textPreview":"Bốn phần này giúp giữ cuộc họp đi theo thứ tự: quan sát, xác định vấn đề, chọn cách xử lý, rồi chốt bước thử.","textChars":109,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/wval87ed","slide":2,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[92,230,62,54]}
+{"kind":"textbox","id":"sh/pg3ex0nu","slide":2,"text":"Hiện trạng","textPreview":"Hiện trạng","textChars":10,"textLines":1,"bbox":[182,232,250,28]}
+{"kind":"textbox","id":"sh/eloj2t83","slide":2,"text":"Đơn mua hàng đang đi qua chat, chứng từ rời và nhập liệu lại.","textPreview":"Đơn mua hàng đang đi qua chat, chứng từ rời và nhập liệu lại.","textChars":61,"textLines":1,"bbox":[182,266,820,28]}
+{"kind":"shape","id":"sh/36hcrmhk","slide":2,"bbox":[1030,257,96,1]}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[92,316,62,54]}
+{"kind":"textbox","id":"sh/qxs72x4n","slide":2,"text":"Vấn đề","textPreview":"Vấn đề","textChars":6,"textLines":1,"bbox":[182,318,250,28]}
+{"kind":"textbox","id":"sh/xobm58z2","slide":2,"text":"Truy vết, dữ liệu, mẫu tin nhắn, bằng chứng và trách nhiệm bị phân tán.","textPreview":"Truy vết, dữ liệu, mẫu tin nhắn, bằng chứng và trách nhiệm bị phân tán.","textChars":71,"textLines":1,"bbox":[182,352,820,28]}
+{"kind":"shape","id":"sh/83itgfml","slide":2,"bbox":[1030,343,96,1]}
+{"kind":"textbox","id":"sh/fu18jqh0","slide":2,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[92,402,62,54]}
+{"kind":"textbox","id":"sh/m94fu18j","slide":2,"text":"Giải pháp đề xuất","textPreview":"Giải pháp đề xuất","textChars":17,"textLines":1,"bbox":[182,404,250,28]}
+{"kind":"textbox","id":"sh/x0nuxc3y","slide":2,"text":"App chuẩn hóa luồng DXMH → nghiệm thu → DXTT → chi tiền → công nợ.","textPreview":"App chuẩn hóa luồng DXMH → nghiệm thu → DXTT → chi tiền → công nợ.","textChars":66,"textLines":1,"bbox":[182,438,820,28]}
+{"kind":"shape","id":"sh/4fu18jqh","slide":2,"bbox":[1030,429,96,1]}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":2,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[92,488,62,54]}
+{"kind":"textbox","id":"sh/mlkjm1cf","slide":2,"text":"Bước tiếp theo","textPreview":"Bước tiếp theo","textChars":14,"textLines":1,"bbox":[182,490,250,28]}
+{"kind":"textbox","id":"sh/upwb2hwf","slide":2,"text":"Xin phê duyệt pilot 2 tuần, có phạm vi và tiêu chí rõ.","textPreview":"Xin phê duyệt pilot 2 tuần, có phạm vi và tiêu chí rõ.","textChars":54,"textLines":1,"bbox":[182,524,820,28]}
+{"kind":"shape","id":"sh/nap4r65w","slide":2,"bbox":[1030,515,96,1]}
+{"kind":"notes","id":"nt/cm5ogx","slide":2,"text":""}
+{"kind":"slide","id":"sl/5snezi","slide":3,"title":"MỤC TIÊU","textShapes":10}
+{"kind":"textbox","id":"sh/ylc7u54z","slide":3,"text":"MỤC TIÊU","textPreview":"MỤC TIÊU","textChars":8,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/9cvixcze","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/gr2p8nqx","slide":3,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/nih4byhg","slide":3,"text":"Hôm nay cần chốt một bước thử có kiểm soát","textPreview":"Hôm nay cần chốt một bước thử có kiểm soát","textChars":42,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/yxobm58z","slide":3,"text":"Không cần quyết định triển khai toàn bộ. Cần quyết định có cho kiểm chứng một luồng thường kỳ bằng app hay không.","textPreview":"Không cần quyết định triển khai toàn bộ. Cần quyết định có cho kiểm chứng một luồng thường kỳ bằng app hay không.","textChars":113,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/5o7qpg3e","slide":3,"bbox":[358,305,34,2]}
+{"kind":"shape","id":"sh/g3ex0nux","slide":3,"bbox":[562,305,34,2]}
+{"kind":"shape","id":"sh/rmhk3q5o","slide":3,"bbox":[766,305,34,2]}
+{"kind":"textbox","id":"sh/y1kre1w7","slide":3,"text":"Chọn phạm vi","textPreview":"Chọn phạm vi","textChars":12,"textLines":1,"bbox":[188,270,170,72]}
+{"kind":"textbox","id":"sh/kjm1cfa9","slide":3,"text":"Chọn người phụ trách","textPreview":"Chọn người phụ trách","textChars":20,"textLines":1,"bbox":[392,270,170,72]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":3,"text":"Chạy pilot","textPreview":"Chạy pilot","textChars":10,"textLines":1,"bbox":[596,270,170,72]}
+{"kind":"textbox","id":"sh/2hwfyxob","slide":3,"text":"Báo cáo cuối kỳ","textPreview":"Báo cáo cuối kỳ","textChars":15,"textLines":1,"bbox":[800,270,170,72]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":3,"text":"Kết quả mong muốn","textPreview":"Kết quả mong muốn","textChars":17,"textLines":1,"bbox":[204,410,220,28]}
+{"kind":"textbox","id":"sh/gvy90je9","slide":3,"text":"Lãnh đạo đồng ý một pilot 2 tuần với: phạm vi, nguyên tắc phê duyệt, cách dùng Viber dự phòng, người phụ trách và tiêu chí báo cáo.","textPreview":"Lãnh đạo đồng ý một pilot 2 tuần với: phạm vi, nguyên tắc phê duyệt, cách dùng Viber dự phòng, người phụ trách và tiêu chí báo cáo.","textChars":131,"textLines":1,"bbox":[204,450,820,62]}
+{"kind":"notes","id":"nt/5snezi","slide":3,"text":""}
+{"kind":"slide","id":"sl/i4hpk3","slide":4,"title":"01 HIỆN TRẠNG","textShapes":5}
+{"kind":"textbox","id":"sh/rytsvu9k","slide":4,"text":"01 HIỆN TRẠNG","textPreview":"01 HIỆN TRẠNG","textChars":13,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/gfmlkjm1","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/90je9cvi","slide":4,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/y1kre1w7","slide":4,"text":"01 HIỆN TRẠNG","textPreview":"01 HIỆN TRẠNG","textChars":13,"textLines":1,"bbox":[64,176,420,22]}
+{"kind":"textbox","id":"sh/rmhk3q5o","slide":4,"text":"Ghi nhận đúng hiện trạng trước khi đổi quy trình","textPreview":"Ghi nhận đúng hiện trạng trước khi đổi quy trình","textChars":48,"textLines":1,"bbox":[64,220,850,92]}
+{"kind":"textbox","id":"sh/g7adsji5","slide":4,"text":"Hiện trạng không sai vì dùng Viber. Vấn đề là toàn bộ trạng thái vận hành đang phụ thuộc vào nhiều nơi rời nhau.","textPreview":"Hiện trạng không sai vì dùng Viber. Vấn đề là toàn bộ trạng thái vận hành đang phụ thuộc vào nhiều nơi rời nhau.","textChars":112,"textLines":1,"bbox":[66,330,820,54]}
+{"kind":"shape","id":"sh/9s36hcrm","slide":4,"bbox":[64,420,360,2]}
+{"kind":"notes","id":"nt/i4hpk3","slide":4,"text":""}
+{"kind":"slide","id":"sl/21aetj","slide":5,"title":"HIỆN TRẠNG","textShapes":9}
+{"kind":"textbox","id":"sh/1gvy90je","slide":5,"text":"HIỆN TRẠNG","textPreview":"HIỆN TRẠNG","textChars":10,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/je9cvixc","slide":5,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/87ed8bat","slide":5,"text":"Đơn mua hàng hiện đi qua nhiều nơi","textPreview":"Đơn mua hàng hiện đi qua nhiều nơi","textChars":34,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/xs72x4na","slide":5,"text":"Khi một yêu cầu sống trong chat, chứng từ giấy và file kế toán, không có một nguồn trạng thái duy nhất.","textPreview":"Khi một yêu cầu sống trong chat, chứng từ giấy và file kế toán, không có một nguồn trạng thái duy nhất.","textChars":103,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/q1orytsv","slide":5,"text":"Viber\nxin / nhắc / duyệt nhanh","textPreview":"Viber | xin / nhắc / duyệt nhanh","textChars":30,"textLines":2,"bbox":[120,255,230,90]}
+{"kind":"textbox","id":"sh/fmlkjm1c","slide":5,"text":"Chứng từ\nVAT / BBGN / phiếu cân","textPreview":"Chứng từ | VAT / BBGN / phiếu cân","textChars":31,"textLines":2,"bbox":[405,255,230,90]}
+{"kind":"textbox","id":"sh/8jqh0fep","slide":5,"text":"Kế toán\nnhập lại / đối soát","textPreview":"Kế toán | nhập lại / đối soát","textChars":27,"textLines":2,"bbox":[690,255,230,90]}
+{"kind":"textbox","id":"sh/x4nap4r6","slide":5,"text":"Lãnh đạo\nhỏi trạng thái","textPreview":"Lãnh đạo | hỏi trạng thái","textChars":23,"textLines":2,"bbox":[975,255,180,90]}
+{"kind":"shape","id":"sh/1w7mp0bi","slide":5,"bbox":[350,300,55,2]}
+{"kind":"shape","id":"sh/8bat47y1","slide":5,"bbox":[635,300,55,2]}
+{"kind":"shape","id":"sh/jqh0fepk","slide":5,"bbox":[920,300,55,2]}
+{"kind":"textbox","id":"sh/q5o7qpg3","slide":5,"text":"Kết luận vận hành: tốc độ xử lý có thể nhanh, nhưng dữ liệu và trách nhiệm không tự gom lại thành hồ sơ.","textPreview":"Kết luận vận hành: tốc độ xử lý có thể nhanh, nhưng dữ liệu và trách nhiệm không tự gom lại thành hồ sơ.","textChars":104,"textLines":1,"bbox":[178,430,900,44]}
+{"kind":"notes","id":"nt/21aetj","slide":5,"text":""}
+{"kind":"slide","id":"sl/d3w6qs","slide":6,"title":"HIỆN TRẠNG","textShapes":10}
+{"kind":"textbox","id":"sh/ytsvu9kn","slide":6,"text":"HIỆN TRẠNG","textPreview":"HIỆN TRẠNG","textChars":10,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/5kb6xkf6","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/czed8v6p","slide":6,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/nqxs72x4","slide":6,"text":"Đưa trạng thái công việc ra khỏi nhóm chat","textPreview":"Đưa trạng thái công việc ra khỏi nhóm chat","textChars":42,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/u54zidon","slide":6,"text":"Nếu muốn quản lý được việc đang kẹt ở đâu, trạng thái không nên chỉ nằm trong tin nhắn.","textPreview":"Nếu muốn quản lý được việc đang kẹt ở đâu, trạng thái không nên chỉ nằm trong tin nhắn.","textChars":87,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/5sneloj2","slide":6,"text":"Đơn đang ở đâu?","textPreview":"Đơn đang ở đâu?","textChars":15,"textLines":1,"bbox":[120,250,220,78]}
+{"kind":"textbox","id":"sh/cbulwval","slide":6,"text":"Ai giữ bước tiếp theo?","textPreview":"Ai giữ bước tiếp theo?","textChars":22,"textLines":1,"bbox":[390,250,220,78]}
+{"kind":"textbox","id":"sh/nuxc3ylc","slide":6,"text":"Hồ sơ đã đủ chưa?","textPreview":"Hồ sơ đã đủ chưa?","textChars":17,"textLines":1,"bbox":[660,250,220,78]}
+{"kind":"textbox","id":"sh/y90je9cv","slide":6,"text":"Đã chi tiền chưa?","textPreview":"Đã chi tiền chưa?","textChars":17,"textLines":1,"bbox":[930,250,220,78]}
+{"kind":"textbox","id":"sh/oza1gvy9","slide":6,"text":"Hành động cần có","textPreview":"Hành động cần có","textChars":16,"textLines":1,"bbox":[182,410,220,28]}
+{"kind":"textbox","id":"sh/hk3q5o7q","slide":6,"text":"Tạo một nơi mà lãnh đạo và từng vai trò có thể tự xem trạng thái mà không phải hỏi lại nhiều người.","textPreview":"Tạo một nơi mà lãnh đạo và từng vai trò có thể tự xem trạng thái mà không phải hỏi lại nhiều người.","textChars":99,"textLines":1,"bbox":[182,452,850,46]}
+{"kind":"notes","id":"nt/d3w6qs","slide":6,"text":""}
+{"kind":"slide","id":"sl/fprk7d","slide":7,"title":"HIỆN TRẠNG","textShapes":9}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":7,"text":"HIỆN TRẠNG","textPreview":"HIỆN TRẠNG","textChars":10,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/zupwb2hw","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/a9w3m94f","slide":7,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/hcrmhk3q","slide":7,"text":"Ghi dữ liệu một lần, đúng mẫu, đúng nơi","textPreview":"Ghi dữ liệu một lần, đúng mẫu, đúng nơi","textChars":39,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/orytsvu9","slide":7,"text":"Tin nhắn tự do giúp linh hoạt, nhưng không tạo dữ liệu sạch để phân tích hoặc đối chiếu sau này.","textPreview":"Tin nhắn tự do giúp linh hoạt, nhưng không tạo dữ liệu sạch để phân tích hoặc đối chiếu sau này.","textChars":96,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/z61032ls","slide":7,"text":"Tin nhắn tự do\nnội dung mỗi lần khác nhau","textPreview":"Tin nhắn tự do | nội dung mỗi lần khác nhau","textChars":41,"textLines":2,"bbox":[150,245,300,110]}
+{"kind":"textbox","id":"sh/al87ed8b","slide":7,"text":"Form chuẩn\ntrường bắt buộc và format rõ","textPreview":"Form chuẩn | trường bắt buộc và format rõ","textChars":39,"textLines":2,"bbox":[830,245,300,110]}
+{"kind":"shape","id":"sh/hk3q5o7q","slide":7,"bbox":[450,300,380,2]}
+{"kind":"textbox","id":"sh/oza1gvy9","slide":7,"text":"Dữ liệu có cấu trúc","textPreview":"Dữ liệu có cấu trúc","textChars":19,"textLines":1,"bbox":[525,255,240,24]}
+{"kind":"textbox","id":"sh/29gr2p8n","slide":7,"text":"mặt hàng · NCC · số lượng · VAT · chứng từ · người duyệt · trạng thái","textPreview":"mặt hàng · NCC · số lượng · VAT · chứng từ · người duyệt · trạng thái","textChars":69,"textLines":1,"bbox":[474,325,340,42]}
+{"kind":"textbox","id":"sh/vu9knih4","slide":7,"text":"Hành động cần có: chuẩn hóa điểm nhập đầu tiên thay vì sửa dữ liệu ở cuối quy trình.","textPreview":"Hành động cần có: chuẩn hóa điểm nhập đầu tiên thay vì sửa dữ liệu ở cuối quy trình.","textChars":84,"textLines":1,"bbox":[180,450,900,40]}
+{"kind":"notes","id":"nt/fprk7d","slide":7,"text":""}
+{"kind":"slide","id":"sl/7ijd0x","slide":8,"title":"HIỆN TRẠNG","textShapes":12}
+{"kind":"textbox","id":"sh/gvy90je9","slide":8,"text":"HIỆN TRẠNG","textPreview":"HIỆN TRẠNG","textChars":10,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/ra5gbq1o","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/2p8nqxs7","slide":8,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":8,"text":"Gom bằng chứng theo hồ sơ để lãnh đạo tự kiểm tra","textPreview":"Gom bằng chứng theo hồ sơ để lãnh đạo tự kiểm tra","textChars":49,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/kjm1cfa9","slide":8,"text":"Bằng chứng mua hàng nên đi cùng đề xuất, quyết định duyệt và chứng từ chi tiền.","textPreview":"Bằng chứng mua hàng nên đi cùng đề xuất, quyết định duyệt và chứng từ chi tiền.","textChars":79,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":8,"text":"Báo giá","textPreview":"Báo giá","textChars":7,"textLines":1,"bbox":[150,250,100,48]}
+{"kind":"textbox","id":"sh/2hwfyxob","slide":8,"text":"VAT","textPreview":"VAT","textChars":3,"textLines":1,"bbox":[268,250,100,48]}
+{"kind":"textbox","id":"sh/9w3m94fu","slide":8,"text":"BBGN","textPreview":"BBGN","textChars":4,"textLines":1,"bbox":[386,250,100,48]}
+{"kind":"textbox","id":"sh/kb6xkf6d","slide":8,"text":"Ảnh vật tư","textPreview":"Ảnh vật tư","textChars":10,"textLines":1,"bbox":[150,324,100,48]}
+{"kind":"textbox","id":"sh/2p8nqxs7","slide":8,"text":"Phiếu chi","textPreview":"Phiếu chi","textChars":9,"textLines":1,"bbox":[268,324,100,48]}
+{"kind":"textbox","id":"sh/ra5gbq1o","slide":8,"text":"Một hồ sơ mua hàng\ncó thể mở lại","textPreview":"Một hồ sơ mua hàng | có thể mở lại","textChars":32,"textLines":2,"bbox":[770,250,300,122]}
+{"kind":"shape","id":"sh/gvy90je9","slide":8,"bbox":[508,310,240,2]}
+{"kind":"textbox","id":"sh/9gr2p8nq","slide":8,"text":"Hành động cần có","textPreview":"Hành động cần có","textChars":16,"textLines":1,"bbox":[230,440,220,28]}
+{"kind":"textbox","id":"sh/2hwfyxob","slide":8,"text":"Không chỉ lưu tệp. Cần gắn tệp vào đúng bước: tạo đơn, nghiệm thu, duyệt thanh toán, chi tiền.","textPreview":"Không chỉ lưu tệp. Cần gắn tệp vào đúng bước: tạo đơn, nghiệm thu, duyệt thanh toán, chi tiền.","textChars":94,"textLines":1,"bbox":[230,482,820,46]}
+{"kind":"notes","id":"nt/7ijd0x","slide":8,"text":""}
+{"kind":"slide","id":"sl/x7y758","slide":9,"title":"02 VẤN ĐỀ","textShapes":5}
+{"kind":"textbox","id":"sh/itgfmlkj","slide":9,"text":"02 VẤN ĐỀ","textPreview":"02 VẤN ĐỀ","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/pkzupwb2","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/0z61032l","slide":9,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/72x4nap4","slide":9,"text":"02 VẤN ĐỀ","textPreview":"02 VẤN ĐỀ","textChars":9,"textLines":1,"bbox":[64,176,420,22]}
+{"kind":"textbox","id":"sh/ih4byhgn","slide":9,"text":"Xác định vấn đề theo từng chốt vận hành","textPreview":"Xác định vấn đề theo từng chốt vận hành","textChars":39,"textLines":1,"bbox":[64,220,850,92]}
+{"kind":"textbox","id":"sh/p8nqxs72","slide":9,"text":"Vấn đề chính không phải là thiếu người làm. Vấn đề là mỗi bộ phận phải tự vá khoảng trống thông tin.","textPreview":"Vấn đề chính không phải là thiếu người làm. Vấn đề là mỗi bộ phận phải tự vá khoảng trống thông tin.","textChars":100,"textLines":1,"bbox":[66,330,820,54]}
+{"kind":"shape","id":"sh/0nuxc3yl","slide":9,"bbox":[64,420,360,2]}
+{"kind":"notes","id":"nt/x7y758","slide":9,"text":""}
+{"kind":"slide","id":"sl/ir3qiz","slide":10,"title":"VẤN ĐỀ","textShapes":15}
+{"kind":"textbox","id":"sh/m94fu18j","slide":10,"text":"VẤN ĐỀ","textPreview":"VẤN ĐỀ","textChars":6,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/x0nuxc3y","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/4fu18jqh","slide":10,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":10,"text":"Năm khoảng trống cần xử lý trước khi mở rộng","textPreview":"Năm khoảng trống cần xử lý trước khi mở rộng","textChars":44,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/qxs72x4n","slide":10,"text":"Mỗi khoảng trống tạo thêm việc hỏi lại, đối soát lại hoặc quyết định thiếu bối cảnh.","textPreview":"Mỗi khoảng trống tạo thêm việc hỏi lại, đối soát lại hoặc quyết định thiếu bối cảnh.","textChars":84,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/xobm58z2","slide":10,"text":"Truy vết","textPreview":"Truy vết","textChars":8,"textLines":1,"bbox":[100,260,176,60]}
+{"kind":"textbox","id":"sh/83itgfml","slide":10,"text":"khó thấy ai đã làm gì, lúc nào","textPreview":"khó thấy ai đã làm gì, lúc nào","textChars":30,"textLines":1,"bbox":[100,338,176,60]}
+{"kind":"textbox","id":"sh/fepkzupw","slide":10,"text":"Lưu trữ dữ liệu","textPreview":"Lưu trữ dữ liệu","textChars":15,"textLines":1,"bbox":[316,260,176,60]}
+{"kind":"textbox","id":"sh/mtwra5gb","slide":10,"text":"khó tổng hợp và phân tích","textPreview":"khó tổng hợp và phân tích","textChars":25,"textLines":1,"bbox":[316,338,176,60]}
+{"kind":"textbox","id":"sh/oj2t83it","slide":10,"text":"Mẫu thông tin","textPreview":"Mẫu thông tin","textChars":13,"textLines":1,"bbox":[532,260,176,60]}
+{"kind":"textbox","id":"sh/d4vmtwra","slide":10,"text":"người nhập dễ thiếu trường","textPreview":"người nhập dễ thiếu trường","textChars":26,"textLines":1,"bbox":[532,338,176,60]}
+{"kind":"textbox","id":"sh/6dcbulwv","slide":10,"text":"Nhập lại","textPreview":"Nhập lại","textChars":8,"textLines":1,"bbox":[748,260,176,60]}
+{"kind":"textbox","id":"sh/vy90je9c","slide":10,"text":"dễ lệch số, lệch trạng thái","textPreview":"dễ lệch số, lệch trạng thái","textChars":27,"textLines":1,"bbox":[748,338,176,60]}
+{"kind":"textbox","id":"sh/o7qpg3ex","slide":10,"text":"Bằng chứng","textPreview":"Bằng chứng","textChars":10,"textLines":1,"bbox":[964,260,176,60]}
+{"kind":"textbox","id":"sh/dsji5sne","slide":10,"text":"khó tìm đủ hồ sơ khi duyệt","textPreview":"khó tìm đủ hồ sơ khi duyệt","textChars":26,"textLines":1,"bbox":[964,338,176,60]}
+{"kind":"textbox","id":"sh/61032lsz","slide":10,"text":"Hành động: chuyển các khoảng trống này thành yêu cầu sản phẩm cụ thể, không xử lý bằng nhắc nhở chung.","textPreview":"Hành động: chuyển các khoảng trống này thành yêu cầu sản phẩm cụ thể, không xử lý bằng nhắc nhở chung.","textChars":102,"textLines":1,"bbox":[160,470,940,42]}
+{"kind":"notes","id":"nt/ir3qiz","slide":10,"text":""}
+{"kind":"slide","id":"sl/f9mbc5","slide":11,"title":"VẤN ĐỀ THEO BỘ PHẬN","textShapes":14}
+{"kind":"textbox","id":"sh/sji5snel","slide":11,"text":"VẤN ĐỀ THEO BỘ PHẬN","textPreview":"VẤN ĐỀ THEO BỘ PHẬN","textChars":19,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/3ylc7u54","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/adsji5sn","slide":11,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/lszqtcj6","slide":11,"text":"Giảm câu hỏi cho mua hàng bằng mẫu nhập thống nhất","textPreview":"Giảm câu hỏi cho mua hàng bằng mẫu nhập thống nhất","textChars":50,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/s72x4nap","slide":11,"text":"NVMH không nên phải nhớ mỗi lần cần gửi đủ nội dung gì trong Viber.","textPreview":"NVMH không nên phải nhớ mỗi lần cần gửi đủ nội dung gì trong Viber.","textChars":67,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/3m94fu18","slide":11,"bbox":[150,220,980,64]}
+{"kind":"textbox","id":"sh/a5gbq1or","slide":11,"text":"Bộ phận","textPreview":"Bộ phận","textChars":7,"textLines":1,"bbox":[170,234,190,50]}
+{"kind":"textbox","id":"sh/hoza1gvy","slide":11,"text":"Vấn đề vận hành cần giảm","textPreview":"Vấn đề vận hành cần giảm","textChars":24,"textLines":1,"bbox":[370,234,730,50]}
+{"kind":"shape","id":"sh/s36hcrmh","slide":11,"bbox":[150,290,980,64]}
+{"kind":"textbox","id":"sh/q1orytsv","slide":11,"text":"NVMH","textPreview":"NVMH","textChars":4,"textLines":1,"bbox":[170,304,190,50]}
+{"kind":"textbox","id":"sh/fmlkjm1c","slide":11,"text":"Thiếu trường thông tin, thiếu tệp, phải giải thích lại nhiều lần.","textPreview":"Thiếu trường thông tin, thiếu tệp, phải giải thích lại nhiều lần.","textChars":65,"textLines":1,"bbox":[370,304,730,50]}
+{"kind":"shape","id":"sh/87ed8bat","slide":11,"bbox":[150,360,980,64]}
+{"kind":"textbox","id":"sh/xs72x4na","slide":11,"text":"Trưởng bộ phận","textPreview":"Trưởng bộ phận","textChars":14,"textLines":1,"bbox":[170,374,190,50]}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":11,"text":"Khó xác nhận nhu cầu nếu bối cảnh nằm trong nhiều tin nhắn.","textPreview":"Khó xác nhận nhu cầu nếu bối cảnh nằm trong nhiều tin nhắn.","textChars":59,"textLines":1,"bbox":[370,374,730,50]}
+{"kind":"shape","id":"sh/je9cvixc","slide":11,"bbox":[150,430,980,64]}
+{"kind":"textbox","id":"sh/8z25kb6x","slide":11,"text":"Lãnh đạo duyệt","textPreview":"Lãnh đạo duyệt","textChars":14,"textLines":1,"bbox":[170,444,190,50]}
+{"kind":"textbox","id":"sh/1gvy90je","slide":11,"text":"Khó xem nhanh NCC, giá, VAT, báo giá và lý do mua.","textPreview":"Khó xem nhanh NCC, giá, VAT, báo giá và lý do mua.","textChars":50,"textLines":1,"bbox":[370,444,730,50]}
+{"kind":"shape","id":"sh/qpg3ex0n","slide":11,"bbox":[150,500,980,64]}
+{"kind":"textbox","id":"sh/fa9w3m94","slide":11,"text":"KTTH","textPreview":"KTTH","textChars":4,"textLines":1,"bbox":[170,514,190,50]}
+{"kind":"textbox","id":"sh/re1w7mp0","slide":11,"text":"Phải kiểm tra lại dữ liệu trước khi đưa vào công nợ.","textPreview":"Phải kiểm tra lại dữ liệu trước khi đưa vào công nợ.","textChars":52,"textLines":1,"bbox":[370,514,730,50]}
+{"kind":"notes","id":"nt/f9mbc5","slide":11,"text":""}
+{"kind":"slide","id":"sl/065xp2","slide":12,"title":"VẤN ĐỀ THEO BỘ PHẬN","textShapes":8}
+{"kind":"textbox","id":"sh/t47y1kre","slide":12,"text":"VẤN ĐỀ THEO BỘ PHẬN","textPreview":"VẤN ĐỀ THEO BỘ PHẬN","textChars":19,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/idonyd0z","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/byhgn29g","slide":12,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/0rqd4vmt","slide":12,"text":"Giảm đối soát lại cho kế toán bằng dữ liệu có cấu trúc","textPreview":"Giảm đối soát lại cho kế toán bằng dữ liệu có cấu trúc","textChars":54,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/tcj6tova","slide":12,"text":"Kế toán không nên phải nhập lại từ chat nếu dữ liệu đã được tạo đúng ngay từ đầu.","textPreview":"Kế toán không nên phải nhập lại từ chat nếu dữ liệu đã được tạo đúng ngay từ đầu.","textChars":81,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/il0rqd4v","slide":12,"text":"Chat / tệp rời\nnhập lại","textPreview":"Chat / tệp rời | nhập lại","textChars":23,"textLines":2,"bbox":[155,270,250,90]}
+{"kind":"textbox","id":"sh/b6xkf6dc","slide":12,"text":"Dữ liệu app\nđã có mã và trạng thái","textPreview":"Dữ liệu app | đã có mã và trạng thái","textChars":34,"textLines":2,"bbox":[515,270,250,90]}
+{"kind":"textbox","id":"sh/032lszqt","slide":12,"text":"Công nợ\nkiểm tra và lưu","textPreview":"Công nợ | kiểm tra và lưu","textChars":23,"textLines":2,"bbox":[875,270,250,90]}
+{"kind":"shape","id":"sh/tovahoza","slide":12,"bbox":[405,315,110,2]}
+{"kind":"shape","id":"sh/l87ed8ba","slide":12,"bbox":[765,315,110,2]}
+{"kind":"textbox","id":"sh/sneloj2t","slide":12,"text":"Hành động: biến DXMH, nghiệm thu và DXTT thành dữ liệu nối tiếp nhau thay vì ba lần nhập độc lập.","textPreview":"Hành động: biến DXMH, nghiệm thu và DXTT thành dữ liệu nối tiếp nhau thay vì ba lần nhập độc lập.","textChars":97,"textLines":1,"bbox":[172,445,940,44]}
+{"kind":"notes","id":"nt/065xp2","slide":12,"text":""}
+{"kind":"slide","id":"sl/wsb96n","slide":13,"title":"VẤN ĐỀ THEO BỘ PHẬN","textShapes":9}
+{"kind":"textbox","id":"sh/nih4byhg","slide":13,"text":"VẤN ĐỀ THEO BỘ PHẬN","textPreview":"VẤN ĐỀ THEO BỘ PHẬN","textChars":19,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/g3ex0nux","slide":13,"text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/5o7qpg3e","slide":13,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/ylc7u54z","slide":13,"text":"Giúp thủ quỹ chi đúng dòng đã được duyệt","textPreview":"Giúp thủ quỹ chi đúng dòng đã được duyệt","textChars":40,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/r65wjudg","slide":13,"text":"Chi tiền cần bám vào dòng đã được duyệt, số tiền được duyệt và bằng chứng chi tiền.","textPreview":"Chi tiền cần bám vào dòng đã được duyệt, số tiền được duyệt và bằng chứng chi tiền.","textChars":83,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/gr2p8nqx","slide":13,"bbox":[390,305,28,2]}
+{"kind":"shape","id":"sh/9cvixcze","slide":13,"bbox":[603,305,28,2]}
+{"kind":"shape","id":"sh/yd0z6103","slide":13,"bbox":[816,305,28,2]}
+{"kind":"textbox","id":"sh/rytsvu9k","slide":13,"text":"DXTT đã duyệt","textPreview":"DXTT đã duyệt","textChars":13,"textLines":1,"bbox":[205,270,185,72]}
+{"kind":"textbox","id":"sh/bi9s36hc","slide":13,"text":"Dòng chi","textPreview":"Dòng chi","textChars":8,"textLines":1,"bbox":[418,270,185,72]}
+{"kind":"textbox","id":"sh/ixczed8v","slide":13,"text":"Chứng từ chi","textPreview":"Chứng từ chi","textChars":12,"textLines":1,"bbox":[631,270,185,72]}
+{"kind":"textbox","id":"sh/tovahoza","slide":13,"text":"Cập nhật công nợ","textPreview":"Cập nhật công nợ","textChars":16,"textLines":1,"bbox":[844,270,185,72]}
+{"kind":"textbox","id":"sh/032lszqt","slide":13,"text":"Hành động: thủ quỹ không chỉ ghi 'đã chi', mà upload bằng chứng chi tiền vào đúng dòng thanh toán.","textPreview":"Hành động: thủ quỹ không chỉ ghi 'đã chi', mà upload bằng chứng chi tiền vào đúng dòng thanh toán.","textChars":98,"textLines":1,"bbox":[190,430,900,42]}
+{"kind":"notes","id":"nt/wsb96n","slide":13,"text":""}
+{"kind":"slide","id":"sl/v21c7a","slide":14,"title":"VẤN ĐỀ THEO BỘ PHẬN","textShapes":10}
+{"kind":"textbox","id":"sh/eloj2t83","slide":14,"text":"VẤN ĐỀ THEO BỘ PHẬN","textPreview":"VẤN ĐỀ THEO BỘ PHẬN","textChars":19,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/lc7u54zi","slide":14,"text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/wra5gbq1","slide":14,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/7u54zido","slide":14,"text":"Cho lãnh đạo một nơi nhìn trạng thái và bằng chứng","textPreview":"Cho lãnh đạo một nơi nhìn trạng thái và bằng chứng","textChars":50,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/ed8bat47","slide":14,"text":"Lãnh đạo cần xem được việc đang chờ ai, giá trị bao nhiêu và hồ sơ có gì trước khi quyết định.","textPreview":"Lãnh đạo cần xem được việc đang chờ ai, giá trị bao nhiêu và hồ sơ có gì trước khi quyết định.","textChars":94,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/l0rqd4vm","slide":14,"text":"Chờ duyệt","textPreview":"Chờ duyệt","textChars":9,"textLines":1,"bbox":[190,245,180,64]}
+{"kind":"textbox","id":"sh/wfyxobm5","slide":14,"text":"Chờ nghiệm thu","textPreview":"Chờ nghiệm thu","textChars":14,"textLines":1,"bbox":[410,245,180,64]}
+{"kind":"textbox","id":"sh/7mp0bi9s","slide":14,"text":"Chờ KTTH","textPreview":"Chờ KTTH","textChars":8,"textLines":1,"bbox":[630,245,180,64]}
+{"kind":"textbox","id":"sh/e1w7mp0b","slide":14,"text":"Chờ chi","textPreview":"Chờ chi","textChars":7,"textLines":1,"bbox":[850,245,180,64]}
+{"kind":"textbox","id":"sh/0rqd4vmt","slide":14,"text":"Một dashboard nên trả lời ba câu hỏi","textPreview":"Một dashboard nên trả lời ba câu hỏi","textChars":36,"textLines":1,"bbox":[280,390,720,30]}
+{"kind":"textbox","id":"sh/tcj6tova","slide":14,"text":"Kẹt ở đâu?   Ai giữ bước tiếp theo?   Giá trị tiền bao nhiêu?","textPreview":"Kẹt ở đâu?   Ai giữ bước tiếp theo?   Giá trị tiền bao nhiêu?","textChars":61,"textLines":1,"bbox":[230,438,820,32]}
+{"kind":"notes","id":"nt/v21c7a","slide":14,"text":""}
+{"kind":"slide","id":"sl/o0r9h8","slide":15,"title":"VẤN ĐỀ","textShapes":8}
+{"kind":"textbox","id":"sh/cvixczed","slide":15,"text":"VẤN ĐỀ","textPreview":"VẤN ĐỀ","textChars":6,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/nap4r65w","slide":15,"text":"15","textPreview":"15","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/upwb2hwf","slide":15,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/54zidony","slide":15,"text":"Tách vấn đề hệ thống khỏi lỗi con người","textPreview":"Tách vấn đề hệ thống khỏi lỗi con người","textChars":39,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/cj6tovah","slide":15,"text":"Nếu mẫu nhập và nơi lưu chưa rõ, sai sót sẽ lặp lại dù mọi người đều cố gắng.","textPreview":"Nếu mẫu nhập và nơi lưu chưa rõ, sai sót sẽ lặp lại dù mọi người đều cố gắng.","textChars":77,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/nyd0z610","slide":15,"text":"Con người\nnhớ và nhắn","textPreview":"Con người | nhớ và nhắn","textChars":21,"textLines":2,"bbox":[170,260,230,90]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":15,"text":"Hệ thống\nnhắc trường bắt buộc","textPreview":"Hệ thống | nhắc trường bắt buộc","textChars":29,"textLines":2,"bbox":[525,260,230,90]}
+{"kind":"textbox","id":"sh/1032lszq","slide":15,"text":"Quản trị\nxem lệch và sửa rule","textPreview":"Quản trị | xem lệch và sửa rule","textChars":29,"textLines":2,"bbox":[880,260,230,90]}
+{"kind":"shape","id":"sh/cfa9w3m9","slide":15,"bbox":[400,305,125,2]}
+{"kind":"shape","id":"sh/25kb6xkf","slide":15,"bbox":[755,305,125,2]}
+{"kind":"textbox","id":"sh/rqd4vmtw","slide":15,"text":"Hành động: chuẩn hóa quy trình bằng công cụ, rồi dùng pilot để tìm lỗi thiết kế còn lại.","textPreview":"Hành động: chuẩn hóa quy trình bằng công cụ, rồi dùng pilot để tìm lỗi thiết kế còn lại.","textChars":88,"textLines":1,"bbox":[194,445,890,40]}
+{"kind":"notes","id":"nt/o0r9h8","slide":15,"text":""}
+{"kind":"slide","id":"sl/w4d133","slide":16,"title":"03 GIẢI PHÁP","textShapes":5}
+{"kind":"textbox","id":"sh/47y1kre1","slide":16,"text":"03 GIẢI PHÁP","textPreview":"03 GIẢI PHÁP","textChars":12,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/bm58z25k","slide":16,"text":"16","textPreview":"16","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/m1cfa9w3","slide":16,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/tgfmlkjm","slide":16,"text":"03 GIẢI PHÁP","textPreview":"03 GIẢI PHÁP","textChars":12,"textLines":1,"bbox":[64,176,420,22]}
+{"kind":"textbox","id":"sh/4vmtwra5","slide":16,"text":"Dùng app như sổ luồng công việc, không thay chứng từ gốc","textPreview":"Dùng app như sổ luồng công việc, không thay chứng từ gốc","textChars":56,"textLines":1,"bbox":[64,220,850,92]}
+{"kind":"textbox","id":"sh/bat47y1k","slide":16,"text":"App nên giúp công việc đi đúng đường và để lại dấu vết. Chứng từ hợp lệ vẫn là bằng chứng kế toán.","textPreview":"App nên giúp công việc đi đúng đường và để lại dấu vết. Chứng từ hợp lệ vẫn là bằng chứng kế toán.","textChars":98,"textLines":1,"bbox":[66,330,820,54]}
+{"kind":"shape","id":"sh/mp0bi9s3","slide":16,"bbox":[64,420,360,2]}
+{"kind":"notes","id":"nt/w4d133","slide":16,"text":""}
+{"kind":"slide","id":"sl/4dw2ov","slide":17,"title":"GIẢI PHÁP","textShapes":10}
+{"kind":"textbox","id":"sh/ih4byhgn","slide":17,"text":"GIẢI PHÁP","textPreview":"GIẢI PHÁP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/p8nqxs72","slide":17,"text":"17","textPreview":"17","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/0nuxc3yl","slide":17,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/7ed8bat4","slide":17,"text":"Dùng app như sổ luồng công việc, không thay chứng từ gốc","textPreview":"Dùng app như sổ luồng công việc, không thay chứng từ gốc","textChars":56,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/itgfmlkj","slide":17,"text":"Cách nói này khiêm tốn hơn và đúng hơn: app tạo trạng thái, trách nhiệm và dữ liệu; chứng từ vẫn cần hợp lệ.","textPreview":"Cách nói này khiêm tốn hơn và đúng hơn: app tạo trạng thái, trách nhiệm và dữ liệu; chứng từ vẫn cần hợp lệ.","textChars":108,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/pkzupwb2","slide":17,"bbox":[78,250,352,260]}
+{"kind":"textbox","id":"sh/0z61032l","slide":17,"text":"Chứng từ gốc","textPreview":"Chứng từ gốc","textChars":12,"textLines":1,"bbox":[102,276,304,42]}
+{"kind":"textbox","id":"sh/7qpg3ex0","slide":17,"text":"VAT, BBGN, phiếu cân, uỷ nhiệm chi, phiếu chi.\n\nVai trò: bằng chứng kế toán và pháp lý.","textPreview":"VAT, BBGN, phiếu cân, uỷ nhiệm chi, phiếu chi. |  | Vai trò: bằng chứng kế toán và pháp lý.","textChars":87,"textLines":3,"bbox":[102,338,304,152]}
+{"kind":"shape","id":"sh/i5sneloj","slide":17,"bbox":[458,250,352,260]}
+{"kind":"textbox","id":"sh/0nuxc3yl","slide":17,"text":"App","textPreview":"App","textChars":3,"textLines":1,"bbox":[482,276,304,42]}
+{"kind":"textbox","id":"sh/p8nqxs72","slide":17,"text":"Trạng thái, người xử lý, quyền duyệt, lịch sử thao tác, tệp đính kèm.\n\nVai trò: luồng công việc.","textPreview":"Trạng thái, người xử lý, quyền duyệt, lịch sử thao tác, tệp đính kèm. |  | Vai trò: luồng công việc.","textChars":96,"textLines":3,"bbox":[482,338,304,152]}
+{"kind":"shape","id":"sh/ih4byhgn","slide":17,"bbox":[838,250,352,260]}
+{"kind":"textbox","id":"sh/72x4nap4","slide":17,"text":"Dashboard","textPreview":"Dashboard","textChars":9,"textLines":1,"bbox":[862,276,304,42]}
+{"kind":"textbox","id":"sh/0z61032l","slide":17,"text":"Tổng hợp việc đang chờ, giá trị tiền, điểm kẹt và công nợ.\n\nVai trò: quan sát và điều hành.","textPreview":"Tổng hợp việc đang chờ, giá trị tiền, điểm kẹt và công nợ. |  | Vai trò: quan sát và điều hành.","textChars":91,"textLines":3,"bbox":[862,338,304,152]}
+{"kind":"notes","id":"nt/4dw2ov","slide":17,"text":""}
+{"kind":"slide","id":"sl/2p3q1k","slide":18,"title":"GIẢI PHÁP","textShapes":16}
+{"kind":"textbox","id":"sh/87ed8bat","slide":18,"text":"GIẢI PHÁP","textPreview":"GIẢI PHÁP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/fmlkjm1c","slide":18,"text":"18","textPreview":"18","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/q1orytsv","slide":18,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/1gvy90je","slide":18,"text":"Ghép từng vấn đề với một chức năng xử lý","textPreview":"Ghép từng vấn đề với một chức năng xử lý","textChars":40,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/8z25kb6x","slide":18,"text":"Giải pháp nên được nhìn như danh sách hành động cụ thể, không phải lời hứa chung.","textPreview":"Giải pháp nên được nhìn như danh sách hành động cụ thể, không phải lời hứa chung.","textChars":81,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/je9cvixc","slide":18,"bbox":[130,205,1020,58]}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":18,"text":"Vấn đề","textPreview":"Vấn đề","textChars":6,"textLines":1,"bbox":[150,219,220,44]}
+{"kind":"textbox","id":"sh/xczed8v6","slide":18,"text":"Hành động trong app","textPreview":"Hành động trong app","textChars":19,"textLines":1,"bbox":[380,219,740,44]}
+{"kind":"shape","id":"sh/8v6psfil","slide":18,"bbox":[130,269,1020,58]}
+{"kind":"textbox","id":"sh/yhgn29gr","slide":18,"text":"Truy vết","textPreview":"Truy vết","textChars":8,"textLines":1,"bbox":[150,283,220,44]}
+{"kind":"textbox","id":"sh/n29gr2p8","slide":18,"text":"Ghi người tạo, người duyệt, thời điểm và lý do trả lại/từ chối.","textPreview":"Ghi người tạo, người duyệt, thời điểm và lý do trả lại/từ chối.","textChars":63,"textLines":1,"bbox":[380,283,740,44]}
+{"kind":"shape","id":"sh/gn29gr2p","slide":18,"bbox":[130,333,1020,58]}
+{"kind":"textbox","id":"sh/58z25kb6","slide":18,"text":"Dữ liệu rời","textPreview":"Dữ liệu rời","textChars":11,"textLines":1,"bbox":[150,347,220,44]}
+{"kind":"textbox","id":"sh/y90je9cv","slide":18,"text":"Lưu DXMH, nghiệm thu, DXTT, chi tiền và công nợ trong cùng cơ sở dữ liệu.","textPreview":"Lưu DXMH, nghiệm thu, DXTT, chi tiền và công nợ trong cùng cơ sở dữ liệu.","textChars":73,"textLines":1,"bbox":[380,347,740,44]}
+{"kind":"shape","id":"sh/nuxc3ylc","slide":18,"bbox":[130,397,1020,58]}
+{"kind":"textbox","id":"sh/gbq1oryt","slide":18,"text":"Mẫu tin nhắn lệch","textPreview":"Mẫu tin nhắn lệch","textChars":17,"textLines":1,"bbox":[150,411,220,44]}
+{"kind":"textbox","id":"sh/5wjudg7a","slide":18,"text":"Dùng biểu mẫu bắt buộc trường: NCC, mặt hàng, số lượng, VAT, tệp.","textPreview":"Dùng biểu mẫu bắt buộc trường: NCC, mặt hàng, số lượng, VAT, tệp.","textChars":65,"textLines":1,"bbox":[380,411,740,44]}
+{"kind":"shape","id":"sh/u54zidon","slide":18,"bbox":[130,461,1020,58]}
+{"kind":"textbox","id":"sh/nqxs72x4","slide":18,"text":"Nhập lại nhiều lần","textPreview":"Nhập lại nhiều lần","textChars":18,"textLines":1,"bbox":[150,475,220,44]}
+{"kind":"textbox","id":"sh/je9cvixc","slide":18,"text":"Dữ liệu từ bước trước được dùng tiếp ở bước sau.","textPreview":"Dữ liệu từ bước trước được dùng tiếp ở bước sau.","textChars":48,"textLines":1,"bbox":[380,475,740,44]}
+{"kind":"shape","id":"sh/qtcj6tov","slide":18,"bbox":[130,525,1020,58]}
+{"kind":"textbox","id":"sh/1gvy90je","slide":18,"text":"Khó xem bằng chứng","textPreview":"Khó xem bằng chứng","textChars":18,"textLines":1,"bbox":[150,539,220,44]}
+{"kind":"textbox","id":"sh/8z25kb6x","slide":18,"text":"Mỗi hồ sơ có link chứng từ theo đúng bước kiểm soát.","textPreview":"Mỗi hồ sơ có link chứng từ theo đúng bước kiểm soát.","textChars":52,"textLines":1,"bbox":[380,539,740,44]}
+{"kind":"notes","id":"nt/2p3q1k","slide":18,"text":""}
+{"kind":"slide","id":"sl/0p6hy9","slide":19,"title":"GIẢI PHÁP","textShapes":13}
+{"kind":"textbox","id":"sh/at47y1kr","slide":19,"text":"GIẢI PHÁP","textPreview":"GIẢI PHÁP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/lkjm1cfa","slide":19,"text":"19","textPreview":"19","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/szqtcj6t","slide":19,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/32lszqtc","slide":19,"text":"Chạy một vòng đời đơn hàng trong cùng hồ sơ","textPreview":"Chạy một vòng đời đơn hàng trong cùng hồ sơ","textChars":43,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/ahoza1gv","slide":19,"text":"Mục tiêu là theo dõi trọn vòng đời, không chỉ thay form tạo đề xuất.","textPreview":"Mục tiêu là theo dõi trọn vòng đời, không chỉ thay form tạo đề xuất.","textChars":68,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/l87ed8ba","slide":19,"bbox":[202,303,18,2]}
+{"kind":"shape","id":"sh/sneloj2t","slide":19,"bbox":[336,303,18,2]}
+{"kind":"shape","id":"sh/3q5o7qpg","slide":19,"bbox":[470,303,18,2]}
+{"kind":"shape","id":"sh/e9cvixcz","slide":19,"bbox":[604,303,18,2]}
+{"kind":"shape","id":"sh/87ed8bat","slide":19,"bbox":[738,303,18,2]}
+{"kind":"shape","id":"sh/xs72x4na","slide":19,"bbox":[872,303,18,2]}
+{"kind":"shape","id":"sh/q1orytsv","slide":19,"bbox":[1006,303,18,2]}
+{"kind":"textbox","id":"sh/fmlkjm1c","slide":19,"text":"DXMH","textPreview":"DXMH","textChars":4,"textLines":1,"bbox":[86,275,116,58]}
+{"kind":"textbox","id":"sh/8z25kb6x","slide":19,"text":"Duyệt","textPreview":"Duyệt","textChars":5,"textLines":1,"bbox":[220,275,116,58]}
+{"kind":"textbox","id":"sh/1gvy90je","slide":19,"text":"Nghiệm thu","textPreview":"Nghiệm thu","textChars":10,"textLines":1,"bbox":[354,275,116,58]}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":19,"text":"KTTH","textPreview":"KTTH","textChars":4,"textLines":1,"bbox":[488,275,116,58]}
+{"kind":"textbox","id":"sh/je9cvixc","slide":19,"text":"DXTT","textPreview":"DXTT","textChars":4,"textLines":1,"bbox":[622,275,116,58]}
+{"kind":"textbox","id":"sh/8v6psfil","slide":19,"text":"Duyệt chi","textPreview":"Duyệt chi","textChars":9,"textLines":1,"bbox":[756,275,116,58]}
+{"kind":"textbox","id":"sh/xczed8v6","slide":19,"text":"Thủ quỹ","textPreview":"Thủ quỹ","textChars":7,"textLines":1,"bbox":[890,275,116,58]}
+{"kind":"textbox","id":"sh/hoza1gvy","slide":19,"text":"Công nợ","textPreview":"Công nợ","textChars":7,"textLines":1,"bbox":[1024,275,116,58]}
+{"kind":"textbox","id":"sh/s36hcrmh","slide":19,"text":"Hành động: pilot phải kiểm chứng chuỗi thật từ đề xuất đến bằng chứng chi tiền.","textPreview":"Hành động: pilot phải kiểm chứng chuỗi thật từ đề xuất đến bằng chứng chi tiền.","textChars":79,"textLines":1,"bbox":[190,430,900,42]}
+{"kind":"notes","id":"nt/0p6hy9","slide":19,"text":""}
+{"kind":"slide","id":"sl/z0qusf","slide":20,"title":"GIẢI PHÁP","textShapes":12}
+{"kind":"textbox","id":"sh/1kre1w7m","slide":20,"text":"GIẢI PHÁP","textPreview":"GIẢI PHÁP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":20,"text":"20","textPreview":"20","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/ji5snelo","slide":20,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":20,"text":"Chuẩn hóa mẫu nhập liệu trước khi gửi duyệt","textPreview":"Chuẩn hóa mẫu nhập liệu trước khi gửi duyệt","textChars":43,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/1cfa9w3m","slide":20,"text":"Nếu dữ liệu đầu vào chuẩn, các bước sau bớt phải hỏi lại và sửa lại.","textPreview":"Nếu dữ liệu đầu vào chuẩn, các bước sau bớt phải hỏi lại và sửa lại.","textChars":68,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/ulwval87","slide":20,"bbox":[155,230,390,285]}
+{"kind":"textbox","id":"sh/j6tovaho","slide":20,"text":"Tạo đề xuất mua hàng","textPreview":"Tạo đề xuất mua hàng","textChars":20,"textLines":1,"bbox":[180,255,320,28]}
+{"kind":"textbox","id":"sh/8nqxs72x","slide":20,"text":"NCC","textPreview":"NCC","textChars":3,"textLines":1,"bbox":[185,315,145,38]}
+{"kind":"textbox","id":"sh/18jqh0fe","slide":20,"text":"Mặt hàng","textPreview":"Mặt hàng","textChars":8,"textLines":1,"bbox":[353,315,145,38]}
+{"kind":"textbox","id":"sh/psfil0rq","slide":20,"text":"Số lượng","textPreview":"Số lượng","textChars":8,"textLines":1,"bbox":[185,373,145,38]}
+{"kind":"textbox","id":"sh/w7mp0bi9","slide":20,"text":"Đơn giá","textPreview":"Đơn giá","textChars":7,"textLines":1,"bbox":[353,373,145,38]}
+{"kind":"textbox","id":"sh/7mp0bi9s","slide":20,"text":"% VAT","textPreview":"% VAT","textChars":5,"textLines":1,"bbox":[185,431,145,38]}
+{"kind":"textbox","id":"sh/e1w7mp0b","slide":20,"text":"File báo giá","textPreview":"File báo giá","textChars":12,"textLines":1,"bbox":[353,431,145,38]}
+{"kind":"textbox","id":"sh/pg3ex0nu","slide":20,"text":"Dữ liệu đủ hơn\ntrước khi lãnh đạo duyệt","textPreview":"Dữ liệu đủ hơn | trước khi lãnh đạo duyệt","textChars":39,"textLines":2,"bbox":[735,275,330,130]}
+{"kind":"shape","id":"sh/wval87ed","slide":20,"bbox":[545,370,190,2]}
+{"kind":"notes","id":"nt/z0qusf","slide":20,"text":""}
+{"kind":"slide","id":"sl/tf51w3","slide":21,"title":"GIẢI PHÁP","textShapes":12}
+{"kind":"textbox","id":"sh/4zidonyd","slide":21,"text":"GIẢI PHÁP","textPreview":"GIẢI PHÁP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/fepkzupw","slide":21,"text":"21","textPreview":"21","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/mtwra5gb","slide":21,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/xc3ylc7u","slide":21,"text":"Gắn chứng từ vào đúng bước kiểm soát","textPreview":"Gắn chứng từ vào đúng bước kiểm soát","textChars":36,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/4r65wjud","slide":21,"text":"Không chỉ cần có tệp; cần biết tệp đó chứng minh cho bước nào.","textPreview":"Không chỉ cần có tệp; cần biết tệp đó chứng minh cho bước nào.","textChars":62,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":21,"text":"DXMH","textPreview":"DXMH","textChars":4,"textLines":1,"bbox":[180,220,150,52]}
+{"kind":"textbox","id":"sh/mlkjm1cf","slide":21,"text":"Báo giá / đề xuất NCC","textPreview":"Báo giá / đề xuất NCC","textChars":21,"textLines":1,"bbox":[430,220,560,52]}
+{"kind":"shape","id":"sh/x0nuxc3y","slide":21,"bbox":[330,246,100,2]}
+{"kind":"textbox","id":"sh/4fu18jqh","slide":21,"text":"Nghiệm thu","textPreview":"Nghiệm thu","textChars":10,"textLines":1,"bbox":[180,302,150,52]}
+{"kind":"textbox","id":"sh/6dcbulwv","slide":21,"text":"VAT / BBGN / phiếu cân / ảnh vật tư","textPreview":"VAT / BBGN / phiếu cân / ảnh vật tư","textChars":35,"textLines":1,"bbox":[430,302,560,52]}
+{"kind":"shape","id":"sh/vy90je9c","slide":21,"bbox":[330,328,100,2]}
+{"kind":"textbox","id":"sh/oj2t83it","slide":21,"text":"DXTT","textPreview":"DXTT","textChars":4,"textLines":1,"bbox":[180,384,150,52]}
+{"kind":"textbox","id":"sh/d4vmtwra","slide":21,"text":"Hồ sơ đủ điều kiện thanh toán","textPreview":"Hồ sơ đủ điều kiện thanh toán","textChars":29,"textLines":1,"bbox":[430,384,560,52]}
+{"kind":"shape","id":"sh/61032lsz","slide":21,"bbox":[330,410,100,2]}
+{"kind":"textbox","id":"sh/vmtwra5g","slide":21,"text":"Chi tiền","textPreview":"Chi tiền","textChars":8,"textLines":1,"bbox":[180,466,150,52]}
+{"kind":"textbox","id":"sh/o7qpg3ex","slide":21,"text":"Phiếu chi / uỷ nhiệm chi","textPreview":"Phiếu chi / uỷ nhiệm chi","textChars":24,"textLines":1,"bbox":[430,466,560,52]}
+{"kind":"shape","id":"sh/dsji5sne","slide":21,"bbox":[330,492,100,2]}
+{"kind":"notes","id":"nt/tf51w3","slide":21,"text":""}
+{"kind":"slide","id":"sl/e2qjzx","slide":22,"title":"GIẢI PHÁP","textShapes":8}
+{"kind":"textbox","id":"sh/s36hcrmh","slide":22,"text":"GIẢI PHÁP","textPreview":"GIẢI PHÁP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/zidonyd0","slide":22,"text":"22","textPreview":"22","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/a1gvy90j","slide":22,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/hgn29gr2","slide":22,"text":"Phê duyệt trong app để tạo dấu vết quyết định","textPreview":"Phê duyệt trong app để tạo dấu vết quyết định","textChars":45,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/svu9knih","slide":22,"text":"Duyệt trong app không thay quyền lãnh đạo. Nó ghi lại quyết định, bối cảnh và trạng thái tiếp theo.","textPreview":"Duyệt trong app không thay quyền lãnh đạo. Nó ghi lại quyết định, bối cảnh và trạng thái tiếp theo.","textChars":99,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/za1gvy90","slide":22,"text":"Thông tin đề xuất\nNCC · giá · VAT · tệp","textPreview":"Thông tin đề xuất | NCC · giá · VAT · tệp","textChars":39,"textLines":2,"bbox":[135,260,250,94]}
+{"kind":"textbox","id":"sh/ap4r65wj","slide":22,"text":"Lãnh đạo duyệt\nhoặc trả lại có lý do","textPreview":"Lãnh đạo duyệt | hoặc trả lại có lý do","textChars":36,"textLines":2,"bbox":[515,250,250,114]}
+{"kind":"textbox","id":"sh/h4byhgn2","slide":22,"text":"Trạng thái mới\nchờ nghiệm thu / trả lại","textPreview":"Trạng thái mới | chờ nghiệm thu / trả lại","textChars":39,"textLines":2,"bbox":[895,260,250,94]}
+{"kind":"shape","id":"sh/sji5snel","slide":22,"bbox":[385,310,130,2]}
+{"kind":"shape","id":"sh/qh0fepkz","slide":22,"bbox":[765,310,130,2]}
+{"kind":"textbox","id":"sh/j2t83itg","slide":22,"text":"Nguyên tắc: phê duyệt nguyên tắc nên đi cùng bằng chứng đủ để người duyệt hiểu mình đang chấp thuận điều gì.","textPreview":"Nguyên tắc: phê duyệt nguyên tắc nên đi cùng bằng chứng đủ để người duyệt hiểu mình đang chấp thuận điều gì.","textChars":108,"textLines":1,"bbox":[175,445,930,48]}
+{"kind":"notes","id":"nt/e2qjzx","slide":22,"text":""}
+{"kind":"slide","id":"sl/hd31ln","slide":23,"title":"GIẢI PHÁP","textShapes":9}
+{"kind":"textbox","id":"sh/s36hcrmh","slide":23,"text":"GIẢI PHÁP","textPreview":"GIẢI PHÁP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/zidonyd0","slide":23,"text":"23","textPreview":"23","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/a1gvy90j","slide":23,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/hgn29gr2","slide":23,"text":"Theo dõi chi phí và công nợ theo trạng thái mới nhất","textPreview":"Theo dõi chi phí và công nợ theo trạng thái mới nhất","textChars":52,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/svu9knih","slide":23,"text":"Dashboard có ích khi nó trả lời câu hỏi vận hành, không chỉ hiển thị số liệu.","textPreview":"Dashboard có ích khi nó trả lời câu hỏi vận hành, không chỉ hiển thị số liệu.","textChars":77,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/za1gvy90","slide":23,"bbox":[150,220,980,290]}
+{"kind":"textbox","id":"sh/ap4r65wj","slide":23,"text":"Chờ duyệt\n12 đơn","textPreview":"Chờ duyệt | 12 đơn","textChars":16,"textLines":2,"bbox":[190,265,175,85]}
+{"kind":"textbox","id":"sh/h4byhgn2","slide":23,"text":"Chờ nghiệm thu\n5 đơn","textPreview":"Chờ nghiệm thu | 5 đơn","textChars":20,"textLines":2,"bbox":[420,265,175,85]}
+{"kind":"textbox","id":"sh/sji5snel","slide":23,"text":"Chờ chi\n318 triệu","textPreview":"Chờ chi | 318 triệu","textChars":17,"textLines":2,"bbox":[650,265,175,85]}
+{"kind":"textbox","id":"sh/qh0fepkz","slide":23,"text":"Công nợ mở\n1,42 tỷ","textPreview":"Công nợ mở | 1,42 tỷ","textChars":18,"textLines":2,"bbox":[880,265,175,85]}
+{"kind":"shape","id":"sh/j2t83itg","slide":23,"bbox":[220,405,840,2]}
+{"kind":"textbox","id":"sh/8nqxs72x","slide":23,"text":"Kẹt ở đâu? Ai giữ bước tiếp theo? Giá trị tiền bao nhiêu?","textPreview":"Kẹt ở đâu? Ai giữ bước tiếp theo? Giá trị tiền bao nhiêu?","textChars":57,"textLines":1,"bbox":[250,430,780,32]}
+{"kind":"notes","id":"nt/hd31ln","slide":23,"text":""}
+{"kind":"slide","id":"sl/qrlx1f","slide":24,"title":"THIẾT LẬP","textShapes":9}
+{"kind":"textbox","id":"sh/q1orytsv","slide":24,"text":"THIẾT LẬP","textPreview":"THIẾT LẬP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/xs72x4na","slide":24,"text":"24","textPreview":"24","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/87ed8bat","slide":24,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/je9cvixc","slide":24,"text":"Lưu dữ liệu ở Supabase, còn giao diện là trang web nhẹ","textPreview":"Lưu dữ liệu ở Supabase, còn giao diện là trang web nhẹ","textChars":54,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":24,"text":"Thiết lập hiện tại phù hợp cho pilot: ít hạ tầng, dễ mở bằng trình duyệt, dữ liệu nằm ở cơ sở dữ liệu quản lý tập trung.","textPreview":"Thiết lập hiện tại phù hợp cho pilot: ít hạ tầng, dễ mở bằng trình duyệt, dữ liệu nằm ở cơ sở dữ liệu quản lý tập trung.","textChars":120,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/1gvy90je","slide":24,"bbox":[315,313,28,2]}
+{"kind":"shape","id":"sh/8z25kb6x","slide":24,"bbox":[553,313,28,2]}
+{"kind":"shape","id":"sh/fa9w3m94","slide":24,"bbox":[791,313,28,2]}
+{"kind":"textbox","id":"sh/qpg3ex0n","slide":24,"text":"Người dùng\ntrình duyệt / điện thoại","textPreview":"Người dùng | trình duyệt / điện thoại","textChars":35,"textLines":2,"bbox":[105,270,210,88]}
+{"kind":"textbox","id":"sh/wjudg7ad","slide":24,"text":"GitHub Pages\nweb tĩnh","textPreview":"GitHub Pages | web tĩnh","textChars":21,"textLines":2,"bbox":[343,270,210,88]}
+{"kind":"textbox","id":"sh/p4r65wju","slide":24,"text":"Supabase Auth\nđăng nhập","textPreview":"Supabase Auth | đăng nhập","textChars":23,"textLines":2,"bbox":[581,270,210,88]}
+{"kind":"textbox","id":"sh/ed8v6psf","slide":24,"text":"RPC + Postgres\ndữ liệu nghiệp vụ","textPreview":"RPC + Postgres | dữ liệu nghiệp vụ","textChars":32,"textLines":2,"bbox":[819,270,210,88]}
+{"kind":"textbox","id":"sh/7y1kre1w","slide":24,"text":"Nguồn kiểm tra: README, SUPABASE_SETUP, tệp triển khai giao diện.","textPreview":"Nguồn kiểm tra: README, SUPABASE_SETUP, tệp triển khai giao diện.","textChars":65,"textLines":1,"bbox":[155,445,860,28]}
+{"kind":"notes","id":"nt/qrlx1f","slide":24,"text":""}
+{"kind":"slide","id":"sl/1211v9","slide":25,"title":"THIẾT LẬP","textShapes":10}
+{"kind":"textbox","id":"sh/y1kre1w7","slide":25,"text":"THIẾT LẬP","textPreview":"THIẾT LẬP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/9s36hcrm","slide":25,"text":"25","textPreview":"25","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/g7adsji5","slide":25,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/rytsvu9k","slide":25,"text":"Giảm rủi ro bằng phân quyền và RPC","textPreview":"Giảm rủi ro bằng phân quyền và RPC","textChars":34,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/yd0z6103","slide":25,"text":"Cần trình bày đúng mức: dữ liệu đi qua hàm server có kiểm tra quyền, thay vì để trình duyệt đọc bảng trực tiếp.","textPreview":"Cần trình bày đúng mức: dữ liệu đi qua hàm server có kiểm tra quyền, thay vì để trình duyệt đọc bảng trực tiếp.","textChars":111,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/90je9cvi","slide":25,"bbox":[78,250,352,260]}
+{"kind":"textbox","id":"sh/gfmlkjm1","slide":25,"text":"Auth","textPreview":"Auth","textChars":4,"textLines":1,"bbox":[102,276,304,42]}
+{"kind":"textbox","id":"sh/r65wjudg","slide":25,"text":"Người dùng đăng nhập bằng tài khoản đã cấp.\n\nTài khoản không hoạt động sẽ bị chặn.","textPreview":"Người dùng đăng nhập bằng tài khoản đã cấp. |  | Tài khoản không hoạt động sẽ bị chặn.","textChars":82,"textLines":3,"bbox":[102,338,304,152]}
+{"kind":"shape","id":"sh/ylc7u54z","slide":25,"bbox":[458,250,352,260]}
+{"kind":"textbox","id":"sh/g7adsji5","slide":25,"text":"Qua RPC","textPreview":"Qua RPC","textChars":7,"textLines":1,"bbox":[482,276,304,42]}
+{"kind":"textbox","id":"sh/9s36hcrm","slide":25,"text":"Bảng bật RLS và không mở quyền đọc/ghi trực tiếp.\n\nMỗi thao tác gọi RPC có kiểm tra quyền.","textPreview":"Bảng bật RLS và không mở quyền đọc/ghi trực tiếp. |  | Mỗi thao tác gọi RPC có kiểm tra quyền.","textChars":90,"textLines":3,"bbox":[482,338,304,152]}
+{"kind":"shape","id":"sh/y1kre1w7","slide":25,"bbox":[838,250,352,260]}
+{"kind":"textbox","id":"sh/rmhk3q5o","slide":25,"text":"Dấu vết","textPreview":"Dấu vết","textChars":7,"textLines":1,"bbox":[862,276,304,42]}
+{"kind":"textbox","id":"sh/gfmlkjm1","slide":25,"text":"Các thao tác chính có log, lý do từ chối/trả lại và trạng thái mới.\n\nPhù hợp để truy vết.","textPreview":"Các thao tác chính có log, lý do từ chối/trả lại và trạng thái mới. |  | Phù hợp để truy vết.","textChars":89,"textLines":3,"bbox":[862,338,304,152]}
+{"kind":"notes","id":"nt/1211v9","slide":25,"text":""}
+{"kind":"slide","id":"sl/2uhhsx","slide":26,"title":"THIẾT LẬP","textShapes":14}
+{"kind":"textbox","id":"sh/47y1kre1","slide":26,"text":"THIẾT LẬP","textPreview":"THIẾT LẬP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/bm58z25k","slide":26,"text":"26","textPreview":"26","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/m1cfa9w3","slide":26,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/tgfmlkjm","slide":26,"text":"Nói rõ giới hạn bảo mật cần kiểm tra trước khi mở rộng","textPreview":"Nói rõ giới hạn bảo mật cần kiểm tra trước khi mở rộng","textChars":54,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/4vmtwra5","slide":26,"text":"Một deck tốt không nên hứa tuyệt đối. Nên nói rõ phần đang có và phần cần làm chặt hơn.","textPreview":"Một deck tốt không nên hứa tuyệt đối. Nên nói rõ phần đang có và phần cần làm chặt hơn.","textChars":87,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/bat47y1k","slide":26,"bbox":[120,220,1040,64]}
+{"kind":"textbox","id":"sh/mp0bi9s3","slide":26,"text":"Hạng mục","textPreview":"Hạng mục","textChars":8,"textLines":1,"bbox":[140,234,200,50]}
+{"kind":"textbox","id":"sh/t83itgfm","slide":26,"text":"Cách nói trong buổi họp","textPreview":"Cách nói trong buổi họp","textChars":23,"textLines":1,"bbox":[350,234,780,50]}
+{"kind":"shape","id":"sh/4nap4r65","slide":26,"bbox":[120,290,1040,64]}
+{"kind":"textbox","id":"sh/u9knih4b","slide":26,"text":"Dữ liệu nghiệp vụ","textPreview":"Dữ liệu nghiệp vụ","textChars":17,"textLines":1,"bbox":[140,304,200,50]}
+{"kind":"textbox","id":"sh/judg7ads","slide":26,"text":"Kiểm soát theo tài khoản, vai trò và hàm server.","textPreview":"Kiểm soát theo tài khoản, vai trò và hàm server.","textChars":48,"textLines":1,"bbox":[350,304,780,50]}
+{"kind":"shape","id":"sh/cfa9w3m9","slide":26,"bbox":[120,360,1040,64]}
+{"kind":"textbox","id":"sh/1032lszq","slide":26,"text":"Tệp đính kèm","textPreview":"Tệp đính kèm","textChars":12,"textLines":1,"bbox":[140,374,200,50]}
+{"kind":"textbox","id":"sh/u18jqh0f","slide":26,"text":"Hiện cần xác nhận mức riêng tư; nếu mở rộng nên chuyển kho riêng tư / đường dẫn có thời hạn nếu cần.","textPreview":"Hiện cần xác nhận mức riêng tư; nếu mở rộng nên chuyển kho riêng tư / đường dẫn có thời hạn nếu cần.","textChars":100,"textLines":1,"bbox":[350,374,780,50]}
+{"kind":"shape","id":"sh/jm1cfa9w","slide":26,"bbox":[120,430,1040,64]}
+{"kind":"textbox","id":"sh/c7u54zid","slide":26,"text":"Admin","textPreview":"Admin","textChars":5,"textLines":1,"bbox":[140,444,200,50]}
+{"kind":"textbox","id":"sh/1orytsvu","slide":26,"text":"Admin quản lý tài khoản và phân quyền, không thay trách nhiệm nội dung giao dịch.","textPreview":"Admin quản lý tài khoản và phân quyền, không thay trách nhiệm nội dung giao dịch.","textChars":81,"textLines":1,"bbox":[350,444,780,50]}
+{"kind":"shape","id":"sh/upwb2hwf","slide":26,"bbox":[120,500,1040,64]}
+{"kind":"textbox","id":"sh/nap4r65w","slide":26,"text":"Ngoại lệ thiếu chứng từ","textPreview":"Ngoại lệ thiếu chứng từ","textChars":23,"textLines":1,"bbox":[140,514,200,50]}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":26,"text":"Chưa nói như tính năng có sẵn; cần chính sách và luồng riêng nếu lãnh đạo muốn.","textPreview":"Chưa nói như tính năng có sẵn; cần chính sách và luồng riêng nếu lãnh đạo muốn.","textChars":79,"textLines":1,"bbox":[350,514,780,50]}
+{"kind":"notes","id":"nt/2uhhsx","slide":26,"text":""}
+{"kind":"slide","id":"sl/7lg4d8","slide":27,"title":"THIẾT LẬP","textShapes":9}
+{"kind":"textbox","id":"sh/upwb2hwf","slide":27,"text":"THIẾT LẬP","textPreview":"THIẾT LẬP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/5gbq1ory","slide":27,"text":"27","textPreview":"27","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/cvixczed","slide":27,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/nyd0z610","slide":27,"text":"Theo dõi độ trễ bằng blocker thay vì đoán","textPreview":"Theo dõi độ trễ bằng blocker thay vì đoán","textChars":41,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":27,"text":"Nếu có chậm, pilot cần biết chậm vì người dùng, dữ liệu thiếu, mạng, hay thiết kế màn hình.","textPreview":"Nếu có chậm, pilot cần biết chậm vì người dùng, dữ liệu thiếu, mạng, hay thiết kế màn hình.","textChars":91,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/54zidony","slide":27,"bbox":[375,310,34,2]}
+{"kind":"shape","id":"sh/cj6tovah","slide":27,"bbox":[594,310,34,2]}
+{"kind":"shape","id":"sh/judg7ads","slide":27,"bbox":[813,310,34,2]}
+{"kind":"textbox","id":"sh/u9knih4b","slide":27,"text":"App bị kẹt","textPreview":"App bị kẹt","textChars":10,"textLines":1,"bbox":[190,275,185,72]}
+{"kind":"textbox","id":"sh/47y1kre1","slide":27,"text":"Ghi blocker","textPreview":"Ghi blocker","textChars":11,"textLines":1,"bbox":[409,275,185,72]}
+{"kind":"textbox","id":"sh/tsvu9kni","slide":27,"text":"Dùng Viber dự phòng","textPreview":"Dùng Viber dự phòng","textChars":19,"textLines":1,"bbox":[628,275,185,72]}
+{"kind":"textbox","id":"sh/m1cfa9w3","slide":27,"text":"Đối soát lại app","textPreview":"Đối soát lại app","textChars":16,"textLines":1,"bbox":[847,275,185,72]}
+{"kind":"textbox","id":"sh/bm58z25k","slide":27,"text":"Hành động: mọi dùng Viber dự phòng trong pilot phải có lý do và được đối soát lại trong ngày hoặc ngày làm việc kế tiếp.","textPreview":"Hành động: mọi dùng Viber dự phòng trong pilot phải có lý do và được đối soát lại trong ngày hoặc ngày làm việc kế tiếp.","textChars":120,"textLines":1,"bbox":[170,430,940,44]}
+{"kind":"notes","id":"nt/7lg4d8","slide":27,"text":""}
+{"kind":"slide","id":"sl/6wzka4","slide":28,"title":"THIẾT LẬP","textShapes":13}
+{"kind":"textbox","id":"sh/1kre1w7m","slide":28,"text":"THIẾT LẬP","textPreview":"THIẾT LẬP","textChars":9,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":28,"text":"28","textPreview":"28","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/ji5snelo","slide":28,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":28,"text":"Thiết kế này có thể mở rộng từng lớp","textPreview":"Thiết kế này có thể mở rộng từng lớp","textChars":36,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/1cfa9w3m","slide":28,"text":"Không cần mở rộng bằng cách ép tất cả dùng ngay. Có thể thêm phòng ban, rule và báo cáo theo từng vòng.","textPreview":"Không cần mở rộng bằng cách ép tất cả dùng ngay. Có thể thêm phòng ban, rule và báo cáo theo từng vòng.","textChars":103,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/ulwval87","slide":28,"text":"Pilot","textPreview":"Pilot","textChars":5,"textLines":1,"bbox":[180,250,170,60]}
+{"kind":"textbox","id":"sh/j6tovaho","slide":28,"text":"một luồng thường kỳ","textPreview":"một luồng thường kỳ","textChars":19,"textLines":1,"bbox":[180,325,170,40]}
+{"kind":"textbox","id":"sh/8nqxs72x","slide":28,"text":"Mở rộng","textPreview":"Mở rộng","textChars":7,"textLines":1,"bbox":[415,232,170,60]}
+{"kind":"textbox","id":"sh/18jqh0fe","slide":28,"text":"thêm bộ phận / NCC","textPreview":"thêm bộ phận / NCC","textChars":18,"textLines":1,"bbox":[415,307,170,40]}
+{"kind":"textbox","id":"sh/psfil0rq","slide":28,"text":"Làm chặt hơn","textPreview":"Làm chặt hơn","textChars":12,"textLines":1,"bbox":[650,214,170,60]}
+{"kind":"textbox","id":"sh/w7mp0bi9","slide":28,"text":"tệp riêng tư / chính sách ngoại lệ","textPreview":"tệp riêng tư / chính sách ngoại lệ","textChars":34,"textLines":1,"bbox":[650,289,170,40]}
+{"kind":"textbox","id":"sh/7mp0bi9s","slide":28,"text":"Báo cáo","textPreview":"Báo cáo","textChars":7,"textLines":1,"bbox":[885,196,170,60]}
+{"kind":"textbox","id":"sh/e1w7mp0b","slide":28,"text":"phân tích chi phí / công nợ","textPreview":"phân tích chi phí / công nợ","textChars":27,"textLines":1,"bbox":[885,271,170,40]}
+{"kind":"textbox","id":"sh/pg3ex0nu","slide":28,"text":"Hành động: chỉ mở rộng sau khi có bằng chứng pilot và danh sách việc cần sửa.","textPreview":"Hành động: chỉ mở rộng sau khi có bằng chứng pilot và danh sách việc cần sửa.","textChars":77,"textLines":1,"bbox":[205,460,870,38]}
+{"kind":"notes","id":"nt/6wzka4","slide":28,"text":""}
+{"kind":"slide","id":"sl/0nxpb1","slide":29,"title":"CHI PHÍ","textShapes":11}
+{"kind":"textbox","id":"sh/ji5snelo","slide":29,"text":"CHI PHÍ","textPreview":"CHI PHÍ","textChars":7,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/c3ylc7u5","slide":29,"text":"29","textPreview":"29","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/1kre1w7m","slide":29,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/ulwval87","slide":29,"text":"Quản trị chi phí theo mức dùng và phạm vi triển khai","textPreview":"Quản trị chi phí theo mức dùng và phạm vi triển khai","textChars":52,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/j6tovaho","slide":29,"text":"Chi phí nên được trình bày như ước tính vận hành, không phải cam kết giá cố định.","textPreview":"Chi phí nên được trình bày như ước tính vận hành, không phải cam kết giá cố định.","textChars":81,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/crmhk3q5","slide":29,"bbox":[78,230,352,260]}
+{"kind":"textbox","id":"sh/1cfa9w3m","slide":29,"text":"Pilot hiện tại","textPreview":"Pilot hiện tại","textChars":14,"textLines":1,"bbox":[102,256,304,42]}
+{"kind":"textbox","id":"sh/qh0fepkz","slide":29,"text":"Giao diện tĩnh trên GitHub Pages / tên miền hiện có.\n\nDự án Supabase hiện có.\n\nChi phí thêm: cần kiểm tra hóa đơn, thường thấp nếu trong hạn mức.","textPreview":"Giao diện tĩnh trên GitHub Pages / tên miền hiện có. |  | Dự án Supabase hiện có. |  | Chi phí thêm: cần kiểm tra hóa đơn, thường thấp nế...","textChars":145,"textLines":5,"bbox":[102,318,304,152]}
+{"kind":"shape","id":"sh/j2t83itg","slide":29,"bbox":[458,230,352,260]}
+{"kind":"textbox","id":"sh/byhgn29g","slide":29,"text":"Vận hành tối thiểu","textPreview":"Vận hành tối thiểu","textChars":18,"textLines":1,"bbox":[482,256,304,42]}
+{"kind":"textbox","id":"sh/idonyd0z","slide":29,"text":"Gói Supabase trả phí + máy chủ cơ sở dữ liệu + mức dùng.\n\nTài liệu hiện công bố máy chủ Micro khoảng US$10/tháng; vượt hạn mức thì tính thêm.","textPreview":"Gói Supabase trả phí + máy chủ cơ sở dữ liệu + mức dùng. |  | Tài liệu hiện công bố máy chủ Micro khoảng US$10/tháng; vượt hạn mức thì tí...","textChars":141,"textLines":3,"bbox":[482,318,304,152]}
+{"kind":"shape","id":"sh/t47y1kre","slide":29,"bbox":[838,230,352,260]}
+{"kind":"textbox","id":"sh/0je9cvix","slide":29,"text":"Thiết lập bằng AI","textPreview":"Thiết lập bằng AI","textChars":17,"textLines":1,"bbox":[862,256,304,42]}
+{"kind":"textbox","id":"sh/b6xkf6dc","slide":29,"text":"Không có giấy phép nhà cung cấp riêng cho phần mềm tự xây.\n\nChi phí thật là thời gian thiết lập, kiểm thử, sửa lỗi và quản trị thay đổi.","textPreview":"Không có giấy phép nhà cung cấp riêng cho phần mềm tự xây. |  | Chi phí thật là thời gian thiết lập, kiểm thử, sửa lỗi và quản trị thay đổi.","textChars":136,"textLines":3,"bbox":[862,318,304,152]}
+{"kind":"textbox","id":"sh/il0rqd4v","slide":29,"text":"Nguồn công khai kiểm tra 06/07/2026: tài liệu hóa đơn/máy chủ Supabase, GitHub Pages, bảng giá Vercel nếu chọn hosting thay thế.","textPreview":"Nguồn công khai kiểm tra 06/07/2026: tài liệu hóa đơn/máy chủ Supabase, GitHub Pages, bảng giá Vercel nếu chọn hosting thay thế.","textChars":128,"textLines":1,"bbox":[96,625,1088,24]}
+{"kind":"notes","id":"nt/0nxpb1","slide":29,"text":""}
+{"kind":"slide","id":"sl/757t4h","slide":30,"title":"04 BƯỚC TIẾP THEO","textShapes":5}
+{"kind":"textbox","id":"sh/zupwb2hw","slide":30,"text":"04 BƯỚC TIẾP THEO","textPreview":"04 BƯỚC TIẾP THEO","textChars":17,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":30,"text":"30","textPreview":"30","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/h0fepkzu","slide":30,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/al87ed8b","slide":30,"text":"04 BƯỚC TIẾP THEO","textPreview":"04 BƯỚC TIẾP THEO","textChars":17,"textLines":1,"bbox":[64,176,420,22]}
+{"kind":"textbox","id":"sh/z61032ls","slide":30,"text":"Bắt đầu bằng pilot hẹp, không ép dùng toàn bộ","textPreview":"Bắt đầu bằng pilot hẹp, không ép dùng toàn bộ","textChars":45,"textLines":1,"bbox":[64,220,850,92]}
+{"kind":"textbox","id":"sh/orytsvu9","slide":30,"text":"Mục tiêu tiếp theo là xin quyền kiểm chứng một luồng thật, có kiểm soát, trong 2 tuần.","textPreview":"Mục tiêu tiếp theo là xin quyền kiểm chứng một luồng thật, có kiểm soát, trong 2 tuần.","textChars":86,"textLines":1,"bbox":[66,330,820,54]}
+{"kind":"shape","id":"sh/hcrmhk3q","slide":30,"bbox":[64,420,360,2]}
+{"kind":"notes","id":"nt/757t4h","slide":30,"text":""}
+{"kind":"slide","id":"sl/6w8p3p","slide":31,"title":"BƯỚC TIẾP THEO","textShapes":10}
+{"kind":"textbox","id":"sh/u54zidon","slide":31,"text":"BƯỚC TIẾP THEO","textPreview":"BƯỚC TIẾP THEO","textChars":14,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/5sneloj2","slide":31,"text":"31","textPreview":"31","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/cbulwval","slide":31,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/neloj2t8","slide":31,"text":"Bắt đầu bằng pilot hẹp, không ép dùng toàn bộ","textPreview":"Bắt đầu bằng pilot hẹp, không ép dùng toàn bộ","textChars":45,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/ytsvu9kn","slide":31,"text":"Cách chuyển đổi phù hợp nhất là không bắt buộc ngay. Chỉ đưa một nhóm đơn thường kỳ vào thử thật.","textPreview":"Cách chuyển đổi phù hợp nhất là không bắt buộc ngay. Chỉ đưa một nhóm đơn thường kỳ vào thử thật.","textChars":97,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/5kb6xkf6","slide":31,"text":"Không làm","textPreview":"Không làm","textChars":9,"textLines":1,"bbox":[150,250,240,70]}
+{"kind":"textbox","id":"sh/czed8v6p","slide":31,"text":"ép tất cả đơn và mọi ngoại lệ vào app ngay","textPreview":"ép tất cả đơn và mọi ngoại lệ vào app ngay","textChars":42,"textLines":1,"bbox":[150,340,240,56]}
+{"kind":"textbox","id":"sh/n29gr2p8","slide":31,"text":"Nên làm","textPreview":"Nên làm","textChars":7,"textLines":1,"bbox":[520,250,240,70]}
+{"kind":"textbox","id":"sh/yhgn29gr","slide":31,"text":"chọn luồng thường kỳ đủ hồ sơ để đi hết vòng đời","textPreview":"chọn luồng thường kỳ đủ hồ sơ để đi hết vòng đời","textChars":48,"textLines":1,"bbox":[520,340,240,56]}
+{"kind":"textbox","id":"sh/kb6xkf6d","slide":31,"text":"Sau pilot","textPreview":"Sau pilot","textChars":9,"textLines":1,"bbox":[890,250,240,70]}
+{"kind":"textbox","id":"sh/9w3m94fu","slide":31,"text":"mở rộng dựa trên bằng chứng, không dựa trên cảm giác","textPreview":"mở rộng dựa trên bằng chứng, không dựa trên cảm giác","textChars":52,"textLines":1,"bbox":[890,340,240,56]}
+{"kind":"notes","id":"nt/6w8p3p","slide":31,"text":""}
+{"kind":"slide","id":"sl/w83ui2","slide":32,"title":"BƯỚC TIẾP THEO","textShapes":14}
+{"kind":"textbox","id":"sh/u9knih4b","slide":32,"text":"BƯỚC TIẾP THEO","textPreview":"BƯỚC TIẾP THEO","textChars":14,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/1032lszq","slide":32,"text":"32","textPreview":"32","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/cfa9w3m9","slide":32,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/jm1cfa9w","slide":32,"text":"Định nghĩa kiểm soát bằng điều kiện vào và ra","textPreview":"Định nghĩa kiểm soát bằng điều kiện vào và ra","textChars":45,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/u18jqh0f","slide":32,"text":"Có kiểm soát không chỉ là 'ít người dùng'. Cần biết rõ đơn nào được thử và đơn nào không.","textPreview":"Có kiểm soát không chỉ là 'ít người dùng'. Cần biết rõ đơn nào được thử và đơn nào không.","textChars":89,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/1orytsvu","slide":32,"bbox":[150,220,980,60]}
+{"kind":"textbox","id":"sh/c7u54zid","slide":32,"text":"Trong phạm vi","textPreview":"Trong phạm vi","textChars":13,"textLines":1,"bbox":[170,234,460,46]}
+{"kind":"textbox","id":"sh/nap4r65w","slide":32,"text":"Ngoài phạm vi","textPreview":"Ngoài phạm vi","textChars":13,"textLines":1,"bbox":[640,234,460,46]}
+{"kind":"shape","id":"sh/upwb2hwf","slide":32,"bbox":[150,286,980,60]}
+{"kind":"textbox","id":"sh/orytsvu9","slide":32,"text":"Đơn thường kỳ đang xin qua Viber","textPreview":"Đơn thường kỳ đang xin qua Viber","textChars":32,"textLines":1,"bbox":[170,300,460,46]}
+{"kind":"textbox","id":"sh/hcrmhk3q","slide":32,"text":"Đơn khẩn cấp thiếu chứng từ gốc","textPreview":"Đơn khẩn cấp thiếu chứng từ gốc","textChars":31,"textLines":1,"bbox":[640,300,460,46]}
+{"kind":"shape","id":"sh/al87ed8b","slide":32,"bbox":[150,352,980,60]}
+{"kind":"textbox","id":"sh/z61032ls","slide":32,"text":"NCC, mặt hàng, bộ phận rõ","textPreview":"NCC, mặt hàng, bộ phận rõ","textChars":25,"textLines":1,"bbox":[170,366,460,46]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":32,"text":"Số dư đầu kỳ chưa đối soát","textPreview":"Số dư đầu kỳ chưa đối soát","textChars":26,"textLines":1,"bbox":[640,366,460,46]}
+{"kind":"shape","id":"sh/h0fepkzu","slide":32,"bbox":[150,418,980,60]}
+{"kind":"textbox","id":"sh/a9w3m94f","slide":32,"text":"Đủ hồ sơ để đi luồng thường","textPreview":"Đủ hồ sơ để đi luồng thường","textChars":27,"textLines":1,"bbox":[170,432,460,46]}
+{"kind":"textbox","id":"sh/zupwb2hw","slide":32,"text":"Việc phát sinh ngoài chính sách","textPreview":"Việc phát sinh ngoài chính sách","textChars":31,"textLines":1,"bbox":[640,432,460,46]}
+{"kind":"shape","id":"sh/obm58z25","slide":32,"bbox":[150,484,980,60]}
+{"kind":"textbox","id":"sh/hwfyxobm","slide":32,"text":"Có thể hoàn tất trong 2 tuần","textPreview":"Có thể hoàn tất trong 2 tuần","textChars":28,"textLines":1,"bbox":[170,498,460,46]}
+{"kind":"textbox","id":"sh/18jqh0fe","slide":32,"text":"Trường hợp cần lãnh đạo đổi quy định trước","textPreview":"Trường hợp cần lãnh đạo đổi quy định trước","textChars":42,"textLines":1,"bbox":[640,498,460,46]}
+{"kind":"notes","id":"nt/w83ui2","slide":32,"text":""}
+{"kind":"slide","id":"sl/phf8ld","slide":33,"title":"BƯỚC TIẾP THEO","textShapes":8}
+{"kind":"textbox","id":"sh/oza1gvy9","slide":33,"text":"BƯỚC TIẾP THEO","textPreview":"BƯỚC TIẾP THEO","textChars":14,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/zed8v6ps","slide":33,"text":"33","textPreview":"33","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/6xkf6dcb","slide":33,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/hwfyxobm","slide":33,"text":"Trong pilot, app là nguồn phê duyệt chính cho đơn trong phạm vi","textPreview":"Trong pilot, app là nguồn phê duyệt chính cho đơn trong phạm vi","textChars":63,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/obm58z25","slide":33,"text":"Nếu chỉ nhập lại sau khi Viber đã duyệt xong, pilot không kiểm chứng được quy trình.","textPreview":"Nếu chỉ nhập lại sau khi Viber đã duyệt xong, pilot không kiểm chứng được quy trình.","textChars":84,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"shape","id":"sh/zqtcj6to","slide":33,"bbox":[480,313,48,2]}
+{"kind":"shape","id":"sh/65wjudg7","slide":33,"bbox":[738,313,48,2]}
+{"kind":"textbox","id":"sh/h0fepkzu","slide":33,"text":"Viber\ntrao đổi nhanh","textPreview":"Viber | trao đổi nhanh","textChars":20,"textLines":2,"bbox":[270,270,210,88]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":33,"text":"App\nphê duyệt chính","textPreview":"App | phê duyệt chính","textChars":19,"textLines":2,"bbox":[528,270,210,88]}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":33,"text":"Dashboard\nnguồn trạng thái","textPreview":"Dashboard | nguồn trạng thái","textChars":26,"textLines":2,"bbox":[786,270,210,88]}
+{"kind":"textbox","id":"sh/je9cvixc","slide":33,"text":"Quy tắc dự phòng: Viber chỉ dùng khi app bị blocker; sau đó phải ghi lý do và đối soát lại app.","textPreview":"Quy tắc dự phòng: Viber chỉ dùng khi app bị blocker; sau đó phải ghi lý do và đối soát lại app.","textChars":95,"textLines":1,"bbox":[190,445,900,44]}
+{"kind":"notes","id":"nt/phf8ld","slide":33,"text":""}
+{"kind":"slide","id":"sl/2q022l","slide":34,"title":"BƯỚC TIẾP THEO","textShapes":13}
+{"kind":"textbox","id":"sh/tcj6tova","slide":34,"text":"BƯỚC TIẾP THEO","textPreview":"BƯỚC TIẾP THEO","textChars":14,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/il0rqd4v","slide":34,"text":"34","textPreview":"34","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/b6xkf6dc","slide":34,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/0je9cvix","slide":34,"text":"Đo pilot bằng thuận tiện, độ đúng và khả năng nhìn realtime","textPreview":"Đo pilot bằng thuận tiện, độ đúng và khả năng nhìn realtime","textChars":59,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/t47y1kre","slide":34,"text":"Pilot thành công không có nghĩa là không có lỗi. Thành công là thấy được lỗi, người phụ trách và cách sửa.","textPreview":"Pilot thành công không có nghĩa là không có lỗi. Thành công là thấy được lỗi, người phụ trách và cách sửa.","textChars":106,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/idonyd0z","slide":34,"text":"Thuận tiện","textPreview":"Thuận tiện","textChars":10,"textLines":1,"bbox":[150,255,190,60]}
+{"kind":"textbox","id":"sh/byhgn29g","slide":34,"text":"ít hỏi trạng thái hơn","textPreview":"ít hỏi trạng thái hơn","textChars":21,"textLines":1,"bbox":[150,335,190,46]}
+{"kind":"textbox","id":"sh/0fepkzup","slide":34,"text":"Độ đúng","textPreview":"Độ đúng","textChars":7,"textLines":1,"bbox":[400,255,190,60]}
+{"kind":"textbox","id":"sh/p0bi9s36","slide":34,"text":"số tiền, VAT, trạng thái khớp","textPreview":"số tiền, VAT, trạng thái khớp","textChars":29,"textLines":1,"bbox":[400,335,190,46]}
+{"kind":"textbox","id":"sh/x0nuxc3y","slide":34,"text":"Realtime","textPreview":"Realtime","textChars":8,"textLines":1,"bbox":[650,255,190,60]}
+{"kind":"textbox","id":"sh/4fu18jqh","slide":34,"text":"dashboard trả lời điểm kẹt","textPreview":"dashboard trả lời điểm kẹt","textChars":26,"textLines":1,"bbox":[650,335,190,46]}
+{"kind":"textbox","id":"sh/fu18jqh0","slide":34,"text":"Kiểm soát","textPreview":"Kiểm soát","textChars":9,"textLines":1,"bbox":[900,255,190,60]}
+{"kind":"textbox","id":"sh/m94fu18j","slide":34,"text":"không âm thầm bỏ qua","textPreview":"không âm thầm bỏ qua","textChars":20,"textLines":1,"bbox":[900,335,190,46]}
+{"kind":"textbox","id":"sh/xobm58z2","slide":34,"text":"Báo cáo cuối pilot nên gồm: số hồ sơ chạy hết luồng, điểm kẹt, sai lệch phát hiện, thời gian xử lý và đề xuất sửa.","textPreview":"Báo cáo cuối pilot nên gồm: số hồ sơ chạy hết luồng, điểm kẹt, sai lệch phát hiện, thời gian xử lý và đề xuất sửa.","textChars":114,"textLines":1,"bbox":[160,455,960,48]}
+{"kind":"notes","id":"nt/2q022l","slide":34,"text":""}
+{"kind":"slide","id":"sl/gm7zq7","slide":35,"title":"BƯỚC TIẾP THEO","textShapes":14}
+{"kind":"textbox","id":"sh/5gbq1ory","slide":35,"text":"BƯỚC TIẾP THEO","textPreview":"BƯỚC TIẾP THEO","textChars":14,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/upwb2hwf","slide":35,"text":"35","textPreview":"35","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/nap4r65w","slide":35,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/cj6tovah","slide":35,"text":"Chốt năm câu hỏi trước khi bắt đầu","textPreview":"Chốt năm câu hỏi trước khi bắt đầu","textChars":34,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/54zidony","slide":35,"text":"Nếu năm điểm này chưa rõ, pilot dễ trở thành demo phần mềm thay vì kiểm chứng quy trình.","textPreview":"Nếu năm điểm này chưa rõ, pilot dễ trở thành demo phần mềm thay vì kiểm chứng quy trình.","textChars":88,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":35,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[155,215,46,46]}
+{"kind":"textbox","id":"sh/nyd0z610","slide":35,"text":"Nhóm đơn thường kỳ nào vào pilot?","textPreview":"Nhóm đơn thường kỳ nào vào pilot?","textChars":33,"textLines":1,"bbox":[230,222,760,32]}
+{"kind":"textbox","id":"sh/cfa9w3m9","slide":35,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[155,285,46,46]}
+{"kind":"textbox","id":"sh/1032lszq","slide":35,"text":"Ai là người phụ trách nghiệp vụ?","textPreview":"Ai là người phụ trách nghiệp vụ?","textChars":32,"textLines":1,"bbox":[230,292,760,32]}
+{"kind":"textbox","id":"sh/xs72x4na","slide":35,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[155,355,46,46]}
+{"kind":"textbox","id":"sh/87ed8bat","slide":35,"text":"App có là nơi duyệt chính trong phạm vi pilot không?","textPreview":"App có là nơi duyệt chính trong phạm vi pilot không?","textChars":52,"textLines":1,"bbox":[230,362,760,32]}
+{"kind":"textbox","id":"sh/fmlkjm1c","slide":35,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[155,425,46,46]}
+{"kind":"textbox","id":"sh/q1orytsv","slide":35,"text":"Viber dự phòng ghi nhận và đối soát thế nào?","textPreview":"Viber dự phòng ghi nhận và đối soát thế nào?","textChars":44,"textLines":1,"bbox":[230,432,760,32]}
+{"kind":"textbox","id":"sh/1gvy90je","slide":35,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[155,495,46,46]}
+{"kind":"textbox","id":"sh/8z25kb6x","slide":35,"text":"Cuối pilot báo cáo theo tiêu chí nào?","textPreview":"Cuối pilot báo cáo theo tiêu chí nào?","textChars":37,"textLines":1,"bbox":[230,502,760,32]}
+{"kind":"notes","id":"nt/gm7zq7","slide":35,"text":""}
+{"kind":"slide","id":"sl/qinz94","slide":36,"title":"ĐỀ NGHỊ CHỐT","textShapes":9}
+{"kind":"textbox","id":"sh/zidonyd0","slide":36,"text":"ĐỀ NGHỊ CHỐT","textPreview":"ĐỀ NGHỊ CHỐT","textChars":12,"textLines":1,"bbox":[64,38,460,22]}
+{"kind":"textbox","id":"sh/s36hcrmh","slide":36,"text":"36","textPreview":"36","textChars":2,"textLines":1,"bbox":[1160,650,50,20]}
+{"kind":"shape","id":"sh/hoza1gvy","slide":36,"bbox":[64,674,96,1]}
+{"kind":"textbox","id":"sh/ap4r65wj","slide":36,"text":"Xin phê duyệt pilot 2 tuần","textPreview":"Xin phê duyệt pilot 2 tuần","textChars":26,"textLines":1,"bbox":[64,76,900,92]}
+{"kind":"textbox","id":"sh/za1gvy90","slide":36,"text":"Đề nghị lãnh đạo cho phép kiểm chứng một luồng mua hàng thường kỳ đang xử lý qua Viber.","textPreview":"Đề nghị lãnh đạo cho phép kiểm chứng một luồng mua hàng thường kỳ đang xử lý qua Viber.","textChars":87,"textLines":1,"bbox":[66,156,880,42]}
+{"kind":"textbox","id":"sh/svu9knih","slide":36,"text":"Các đơn mua hàng thường kỳ trong phạm vi pilot\nsẽ được duyệt chính trong app và đi hết luồng tới chứng từ chi tiền.","textPreview":"Các đơn mua hàng thường kỳ trong phạm vi pilot | sẽ được duyệt chính trong app và đi hết luồng tới chứng từ chi tiền.","textChars":115,"textLines":2,"bbox":[295,245,690,105]}
+{"kind":"shape","id":"sh/hgn29gr2","slide":36,"bbox":[355,415,24,24]}
+{"kind":"textbox","id":"sh/adsji5sn","slide":36,"text":"Chốt phạm vi","textPreview":"Chốt phạm vi","textChars":12,"textLines":1,"bbox":[390,414,150,28]}
+{"kind":"shape","id":"sh/3ylc7u54","slide":36,"bbox":[560,415,24,24]}
+{"kind":"textbox","id":"sh/bat47y1k","slide":36,"text":"Chốt người phụ trách","textPreview":"Chốt người phụ trách","textChars":20,"textLines":1,"bbox":[595,414,150,28]}
+{"kind":"shape","id":"sh/mp0bi9s3","slide":36,"bbox":[765,415,24,24]}
+{"kind":"textbox","id":"sh/tgfmlkjm","slide":36,"text":"Chốt tiêu chí báo cáo","textPreview":"Chốt tiêu chí báo cáo","textChars":21,"textLines":1,"bbox":[800,414,150,28]}
+{"kind":"textbox","id":"sh/4vmtwra5","slide":36,"text":"Đồng ý pilot hôm nay = bắt đầu thử có kiểm soát, không phải triển khai toàn bộ.","textPreview":"Đồng ý pilot hôm nay = bắt đầu thử có kiểm soát, không phải triển khai toàn bộ.","textChars":79,"textLines":1,"bbox":[260,545,760,34]}
+{"kind":"notes","id":"nt/qinz94","slide":36,"text":""}

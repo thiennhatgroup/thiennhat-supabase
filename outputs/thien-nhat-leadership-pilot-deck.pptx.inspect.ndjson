@@ -1,0 +1,446 @@
+{"kind":"deck","id":"pr/2yf0z4","name":"Deck"}
+{"kind":"layout","layoutId":"a40f1c96-684c-4547-8787-26af9ced0f03","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"2e1a9516-9a67-46e4-8c7f-27e08d09e1a9","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/qommeg","slide":1,"title":"Thiên Nhật","textShapes":7}
+{"kind":"textbox","id":"sh/0je9cvix","slide":1,"text":"Thiên Nhật","textPreview":"Thiên Nhật","textChars":10,"textLines":1,"bbox":[72,56,300,28]}
+{"kind":"textbox","id":"sh/byhgn29g","slide":1,"text":"Phần mềm\nMua hàng & Công nợ","textPreview":"Phần mềm | Mua hàng & Công nợ","textChars":27,"textLines":2,"bbox":[72,176,740,150]}
+{"kind":"textbox","id":"sh/idonyd0z","slide":1,"text":"Buổi alignment lãnh đạo\nXin greenlight pilot 2 tuần","textPreview":"Buổi alignment lãnh đạo | Xin greenlight pilot 2 tuần","textChars":51,"textLines":2,"bbox":[76,356,560,72]}
+{"kind":"textbox","id":"sh/tcj6tova","slide":1,"text":"Hôm nay","textPreview":"Hôm nay","textChars":7,"textLines":1,"bbox":[780,210,120,90]}
+{"kind":"textbox","id":"sh/0rqd4vmt","slide":1,"text":"Chốt\nphạm vi","textPreview":"Chốt | phạm vi","textChars":12,"textLines":2,"bbox":[940,210,120,90]}
+{"kind":"textbox","id":"sh/b6xkf6dc","slide":1,"text":"Pilot\n2 tuần","textPreview":"Pilot | 2 tuần","textChars":12,"textLines":2,"bbox":[1100,210,120,90]}
+{"kind":"shape","id":"sh/il0rqd4v","slide":1,"bbox":[900,255,40,0]}
+{"kind":"shape","id":"sh/tovahoza","slide":1,"bbox":[1060,255,40,0]}
+{"kind":"textbox","id":"sh/032lszqt","slide":1,"text":"Mục tiêu không phải go-live ngay.\nMục tiêu là đồng thuận để test thật, có kiểm soát.","textPreview":"Mục tiêu không phải go-live ngay. | Mục tiêu là đồng thuận để test thật, có kiểm soát.","textChars":84,"textLines":2,"bbox":[780,348,420,96]}
+{"kind":"notes","id":"nt/qommeg","slide":1,"text":"Mở đầu bằng mục tiêu quyết định, không mở đầu bằng demo tính năng.\nNhấn mạnh đây là alignment và xin pilot 2 tuần, chưa phải ép toàn bộ công ty chuyển ngay."}
+{"kind":"slide","id":"sl/qngo8n","slide":2,"title":"MỤC TIÊU BUỔI HỌP","textShapes":7}
+{"kind":"textbox","id":"sh/3ex0nuxc","slide":2,"text":"MỤC TIÊU BUỔI HỌP","textPreview":"MỤC TIÊU BUỔI HỌP","textChars":17,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/szqtcj6t","slide":2,"text":"Hôm nay cần ra một quyết định rõ","textPreview":"Hôm nay cần ra một quyết định rõ","textChars":32,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/lkjm1cfa","slide":2,"text":"Đồng thuận\nvề vấn đề","textPreview":"Đồng thuận | về vấn đề","textChars":20,"textLines":2,"bbox":[118,236,280,170]}
+{"kind":"textbox","id":"sh/ahoza1gv","slide":2,"text":"Chốt\npilot lane","textPreview":"Chốt | pilot lane","textChars":15,"textLines":2,"bbox":[500,236,280,170]}
+{"kind":"textbox","id":"sh/32lszqtc","slide":2,"text":"Greenlight\n2 tuần","textPreview":"Greenlight | 2 tuần","textChars":17,"textLines":2,"bbox":[882,236,280,170]}
+{"kind":"shape","id":"sh/sneloj2t","slide":2,"bbox":[398,321,102,0]}
+{"kind":"shape","id":"sh/l87ed8ba","slide":2,"bbox":[780,321,102,0]}
+{"kind":"textbox","id":"sh/e9cvixcz","slide":2,"text":"Nếu cuối buổi không chốt được pilot, deck này chỉ là một buổi giới thiệu phần mềm.","textPreview":"Nếu cuối buổi không chốt được pilot, deck này chỉ là một buổi giới thiệu phần mềm.","textChars":82,"textLines":1,"bbox":[260,478,760,52]}
+{"kind":"textbox","id":"sh/3q5o7qpg","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/neloj2t8","slide":2,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/qngo8n","slide":2,"text":"Định vị rõ: lãnh đạo đang được hỏi để quyết, không chỉ nghe demo."}
+{"kind":"slide","id":"sl/erwcgt","slide":3,"title":"HIỆN TRẠNG","textShapes":10}
+{"kind":"textbox","id":"sh/k3q5o7qp","slide":3,"text":"HIỆN TRẠNG","textPreview":"HIỆN TRẠNG","textChars":10,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/vixczed8","slide":3,"text":"Viber đang xử lý nhanh, nhưng trạng thái bị phân tán","textPreview":"Viber đang xử lý nhanh, nhưng trạng thái bị phân tán","textChars":52,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/2x4nap4r","slide":3,"text":"Viber","textPreview":"Viber","textChars":5,"textLines":1,"bbox":[520,272,240,110]}
+{"kind":"textbox","id":"sh/dcbulwva","slide":3,"text":"Đề xuất","textPreview":"Đề xuất","textChars":7,"textLines":1,"bbox":[168,184,210,74]}
+{"kind":"textbox","id":"sh/kre1w7mp","slide":3,"text":"Duyệt","textPreview":"Duyệt","textChars":5,"textLines":1,"bbox":[860,176,210,74]}
+{"kind":"textbox","id":"sh/val87ed8","slide":3,"text":"Chứng từ","textPreview":"Chứng từ","textChars":8,"textLines":1,"bbox":[156,458,210,74]}
+{"kind":"textbox","id":"sh/6psfil0r","slide":3,"text":"Thanh toán","textPreview":"Thanh toán","textChars":10,"textLines":1,"bbox":[858,468,210,74]}
+{"kind":"textbox","id":"sh/d8bat47y","slide":3,"text":"Công nợ","textPreview":"Công nợ","textChars":7,"textLines":1,"bbox":[510,522,210,74]}
+{"kind":"shape","id":"sh/knih4byh","slide":3,"bbox":[168,221,592,106]}
+{"kind":"shape","id":"sh/uxc3ylc7","slide":3,"bbox":[760,213,100,114]}
+{"kind":"shape","id":"sh/ji5snelo","slide":3,"bbox":[156,327,604,168]}
+{"kind":"shape","id":"sh/c3ylc7u5","slide":3,"bbox":[760,327,98,178]}
+{"kind":"shape","id":"sh/1kre1w7m","slide":3,"bbox":[510,327,250,232]}
+{"kind":"textbox","id":"sh/ulwval87","slide":3,"text":"Một nhóm chat có thể nhanh.\nNhưng nó không tự tạo trách nhiệm, trạng thái và dashboard.","textPreview":"Một nhóm chat có thể nhanh. | Nhưng nó không tự tạo trách nhiệm, trạng thái và dashboard.","textChars":87,"textLines":2,"bbox":[340,620,600,44]}
+{"kind":"textbox","id":"sh/j6tovaho","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/crmhk3q5","slide":3,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/erwcgt","slide":3,"text":"Không phê phán Viber; nói đúng là Viber giúp xử lý nhanh.\nVấn đề là nó không phải hệ thống trạng thái và kiểm soát."}
+{"kind":"slide","id":"sl/pcivhv","slide":4,"title":"VẤN ĐỀ VẬN HÀNH","textShapes":8}
+{"kind":"textbox","id":"sh/ex0nuxc3","slide":4,"text":"VẤN ĐỀ VẬN HÀNH","textPreview":"VẤN ĐỀ VẬN HÀNH","textChars":15,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/loj2t83i","slide":4,"text":"Câu hỏi lớn không phải “ai đã nhắn?”","textPreview":"Câu hỏi lớn không phải “ai đã nhắn?”","textChars":36,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/w3m94fu1","slide":4,"text":"Đơn đang ở đâu?","textPreview":"Đơn đang ở đâu?","textChars":15,"textLines":1,"bbox":[134,228,220,160]}
+{"kind":"textbox","id":"sh/3q5o7qpg","slide":4,"text":"Ai giữ bước tiếp theo?","textPreview":"Ai giữ bước tiếp theo?","textChars":22,"textLines":1,"bbox":[384,228,220,160]}
+{"kind":"textbox","id":"sh/e9cvixcz","slide":4,"text":"Hồ sơ đủ chưa?","textPreview":"Hồ sơ đủ chưa?","textChars":14,"textLines":1,"bbox":[634,228,220,160]}
+{"kind":"textbox","id":"sh/lwval87e","slide":4,"text":"Đã chi tiền chưa?","textPreview":"Đã chi tiền chưa?","textChars":17,"textLines":1,"bbox":[884,228,220,160]}
+{"kind":"textbox","id":"sh/wb2hwfyx","slide":4,"text":"Câu hỏi lớn là: hệ thống có trả lời được ngay không?","textPreview":"Câu hỏi lớn là: hệ thống có trả lời được ngay không?","textChars":52,"textLines":1,"bbox":[208,466,864,50]}
+{"kind":"textbox","id":"sh/32lszqtc","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/ahoza1gv","slide":4,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/pcivhv","slide":4,"text":"Bốn câu hỏi này là thứ dashboard/workflow phải trả lời."}
+{"kind":"slide","id":"sl/lw1vgt","slide":5,"title":"THESIS","textShapes":6}
+{"kind":"textbox","id":"sh/9w3m94fu","slide":5,"text":"THESIS","textPreview":"THESIS","textChars":6,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/25kb6xkf","slide":5,"text":"App là lớp workflow và kiểm soát realtime","textPreview":"App là lớp workflow và kiểm soát realtime","textChars":41,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/rqd4vmtw","slide":5,"text":"Chứng từ gốc / quy trình offline","textPreview":"Chứng từ gốc / quy trình offline","textChars":32,"textLines":1,"bbox":[198,194,884,74]}
+{"kind":"textbox","id":"sh/kzupwb2h","slide":5,"text":"App: trạng thái, phân quyền, dấu vết","textPreview":"App: trạng thái, phân quyền, dấu vết","textChars":36,"textLines":1,"bbox":[198,314,884,74]}
+{"kind":"textbox","id":"sh/9knih4by","slide":5,"text":"Dashboard: nhìn thấy việc đang kẹt ở đâu","textPreview":"Dashboard: nhìn thấy việc đang kẹt ở đâu","textChars":40,"textLines":1,"bbox":[198,434,884,74]}
+{"kind":"shape","id":"sh/2t83itgf","slide":5,"bbox":[640,268,0,46]}
+{"kind":"shape","id":"sh/re1w7mp0","slide":5,"bbox":[640,388,0,46]}
+{"kind":"textbox","id":"sh/gvy90je9","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/9gr2p8nq","slide":5,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/lw1vgt","slide":5,"text":"Thông điệp chính: app không thay chứng từ gốc.\nApp làm rõ workflow, trạng thái, dấu vết và dashboard realtime."}
+{"kind":"slide","id":"sl/ln4za8","slide":6,"title":"RANH GIỚI","textShapes":13}
+{"kind":"textbox","id":"sh/dcbulwva","slide":6,"text":"RANH GIỚI","textPreview":"RANH GIỚI","textChars":9,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/6psfil0r","slide":6,"text":"Nói đúng phạm vi để tránh hiểu nhầm","textPreview":"Nói đúng phạm vi để tránh hiểu nhầm","textChars":35,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"shape","id":"sh/val87ed8","slide":6,"bbox":[100,186,500,350]}
+{"kind":"shape","id":"sh/k3q5o7qp","slide":6,"bbox":[680,186,500,350]}
+{"kind":"textbox","id":"sh/donyd0z6","slide":6,"text":"App dùng để","textPreview":"App dùng để","textChars":11,"textLines":1,"bbox":[128,216,444,38]}
+{"kind":"textbox","id":"sh/2x4nap4r","slide":6,"text":"App không phải","textPreview":"App không phải","textChars":14,"textLines":1,"bbox":[708,216,444,38]}
+{"kind":"shape","id":"sh/vixczed8","slide":6,"bbox":[122,291,10,10]}
+{"kind":"textbox","id":"sh/kf6dcbul","slide":6,"text":"Chuẩn hóa thao tác","textPreview":"Chuẩn hóa thao tác","textChars":18,"textLines":1,"bbox":[146,282,410,42]}
+{"kind":"shape","id":"sh/d0z61032","slide":6,"bbox":[122,349,10,10]}
+{"kind":"textbox","id":"sh/dsji5sne","slide":6,"text":"Theo dõi trạng thái","textPreview":"Theo dõi trạng thái","textChars":19,"textLines":1,"bbox":[146,340,410,42]}
+{"kind":"shape","id":"sh/o7qpg3ex","slide":6,"bbox":[122,407,10,10]}
+{"kind":"textbox","id":"sh/vmtwra5g","slide":6,"text":"Gắn trách nhiệm","textPreview":"Gắn trách nhiệm","textChars":15,"textLines":1,"bbox":[146,398,410,42]}
+{"kind":"shape","id":"sh/61032lsz","slide":6,"bbox":[122,465,10,10]}
+{"kind":"textbox","id":"sh/d4vmtwra","slide":6,"text":"Tạo dữ liệu realtime","textPreview":"Tạo dữ liệu realtime","textChars":20,"textLines":1,"bbox":[146,456,410,42]}
+{"kind":"shape","id":"sh/oj2t83it","slide":6,"bbox":[702,291,10,10]}
+{"kind":"textbox","id":"sh/vy90je9c","slide":6,"text":"Thay toàn bộ hồ sơ giấy","textPreview":"Thay toàn bộ hồ sơ giấy","textChars":23,"textLines":1,"bbox":[726,282,410,42]}
+{"kind":"shape","id":"sh/6dcbulwv","slide":6,"bbox":[702,349,10,10]}
+{"kind":"textbox","id":"sh/d8v6psfi","slide":6,"text":"Hợp thức hóa thiếu chứng từ","textPreview":"Hợp thức hóa thiếu chứng từ","textChars":27,"textLines":1,"bbox":[726,340,410,42]}
+{"kind":"shape","id":"sh/onyd0z61","slide":6,"bbox":[702,407,10,10]}
+{"kind":"textbox","id":"sh/kre1w7mp","slide":6,"text":"Xóa trách nhiệm từng vai trò","textPreview":"Xóa trách nhiệm từng vai trò","textChars":28,"textLines":1,"bbox":[726,398,410,42]}
+{"kind":"shape","id":"sh/dcbulwva","slide":6,"bbox":[702,465,10,10]}
+{"kind":"textbox","id":"sh/6psfil0r","slide":6,"text":"Thay quyết định lãnh đạo","textPreview":"Thay quyết định lãnh đạo","textChars":24,"textLines":1,"bbox":[726,456,410,42]}
+{"kind":"textbox","id":"sh/val87ed8","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/k3q5o7qp","slide":6,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/ln4za8","slide":6,"text":"Slide này giúp lãnh đạo yên tâm: mình không oversell."}
+{"kind":"slide","id":"sl/y70fep","slide":7,"title":"FLOW MỤC TIÊU","textShapes":12}
+{"kind":"textbox","id":"sh/n29gr2p8","slide":7,"text":"FLOW MỤC TIÊU","textPreview":"FLOW MỤC TIÊU","textChars":13,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/gn29gr2p","slide":7,"text":"Một đơn routine cần đi hết vòng đời","textPreview":"Một đơn routine cần đi hết vòng đời","textChars":35,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/58z25kb6","slide":7,"text":"DXMH","textPreview":"DXMH","textChars":4,"textLines":1,"bbox":[72,300,118,74]}
+{"kind":"textbox","id":"sh/y90je9cv","slide":7,"text":"Duyệt","textPreview":"Duyệt","textChars":5,"textLines":1,"bbox":[222,300,118,74]}
+{"kind":"textbox","id":"sh/nuxc3ylc","slide":7,"text":"Nghiệm thu","textPreview":"Nghiệm thu","textChars":10,"textLines":1,"bbox":[372,300,118,74]}
+{"kind":"textbox","id":"sh/gbq1oryt","slide":7,"text":"KTTH","textPreview":"KTTH","textChars":4,"textLines":1,"bbox":[522,300,118,74]}
+{"kind":"textbox","id":"sh/5wjudg7a","slide":7,"text":"DXTT","textPreview":"DXTT","textChars":4,"textLines":1,"bbox":[672,300,118,74]}
+{"kind":"textbox","id":"sh/u54zidon","slide":7,"text":"Duyệt chi","textPreview":"Duyệt chi","textChars":9,"textLines":1,"bbox":[822,300,118,74]}
+{"kind":"textbox","id":"sh/nqxs72x4","slide":7,"text":"Thủ quỹ","textPreview":"Thủ quỹ","textChars":7,"textLines":1,"bbox":[972,300,118,74]}
+{"kind":"textbox","id":"sh/z25kb6xk","slide":7,"text":"Công nợ","textPreview":"Công nợ","textChars":7,"textLines":1,"bbox":[1122,300,118,74]}
+{"kind":"shape","id":"sh/6hcrmhk3","slide":7,"bbox":[190,337,32,0]}
+{"kind":"shape","id":"sh/d8v6psfi","slide":7,"bbox":[340,337,32,0]}
+{"kind":"shape","id":"sh/onyd0z61","slide":7,"bbox":[490,337,32,0]}
+{"kind":"shape","id":"sh/vahoza1g","slide":7,"bbox":[640,337,32,0]}
+{"kind":"shape","id":"sh/6tovahoz","slide":7,"bbox":[790,337,32,0]}
+{"kind":"shape","id":"sh/dg7adsji","slide":7,"bbox":[940,337,32,0]}
+{"kind":"shape","id":"sh/ovahoza1","slide":7,"bbox":[1090,337,32,0]}
+{"kind":"textbox","id":"sh/vmtwra5g","slide":7,"text":"Pilot phải test chuỗi thật, không chỉ test form tạo đề xuất.","textPreview":"Pilot phải test chuỗi thật, không chỉ test form tạo đề xuất.","textChars":60,"textLines":1,"bbox":[264,440,752,40]}
+{"kind":"textbox","id":"sh/61032lsz","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/e9cvixcz","slide":7,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/y70fep","slide":7,"text":"Pilot phải all the way đến chi tiền và proof."}
+{"kind":"slide","id":"sl/3bb4kj","slide":8,"title":"OPERATING MODEL","textShapes":13}
+{"kind":"textbox","id":"sh/szqtcj6t","slide":8,"text":"OPERATING MODEL","textPreview":"OPERATING MODEL","textChars":15,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/3ex0nuxc","slide":8,"text":"Trách nhiệm nằm ở từng chốt kiểm soát","textPreview":"Trách nhiệm nằm ở từng chốt kiểm soát","textChars":37,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/at47y1kr","slide":8,"text":"NVMH","textPreview":"NVMH","textChars":4,"textLines":1,"bbox":[170,188,178,46]}
+{"kind":"textbox","id":"sh/l87ed8ba","slide":8,"text":"Nội dung mua hàng, NCC, chứng từ upload","textPreview":"Nội dung mua hàng, NCC, chứng từ upload","textChars":39,"textLines":1,"bbox":[390,196,720,30]}
+{"kind":"shape","id":"sh/sneloj2t","slide":8,"bbox":[260,236,0,28]}
+{"kind":"textbox","id":"sh/32lszqtc","slide":8,"text":"Lãnh đạo","textPreview":"Lãnh đạo","textChars":8,"textLines":1,"bbox":[170,264,178,46]}
+{"kind":"textbox","id":"sh/ahoza1gv","slide":8,"text":"Quyết định phê duyệt dựa trên evidence","textPreview":"Quyết định phê duyệt dựa trên evidence","textChars":38,"textLines":1,"bbox":[390,272,720,30]}
+{"kind":"shape","id":"sh/lwval87e","slide":8,"bbox":[260,312,0,28]}
+{"kind":"textbox","id":"sh/wb2hwfyx","slide":8,"text":"KTTH","textPreview":"KTTH","textChars":4,"textLines":1,"bbox":[170,340,178,46]}
+{"kind":"textbox","id":"sh/2lszqtcj","slide":8,"text":"Đủ hồ sơ, công nợ, DXTT đúng dữ liệu","textPreview":"Đủ hồ sơ, công nợ, DXTT đúng dữ liệu","textChars":36,"textLines":1,"bbox":[390,348,720,30]}
+{"kind":"shape","id":"sh/v6psfil0","slide":8,"bbox":[260,388,0,28]}
+{"kind":"textbox","id":"sh/knih4byh","slide":8,"text":"Thủ quỹ","textPreview":"Thủ quỹ","textChars":7,"textLines":1,"bbox":[170,416,178,46]}
+{"kind":"textbox","id":"sh/d8bat47y","slide":8,"text":"Chi đúng dòng đã duyệt và upload proof","textPreview":"Chi đúng dòng đã duyệt và upload proof","textChars":38,"textLines":1,"bbox":[390,424,720,30]}
+{"kind":"shape","id":"sh/29gr2p8n","slide":8,"bbox":[260,464,0,28]}
+{"kind":"textbox","id":"sh/vu9knih4","slide":8,"text":"Admin","textPreview":"Admin","textChars":5,"textLines":1,"bbox":[170,492,178,46]}
+{"kind":"textbox","id":"sh/kf6dcbul","slide":8,"text":"Tài khoản, phân quyền, cấu hình","textPreview":"Tài khoản, phân quyền, cấu hình","textChars":31,"textLines":1,"bbox":[390,500,720,30]}
+{"kind":"textbox","id":"sh/d0z61032","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/2x4nap4r","slide":8,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/3bb4kj","slide":8,"text":"Nếu sai thì ai chịu trách nhiệm? Trả lời theo checkpoint."}
+{"kind":"slide","id":"sl/w34hul","slide":9,"title":"APPROVAL AUTHORITY","textShapes":7}
+{"kind":"textbox","id":"sh/vu9knih4","slide":9,"text":"APPROVAL AUTHORITY","textPreview":"APPROVAL AUTHORITY","textChars":18,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/kf6dcbul","slide":9,"text":"Quyền phê duyệt phải giữ đúng thẩm quyền","textPreview":"Quyền phê duyệt phải giữ đúng thẩm quyền","textChars":40,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/d0z61032","slide":9,"text":"< 10 triệu\nTGĐ duyệt","textPreview":"< 10 triệu | TGĐ duyệt","textChars":20,"textLines":2,"bbox":[170,238,270,132]}
+{"kind":"textbox","id":"sh/2lszqtcj","slide":9,"text":"≥ 10 triệu\nChủ tịch duyệt","textPreview":"≥ 10 triệu | Chủ tịch duyệt","textChars":25,"textLines":2,"bbox":[510,238,270,132]}
+{"kind":"textbox","id":"sh/v6psfil0","slide":9,"text":"DXTT\nChủ tịch duyệt","textPreview":"DXTT | Chủ tịch duyệt","textChars":19,"textLines":2,"bbox":[850,238,270,132]}
+{"kind":"shape","id":"sh/knih4byh","slide":9,"bbox":[440,304,70,0]}
+{"kind":"shape","id":"sh/d8bat47y","slide":9,"bbox":[780,304,70,0]}
+{"kind":"textbox","id":"sh/6psfil0r","slide":9,"text":"Override hoặc trả lại phải có lý do và để lại dấu vết.","textPreview":"Override hoặc trả lại phải có lý do và để lại dấu vết.","textChars":54,"textLines":1,"bbox":[300,452,680,36]}
+{"kind":"textbox","id":"sh/val87ed8","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/judg7ads","slide":9,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/w34hul","slide":9,"text":"Nói authority và traceability, không đi sâu kỹ thuật."}
+{"kind":"slide","id":"sl/gd4525","slide":10,"title":"OFFLINE VS APP","textShapes":7}
+{"kind":"textbox","id":"sh/dg7adsji","slide":10,"text":"OFFLINE VS APP","textPreview":"OFFLINE VS APP","textChars":14,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/6tovahoz","slide":10,"text":"Nếu app và chứng từ lệch nhau, chứng từ thắng; app phải được sửa","textPreview":"Nếu app và chứng từ lệch nhau, chứng từ thắng; app phải được sửa","textChars":64,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/vahoza1g","slide":10,"text":"Chứng từ hợp lệ\nbằng chứng kế toán","textPreview":"Chứng từ hợp lệ | bằng chứng kế toán","textChars":34,"textLines":2,"bbox":[200,230,300,140]}
+{"kind":"textbox","id":"sh/onyd0z61","slide":10,"text":"App\ntrạng thái và dấu vết","textPreview":"App | trạng thái và dấu vết","textChars":25,"textLines":2,"bbox":[780,230,300,140]}
+{"kind":"textbox","id":"sh/d8v6psfi","slide":10,"text":"Tạm dừng\nreconcile có lý do","textPreview":"Tạm dừng | reconcile có lý do","textChars":27,"textLines":2,"bbox":[490,430,300,92]}
+{"kind":"shape","id":"sh/6hcrmhk3","slide":10,"bbox":[350,370,140,106]}
+{"kind":"shape","id":"sh/z25kb6xk","slide":10,"bbox":[790,370,140,106]}
+{"kind":"textbox","id":"sh/oj2t83it","slide":10,"text":"Không silent bypass.","textPreview":"Không silent bypass.","textChars":20,"textLines":1,"bbox":[450,166,380,40]}
+{"kind":"textbox","id":"sh/d4vmtwra","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/h4byhgn2","slide":10,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/gd4525","slide":10,"text":"Chứng từ hợp lệ thắng về pháp lý/kế toán; app vẫn phải được sửa để khớp."}
+{"kind":"slide","id":"sl/84qsgw","slide":11,"title":"KIỂM SOÁT RỦI RO","textShapes":12}
+{"kind":"textbox","id":"sh/s36hcrmh","slide":11,"text":"KIỂM SOÁT RỦI RO","textPreview":"KIỂM SOÁT RỦI RO","textChars":16,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/zidonyd0","slide":11,"text":"Safeguards là các chốt, không phải lời hứa chung chung","textPreview":"Safeguards là các chốt, không phải lời hứa chung chung","textChars":54,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/a1gvy90j","slide":11,"text":"Phân quyền","textPreview":"Phân quyền","textChars":10,"textLines":1,"bbox":[104,230,230,150]}
+{"kind":"textbox","id":"sh/hgn29gr2","slide":11,"text":"ai được làm gì","textPreview":"ai được làm gì","textChars":14,"textLines":1,"bbox":[126,320,186,34]}
+{"kind":"textbox","id":"sh/svu9knih","slide":11,"text":"Evidence","textPreview":"Evidence","textChars":8,"textLines":1,"bbox":[398,230,230,150]}
+{"kind":"textbox","id":"sh/za1gvy90","slide":11,"text":"VAT / BBGN / proof","textPreview":"VAT / BBGN / proof","textChars":18,"textLines":1,"bbox":[420,320,186,34]}
+{"kind":"textbox","id":"sh/ap4r65wj","slide":11,"text":"Dấu vết","textPreview":"Dấu vết","textChars":7,"textLines":1,"bbox":[692,230,230,150]}
+{"kind":"textbox","id":"sh/h4byhgn2","slide":11,"text":"ai làm, lúc nào","textPreview":"ai làm, lúc nào","textChars":15,"textLines":1,"bbox":[714,320,186,34]}
+{"kind":"textbox","id":"sh/sji5snel","slide":11,"text":"Dashboard","textPreview":"Dashboard","textChars":9,"textLines":1,"bbox":[986,230,230,150]}
+{"kind":"textbox","id":"sh/qh0fepkz","slide":11,"text":"kẹt ở đâu","textPreview":"kẹt ở đâu","textChars":9,"textLines":1,"bbox":[1008,320,186,34]}
+{"kind":"textbox","id":"sh/j2t83itg","slide":11,"text":"Kiểm soát tốt là khi lỗi không bị ẩn.","textPreview":"Kiểm soát tốt là khi lỗi không bị ẩn.","textChars":37,"textLines":1,"bbox":[340,472,600,42]}
+{"kind":"textbox","id":"sh/8nqxs72x","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/18jqh0fe","slide":11,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/84qsgw","slide":11,"text":"Không cần giải thích RLS/RPC; nói bằng ngôn ngữ vận hành."}
+{"kind":"slide","id":"sl/fjd62q","slide":12,"title":"LIMITATION CẦN NÓI THẲNG","textShapes":7}
+{"kind":"textbox","id":"sh/byhgn29g","slide":12,"text":"LIMITATION CẦN NÓI THẲNG","textPreview":"LIMITATION CẦN NÓI THẲNG","textChars":24,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/0je9cvix","slide":12,"text":"Không đưa ngoại lệ thiếu chứng từ vào pilot này","textPreview":"Không đưa ngoại lệ thiếu chứng từ vào pilot này","textChars":47,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/t47y1kre","slide":12,"text":"Hiện tại\napp yêu cầu hồ sơ","textPreview":"Hiện tại | app yêu cầu hồ sơ","textChars":26,"textLines":2,"bbox":[150,240,300,120]}
+{"kind":"textbox","id":"sh/il0rqd4v","slide":12,"text":"Sau pilot\nthiết kế exception flow","textPreview":"Sau pilot | thiết kế exception flow","textChars":33,"textLines":2,"bbox":[830,240,300,120]}
+{"kind":"textbox","id":"sh/b6xkf6dc","slide":12,"text":"Không oversell\nkhông bypass","textPreview":"Không oversell | không bypass","textChars":27,"textLines":2,"bbox":[490,258,300,84]}
+{"kind":"shape","id":"sh/0rqd4vmt","slide":12,"bbox":[450,300,40,0]}
+{"kind":"shape","id":"sh/tcj6tova","slide":12,"bbox":[790,300,40,0]}
+{"kind":"textbox","id":"sh/ixczed8v","slide":12,"text":"Nếu cần thanh toán khẩn khi thiếu bản gốc, đó là chính sách riêng cần lãnh đạo chốt sau.","textPreview":"Nếu cần thanh toán khẩn khi thiếu bản gốc, đó là chính sách riêng cần lãnh đạo chốt sau.","textChars":88,"textLines":1,"bbox":[220,446,840,50]}
+{"kind":"textbox","id":"sh/bi9s36hc","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/rytsvu9k","slide":12,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/fjd62q","slide":12,"text":"Nói rõ đây chưa phải tính năng đã code."}
+{"kind":"slide","id":"sl/cgr1hr","slide":13,"title":"PILOT ASK","textShapes":7}
+{"kind":"textbox","id":"sh/5sneloj2","slide":13,"text":"PILOT ASK","textPreview":"PILOT ASK","textChars":9,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/u54zidon","slide":13,"text":"Đề xuất: pilot 2 tuần, có kiểm soát","textPreview":"Đề xuất: pilot 2 tuần, có kiểm soát","textChars":35,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/nqxs72x4","slide":13,"text":"Routine\nViber orders","textPreview":"Routine | Viber orders","textChars":20,"textLines":2,"bbox":[160,244,270,132]}
+{"kind":"textbox","id":"sh/czed8v6p","slide":13,"text":"App-first\napproval","textPreview":"App-first | approval","textChars":18,"textLines":2,"bbox":[505,244,270,132]}
+{"kind":"textbox","id":"sh/5kb6xkf6","slide":13,"text":"End-to-end\npayment proof","textPreview":"End-to-end | payment proof","textChars":24,"textLines":2,"bbox":[850,244,270,132]}
+{"kind":"shape","id":"sh/ytsvu9kn","slide":13,"bbox":[430,310,75,0]}
+{"kind":"shape","id":"sh/neloj2t8","slide":13,"bbox":[775,310,75,0]}
+{"kind":"textbox","id":"sh/gn29gr2p","slide":13,"text":"Không phải go-live. Đây là bằng chứng để quyết định mở rộng.","textPreview":"Không phải go-live. Đây là bằng chứng để quyết định mở rộng.","textChars":60,"textLines":1,"bbox":[268,462,744,40]}
+{"kind":"textbox","id":"sh/58z25kb6","slide":13,"text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/d8bat47y","slide":13,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/cgr1hr","slide":13,"text":"Phạm vi hẹp nhưng flow phải thật đến payment proof."}
+{"kind":"slide","id":"sl/k4j8jk","slide":14,"title":"PILOT SCOPE","textShapes":13}
+{"kind":"textbox","id":"sh/k3q5o7qp","slide":14,"text":"PILOT SCOPE","textPreview":"PILOT SCOPE","textChars":11,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/vixczed8","slide":14,"text":"Controlled nghĩa là có include và exclude rõ","textPreview":"Controlled nghĩa là có include và exclude rõ","textChars":44,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"shape","id":"sh/2x4nap4r","slide":14,"bbox":[100,186,500,350]}
+{"kind":"shape","id":"sh/dcbulwva","slide":14,"bbox":[680,186,500,350]}
+{"kind":"textbox","id":"sh/kre1w7mp","slide":14,"text":"Include","textPreview":"Include","textChars":7,"textLines":1,"bbox":[128,216,444,38]}
+{"kind":"textbox","id":"sh/val87ed8","slide":14,"text":"Exclude","textPreview":"Exclude","textChars":7,"textLines":1,"bbox":[708,216,444,38]}
+{"kind":"shape","id":"sh/6psfil0r","slide":14,"bbox":[122,291,10,10]}
+{"kind":"textbox","id":"sh/d8bat47y","slide":14,"text":"Đơn routine đang xin qua Viber","textPreview":"Đơn routine đang xin qua Viber","textChars":30,"textLines":1,"bbox":[146,282,410,42]}
+{"kind":"shape","id":"sh/knih4byh","slide":14,"bbox":[122,349,10,10]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":14,"text":"NCC / mặt hàng / bộ phận rõ","textPreview":"NCC / mặt hàng / bộ phận rõ","textChars":27,"textLines":1,"bbox":[146,340,410,42]}
+{"kind":"shape","id":"sh/ji5snelo","slide":14,"bbox":[122,407,10,10]}
+{"kind":"textbox","id":"sh/c3ylc7u5","slide":14,"text":"Đủ hồ sơ để đi flow thường","textPreview":"Đủ hồ sơ để đi flow thường","textChars":26,"textLines":1,"bbox":[146,398,410,42]}
+{"kind":"shape","id":"sh/1kre1w7m","slide":14,"bbox":[122,465,10,10]}
+{"kind":"textbox","id":"sh/ulwval87","slide":14,"text":"Có thể hoàn tất trong 2 tuần","textPreview":"Có thể hoàn tất trong 2 tuần","textChars":28,"textLines":1,"bbox":[146,456,410,42]}
+{"kind":"shape","id":"sh/j6tovaho","slide":14,"bbox":[702,291,10,10]}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":14,"text":"Thiếu chứng từ gốc khẩn cấp","textPreview":"Thiếu chứng từ gốc khẩn cấp","textChars":27,"textLines":1,"bbox":[726,282,410,42]}
+{"kind":"shape","id":"sh/1cfa9w3m","slide":14,"bbox":[702,349,10,10]}
+{"kind":"textbox","id":"sh/qh0fepkz","slide":14,"text":"Số dư đầu kỳ chưa đối soát","textPreview":"Số dư đầu kỳ chưa đối soát","textChars":26,"textLines":1,"bbox":[726,340,410,42]}
+{"kind":"shape","id":"sh/j2t83itg","slide":14,"bbox":[702,407,10,10]}
+{"kind":"textbox","id":"sh/bq1oryts","slide":14,"text":"One-off ngoài quy trình","textPreview":"One-off ngoài quy trình","textChars":23,"textLines":1,"bbox":[726,398,410,42]}
+{"kind":"shape","id":"sh/m58z25kb","slide":14,"bbox":[702,465,10,10]}
+{"kind":"textbox","id":"sh/twra5gbq","slide":14,"text":"Cần đổi policy trước khi xử lý","textPreview":"Cần đổi policy trước khi xử lý","textChars":30,"textLines":1,"bbox":[726,456,410,42]}
+{"kind":"textbox","id":"sh/4byhgn29","slide":14,"text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/b2hwfyxo","slide":14,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/k4j8jk","slide":14,"text":"Scoping bằng routine lane, không chỉ bằng amount."}
+{"kind":"slide","id":"sl/d8m80k","slide":15,"title":"NGUYÊN TẮC VẬN HÀNH","textShapes":7}
+{"kind":"textbox","id":"sh/udg7adsj","slide":15,"text":"NGUYÊN TẮC VẬN HÀNH","textPreview":"NGUYÊN TẮC VẬN HÀNH","textChars":19,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/54zidony","slide":15,"text":"Trong scope pilot, app là nơi phê duyệt chính","textPreview":"Trong scope pilot, app là nơi phê duyệt chính","textChars":45,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/cj6tovah","slide":15,"text":"Viber\ntrao đổi nhanh","textPreview":"Viber | trao đổi nhanh","textChars":20,"textLines":2,"bbox":[170,250,260,112]}
+{"kind":"textbox","id":"sh/nap4r65w","slide":15,"text":"App\nphê duyệt chính","textPreview":"App | phê duyệt chính","textChars":19,"textLines":2,"bbox":[510,220,260,172]}
+{"kind":"textbox","id":"sh/upwb2hwf","slide":15,"text":"Dashboard\nsource of status","textPreview":"Dashboard | source of status","textChars":26,"textLines":2,"bbox":[850,250,260,112]}
+{"kind":"shape","id":"sh/5gbq1ory","slide":15,"bbox":[430,306,80,0]}
+{"kind":"shape","id":"sh/cvixczed","slide":15,"bbox":[770,306,80,0]}
+{"kind":"textbox","id":"sh/jm1cfa9w","slide":15,"text":"Nếu chỉ backfill sau Viber, pilot chỉ test nhập liệu; không test workflow.","textPreview":"Nếu chỉ backfill sau Viber, pilot chỉ test nhập liệu; không test workflow.","textChars":74,"textLines":1,"bbox":[235,462,810,48]}
+{"kind":"textbox","id":"sh/u18jqh0f","slide":15,"text":"15","textPreview":"15","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/w3m94fu1","slide":15,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/d8m80k","slide":15,"text":"Viber không bị cấm; nó không còn là approval record chính trong scope pilot."}
+{"kind":"slide","id":"sl/adniul","slide":16,"title":"VIBER FALLBACK","textShapes":7}
+{"kind":"textbox","id":"sh/t83itgfm","slide":16,"text":"VIBER FALLBACK","textPreview":"VIBER FALLBACK","textChars":14,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/mhk3q5o7","slide":16,"text":"Fallback không được biến thành đường tắt","textPreview":"Fallback không được biến thành đường tắt","textChars":40,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/b2hwfyxo","slide":16,"text":"App bị blocker","textPreview":"App bị blocker","textChars":14,"textLines":1,"bbox":[176,246,220,110]}
+{"kind":"textbox","id":"sh/4byhgn29","slide":16,"text":"Dùng Viber\nđể không kẹt việc","textPreview":"Dùng Viber | để không kẹt việc","textChars":28,"textLines":2,"bbox":[530,246,220,110]}
+{"kind":"textbox","id":"sh/twra5gbq","slide":16,"text":"Log blocker\nreconcile app","textPreview":"Log blocker | reconcile app","textChars":25,"textLines":2,"bbox":[884,246,220,110]}
+{"kind":"shape","id":"sh/m58z25kb","slide":16,"bbox":[396,301,134,0]}
+{"kind":"shape","id":"sh/bq1oryts","slide":16,"bbox":[750,301,134,0]}
+{"kind":"textbox","id":"sh/47y1kre1","slide":16,"text":"Trong ngày hoặc ngày làm việc kế tiếp.","textPreview":"Trong ngày hoặc ngày làm việc kế tiếp.","textChars":38,"textLines":1,"bbox":[414,444,452,36]}
+{"kind":"textbox","id":"sh/tsvu9kni","slide":16,"text":"16","textPreview":"16","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/90je9cvi","slide":16,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/adniul","slide":16,"text":"Fallback là để business không bị ngưng, nhưng phải có blocker log và reconcile."}
+{"kind":"slide","id":"sl/cr5bd3","slide":17,"title":"PILOT SUCCESS","textShapes":12}
+{"kind":"textbox","id":"sh/n29gr2p8","slide":17,"text":"PILOT SUCCESS","textPreview":"PILOT SUCCESS","textChars":13,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/gn29gr2p","slide":17,"text":"Success không phải là không có lỗi","textPreview":"Success không phải là không có lỗi","textChars":34,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/58z25kb6","slide":17,"text":"Convenience","textPreview":"Convenience","textChars":11,"textLines":1,"bbox":[216,192,280,54]}
+{"kind":"textbox","id":"sh/y90je9cv","slide":17,"text":"ít chase hơn","textPreview":"ít chase hơn","textChars":12,"textLines":1,"bbox":[540,204,420,26]}
+{"kind":"textbox","id":"sh/nuxc3ylc","slide":17,"text":"Accuracy","textPreview":"Accuracy","textChars":8,"textLines":1,"bbox":[216,280,280,54]}
+{"kind":"textbox","id":"sh/gbq1oryt","slide":17,"text":"số và trạng thái khớp","textPreview":"số và trạng thái khớp","textChars":21,"textLines":1,"bbox":[540,292,420,26]}
+{"kind":"textbox","id":"sh/5wjudg7a","slide":17,"text":"Realtime visibility","textPreview":"Realtime visibility","textChars":19,"textLines":1,"bbox":[216,368,280,54]}
+{"kind":"textbox","id":"sh/u54zidon","slide":17,"text":"thấy kẹt ở đâu","textPreview":"thấy kẹt ở đâu","textChars":14,"textLines":1,"bbox":[540,380,420,26]}
+{"kind":"textbox","id":"sh/nqxs72x4","slide":17,"text":"Risk control","textPreview":"Risk control","textChars":12,"textLines":1,"bbox":[216,456,280,54]}
+{"kind":"textbox","id":"sh/z25kb6xk","slide":17,"text":"không bypass im lặng","textPreview":"không bypass im lặng","textChars":20,"textLines":1,"bbox":[540,468,420,26]}
+{"kind":"textbox","id":"sh/6hcrmhk3","slide":17,"text":"Pilot tốt là thấy rõ vấn đề, owner và cách sửa.","textPreview":"Pilot tốt là thấy rõ vấn đề, owner và cách sửa.","textChars":47,"textLines":1,"bbox":[248,588,784,36]}
+{"kind":"textbox","id":"sh/d8v6psfi","slide":17,"text":"17","textPreview":"17","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/onyd0z61","slide":17,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/cr5bd3","slide":17,"text":"Đổi mindset: pilot có lỗi là bình thường. Thành công là learning có cấu trúc."}
+{"kind":"slide","id":"sl/mjufgx","slide":18,"title":"OUTCOME 1","textShapes":6}
+{"kind":"textbox","id":"sh/vu9knih4","slide":18,"text":"OUTCOME 1","textPreview":"OUTCOME 1","textChars":9,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/kf6dcbul","slide":18,"text":"Convenience: bớt hỏi, bớt chase, rõ việc tiếp theo","textPreview":"Convenience: bớt hỏi, bớt chase, rõ việc tiếp theo","textChars":50,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/d0z61032","slide":18,"text":"Trước\n“đơn này tới đâu rồi?”","textPreview":"Trước | “đơn này tới đâu rồi?”","textChars":28,"textLines":2,"bbox":[178,244,320,144]}
+{"kind":"textbox","id":"sh/2lszqtcj","slide":18,"text":"Sau\nmở app xem trạng thái","textPreview":"Sau | mở app xem trạng thái","textChars":25,"textLines":2,"bbox":[782,244,320,144]}
+{"kind":"shape","id":"sh/v6psfil0","slide":18,"bbox":[498,316,284,0]}
+{"kind":"textbox","id":"sh/knih4byh","slide":18,"text":"Dấu hiệu đạt: người dùng tự hoàn thành bước của mình mà không cần hỗ trợ liên tục.","textPreview":"Dấu hiệu đạt: người dùng tự hoàn thành bước của mình mà không cần hỗ trợ liên tục.","textChars":82,"textLines":1,"bbox":[230,470,820,48]}
+{"kind":"textbox","id":"sh/d8bat47y","slide":18,"text":"18","textPreview":"18","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/6psfil0r","slide":18,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/mjufgx","slide":18,"text":"Nếu mọi người vẫn chase qua Viber, pilot chưa đạt convenience."}
+{"kind":"slide","id":"sl/iyulbs","slide":19,"title":"OUTCOME 2","textShapes":7}
+{"kind":"textbox","id":"sh/a1gvy90j","slide":19,"text":"OUTCOME 2","textPreview":"OUTCOME 2","textChars":9,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/hoza1gvy","slide":19,"text":"Accuracy: số tiền, VAT, trạng thái phải khớp","textPreview":"Accuracy: số tiền, VAT, trạng thái phải khớp","textChars":44,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/s36hcrmh","slide":19,"text":"Offline reality","textPreview":"Offline reality","textChars":15,"textLines":1,"bbox":[220,230,260,118]}
+{"kind":"textbox","id":"sh/za1gvy90","slide":19,"text":"MATCH","textPreview":"MATCH","textChars":5,"textLines":1,"bbox":[560,252,160,74]}
+{"kind":"textbox","id":"sh/ap4r65wj","slide":19,"text":"App state","textPreview":"App state","textChars":9,"textLines":1,"bbox":[800,230,260,118]}
+{"kind":"shape","id":"sh/hgn29gr2","slide":19,"bbox":[480,289,80,0]}
+{"kind":"shape","id":"sh/svu9knih","slide":19,"bbox":[720,289,80,0]}
+{"kind":"textbox","id":"sh/3ylc7u54","slide":19,"text":"Amount, VAT, số lượng thực nhận, trạng thái duyệt, công nợ, chi tiền.","textPreview":"Amount, VAT, số lượng thực nhận, trạng thái duyệt, công nợ, chi tiền.","textChars":69,"textLines":1,"bbox":[210,456,860,38]}
+{"kind":"textbox","id":"sh/adsji5sn","slide":19,"text":"19","textPreview":"19","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/w7mp0bi9","slide":19,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/iyulbs","slide":19,"text":"Accuracy là app khớp thực tế/offline."}
+{"kind":"slide","id":"sl/8gyicu","slide":20,"title":"OUTCOME 3","textShapes":7}
+{"kind":"textbox","id":"sh/3ex0nuxc","slide":20,"text":"OUTCOME 3","textPreview":"OUTCOME 3","textChars":9,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/szqtcj6t","slide":20,"text":"Realtime visibility: dashboard phải trả lời ba câu hỏi","textPreview":"Realtime visibility: dashboard phải trả lời ba câu hỏi","textChars":54,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/lkjm1cfa","slide":20,"text":"Kẹt ở đâu?","textPreview":"Kẹt ở đâu?","textChars":10,"textLines":1,"bbox":[146,252,300,132]}
+{"kind":"textbox","id":"sh/ahoza1gv","slide":20,"text":"Ai giữ bước tiếp theo?","textPreview":"Ai giữ bước tiếp theo?","textChars":22,"textLines":1,"bbox":[490,252,300,132]}
+{"kind":"textbox","id":"sh/32lszqtc","slide":20,"text":"Giá trị tiền bao nhiêu?","textPreview":"Giá trị tiền bao nhiêu?","textChars":23,"textLines":1,"bbox":[834,252,300,132]}
+{"kind":"textbox","id":"sh/sneloj2t","slide":20,"text":"Nếu lãnh đạo vẫn phải hỏi thủ công, dashboard chưa làm tròn vai.","textPreview":"Nếu lãnh đạo vẫn phải hỏi thủ công, dashboard chưa làm tròn vai.","textChars":64,"textLines":1,"bbox":[258,464,764,42]}
+{"kind":"textbox","id":"sh/l87ed8ba","slide":20,"text":"20","textPreview":"20","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/e9cvixcz","slide":20,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/8gyicu","slide":20,"text":"Dashboard không cần đẹp trước; cần trả lời đúng câu hỏi vận hành."}
+{"kind":"slide","id":"sl/2estcy","slide":21,"title":"OUTCOME 4","textShapes":7}
+{"kind":"textbox","id":"sh/orytsvu9","slide":21,"text":"OUTCOME 4","textPreview":"OUTCOME 4","textChars":9,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/z61032ls","slide":21,"text":"Risk control: mọi ngoại lệ phải hiện ra","textPreview":"Risk control: mọi ngoại lệ phải hiện ra","textChars":39,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/al87ed8b","slide":21,"text":"No silent bypass","textPreview":"No silent bypass","textChars":16,"textLines":1,"bbox":[180,220,260,128]}
+{"kind":"textbox","id":"sh/h0fepkzu","slide":21,"text":"Blocker có owner","textPreview":"Blocker có owner","textChars":16,"textLines":1,"bbox":[510,220,260,128]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":21,"text":"Fix list cuối pilot","textPreview":"Fix list cuối pilot","textChars":19,"textLines":1,"bbox":[840,220,260,128]}
+{"kind":"shape","id":"sh/zupwb2hw","slide":21,"bbox":[440,284,70,0]}
+{"kind":"shape","id":"sh/a9w3m94f","slide":21,"bbox":[770,284,70,0]}
+{"kind":"textbox","id":"sh/hwfyxobm","slide":21,"text":"Rủi ro không biến mất. Nhưng nó phải được đặt tên, gán người và xử lý.","textPreview":"Rủi ro không biến mất. Nhưng nó phải được đặt tên, gán người và xử lý.","textChars":70,"textLines":1,"bbox":[214,448,852,48]}
+{"kind":"textbox","id":"sh/obm58z25","slide":21,"text":"21","textPreview":"21","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/e1w7mp0b","slide":21,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/2estcy","slide":21,"text":"Pilot không che lỗi; nó làm lỗi hiện rõ và xử lý được."}
+{"kind":"slide","id":"sl/tq0swr","slide":22,"title":"DEMO FRAMING","textShapes":15}
+{"kind":"textbox","id":"sh/neloj2t8","slide":22,"text":"DEMO FRAMING","textPreview":"DEMO FRAMING","textChars":12,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/czed8v6p","slide":22,"text":"Walkthrough chỉ cần chứng minh đường đi","textPreview":"Walkthrough chỉ cần chứng minh đường đi","textChars":39,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"shape","id":"sh/5kb6xkf6","slide":22,"bbox":[90,190,310,150]}
+{"kind":"shape","id":"sh/u54zidon","slide":22,"bbox":[102,202,78,126]}
+{"kind":"shape","id":"sh/nqxs72x4","slide":22,"bbox":[115,222,52,9]}
+{"kind":"shape","id":"sh/cbulwval","slide":22,"bbox":[115,252,52,9]}
+{"kind":"shape","id":"sh/5sneloj2","slide":22,"bbox":[115,282,52,9]}
+{"kind":"shape","id":"sh/y90je9cv","slide":22,"bbox":[115,312,52,9]}
+{"kind":"textbox","id":"sh/nuxc3ylc","slide":22,"text":"Tạo DXMH","textPreview":"Tạo DXMH","textChars":8,"textLines":1,"bbox":[202,216,170,28]}
+{"kind":"textbox","id":"sh/36hcrmhk","slide":22,"text":"NVMH nhập nhu cầu","textPreview":"NVMH nhập nhu cầu","textChars":17,"textLines":1,"bbox":[202,260,164,38]}
+{"kind":"shape","id":"sh/eloj2t83","slide":22,"bbox":[202,312,164,14]}
+{"kind":"shape","id":"sh/lc7u54zi","slide":22,"bbox":[202,342,110,14]}
+{"kind":"shape","id":"sh/wra5gbq1","slide":22,"bbox":[470,190,310,150]}
+{"kind":"shape","id":"sh/7u54zido","slide":22,"bbox":[482,202,78,126]}
+{"kind":"shape","id":"sh/ed8bat47","slide":22,"bbox":[495,222,52,9]}
+{"kind":"shape","id":"sh/l0rqd4vm","slide":22,"bbox":[495,252,52,9]}
+{"kind":"shape","id":"sh/wfyxobm5","slide":22,"bbox":[495,282,52,9]}
+{"kind":"shape","id":"sh/7mp0bi9s","slide":22,"bbox":[495,312,52,9]}
+{"kind":"textbox","id":"sh/e1w7mp0b","slide":22,"text":"Duyệt ĐX","textPreview":"Duyệt ĐX","textChars":8,"textLines":1,"bbox":[582,216,170,28]}
+{"kind":"textbox","id":"sh/qxs72x4n","slide":22,"text":"lãnh đạo xử lý","textPreview":"lãnh đạo xử lý","textChars":14,"textLines":1,"bbox":[582,260,164,38]}
+{"kind":"shape","id":"sh/fil0rqd4","slide":22,"bbox":[582,312,164,14]}
+{"kind":"shape","id":"sh/83itgfml","slide":22,"bbox":[582,342,110,14]}
+{"kind":"shape","id":"sh/xobm58z2","slide":22,"bbox":[850,190,310,150]}
+{"kind":"shape","id":"sh/m94fu18j","slide":22,"bbox":[862,202,78,126]}
+{"kind":"shape","id":"sh/fu18jqh0","slide":22,"bbox":[875,222,52,9]}
+{"kind":"shape","id":"sh/4fu18jqh","slide":22,"bbox":[875,252,52,9]}
+{"kind":"shape","id":"sh/x0nuxc3y","slide":22,"bbox":[875,282,52,9]}
+{"kind":"shape","id":"sh/mlkjm1cf","slide":22,"bbox":[875,312,52,9]}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":22,"text":"Nghiệm thu","textPreview":"Nghiệm thu","textChars":10,"textLines":1,"bbox":[962,216,170,28]}
+{"kind":"textbox","id":"sh/54zidony","slide":22,"text":"evidence bắt buộc","textPreview":"evidence bắt buộc","textChars":17,"textLines":1,"bbox":[962,260,164,38]}
+{"kind":"shape","id":"sh/cj6tovah","slide":22,"bbox":[962,312,164,14]}
+{"kind":"shape","id":"sh/nyd0z610","slide":22,"bbox":[962,342,110,14]}
+{"kind":"shape","id":"sh/udg7adsj","slide":22,"bbox":[90,380,310,150]}
+{"kind":"shape","id":"sh/5gbq1ory","slide":22,"bbox":[102,392,78,126]}
+{"kind":"shape","id":"sh/cvixczed","slide":22,"bbox":[115,412,52,9]}
+{"kind":"shape","id":"sh/nap4r65w","slide":22,"bbox":[115,442,52,9]}
+{"kind":"shape","id":"sh/upwb2hwf","slide":22,"bbox":[115,472,52,9]}
+{"kind":"shape","id":"sh/1orytsvu","slide":22,"bbox":[115,502,52,9]}
+{"kind":"textbox","id":"sh/c7u54zid","slide":22,"text":"KTTH","textPreview":"KTTH","textChars":4,"textLines":1,"bbox":[202,406,170,28]}
+{"kind":"textbox","id":"sh/kb6xkf6d","slide":22,"text":"lưu công nợ","textPreview":"lưu công nợ","textChars":11,"textLines":1,"bbox":[202,450,164,38]}
+{"kind":"shape","id":"sh/9w3m94fu","slide":22,"bbox":[202,502,164,14]}
+{"kind":"shape","id":"sh/25kb6xkf","slide":22,"bbox":[202,532,110,14]}
+{"kind":"shape","id":"sh/rqd4vmtw","slide":22,"bbox":[470,380,310,150]}
+{"kind":"shape","id":"sh/kzupwb2h","slide":22,"bbox":[482,392,78,126]}
+{"kind":"shape","id":"sh/9knih4by","slide":22,"bbox":[495,412,52,9]}
+{"kind":"shape","id":"sh/2t83itgf","slide":22,"bbox":[495,442,52,9]}
+{"kind":"shape","id":"sh/re1w7mp0","slide":22,"bbox":[495,472,52,9]}
+{"kind":"shape","id":"sh/gvy90je9","slide":22,"bbox":[495,502,52,9]}
+{"kind":"textbox","id":"sh/9gr2p8nq","slide":22,"text":"DXTT","textPreview":"DXTT","textChars":4,"textLines":1,"bbox":[582,406,170,28]}
+{"kind":"textbox","id":"sh/fyxobm58","slide":22,"text":"trình duyệt chi","textPreview":"trình duyệt chi","textChars":15,"textLines":1,"bbox":[582,450,164,38]}
+{"kind":"shape","id":"sh/qd4vmtwr","slide":22,"bbox":[582,502,164,14]}
+{"kind":"shape","id":"sh/x4nap4r6","slide":22,"bbox":[582,532,110,14]}
+{"kind":"shape","id":"sh/8jqh0fep","slide":22,"bbox":[850,380,310,150]}
+{"kind":"shape","id":"sh/fa9w3m94","slide":22,"bbox":[862,392,78,126]}
+{"kind":"shape","id":"sh/qpg3ex0n","slide":22,"bbox":[875,412,52,9]}
+{"kind":"shape","id":"sh/xczed8v6","slide":22,"bbox":[875,442,52,9]}
+{"kind":"shape","id":"sh/8v6psfil","slide":22,"bbox":[875,472,52,9]}
+{"kind":"shape","id":"sh/je9cvixc","slide":22,"bbox":[875,502,52,9]}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":22,"text":"Thủ quỹ","textPreview":"Thủ quỹ","textChars":7,"textLines":1,"bbox":[962,406,170,28]}
+{"kind":"textbox","id":"sh/u54zidon","slide":22,"text":"proof chi tiền","textPreview":"proof chi tiền","textChars":14,"textLines":1,"bbox":[962,450,164,38]}
+{"kind":"shape","id":"sh/nqxs72x4","slide":22,"bbox":[962,502,164,14]}
+{"kind":"shape","id":"sh/cbulwval","slide":22,"bbox":[962,532,110,14]}
+{"kind":"textbox","id":"sh/5sneloj2","slide":22,"text":"22","textPreview":"22","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/ytsvu9kn","slide":22,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/tq0swr","slide":22,"text":"V1 dùng wireframe do browser automation bị sandbox chặn. Khi có screenshot thật, có thể thay vào mà không đổi narrative."}
+{"kind":"slide","id":"sl/ojw6vl","slide":23,"title":"DEMO STORY","textShapes":9}
+{"kind":"textbox","id":"sh/8v6psfil","slide":23,"text":"DEMO STORY","textPreview":"DEMO STORY","textChars":10,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/fa9w3m94","slide":23,"text":"Một case routine đi qua app như thế nào","textPreview":"Một case routine đi qua app như thế nào","textChars":39,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/qpg3ex0n","slide":23,"text":"NVMH tạo DXMH","textPreview":"NVMH tạo DXMH","textChars":13,"textLines":1,"bbox":[92,306,170,82]}
+{"kind":"textbox","id":"sh/x4nap4r6","slide":23,"text":"Lãnh đạo duyệt trong app","textPreview":"Lãnh đạo duyệt trong app","textChars":24,"textLines":1,"bbox":[328,306,170,82]}
+{"kind":"textbox","id":"sh/8jqh0fep","slide":23,"text":"NVMH nghiệm thu","textPreview":"NVMH nghiệm thu","textChars":15,"textLines":1,"bbox":[564,306,170,82]}
+{"kind":"textbox","id":"sh/fyxobm58","slide":23,"text":"KTTH lập DXTT","textPreview":"KTTH lập DXTT","textChars":13,"textLines":1,"bbox":[800,306,170,82]}
+{"kind":"textbox","id":"sh/qd4vmtwr","slide":23,"text":"Thủ quỹ upload proof","textPreview":"Thủ quỹ upload proof","textChars":20,"textLines":1,"bbox":[1036,306,170,82]}
+{"kind":"shape","id":"sh/xs72x4na","slide":23,"bbox":[262,347,66,0]}
+{"kind":"shape","id":"sh/87ed8bat","slide":23,"bbox":[498,347,66,0]}
+{"kind":"shape","id":"sh/ed8v6psf","slide":23,"bbox":[734,347,66,0]}
+{"kind":"shape","id":"sh/7y1kre1w","slide":23,"bbox":[970,347,66,0]}
+{"kind":"textbox","id":"sh/wjudg7ad","slide":23,"text":"Không cần demo mọi nút. Chỉ cần lãnh đạo thấy đường đi và chốt kiểm soát.","textPreview":"Không cần demo mọi nút. Chỉ cần lãnh đạo thấy đường đi và chốt kiểm soát.","textChars":73,"textLines":1,"bbox":[248,470,784,44]}
+{"kind":"textbox","id":"sh/p4r65wju","slide":23,"text":"23","textPreview":"23","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/i5sneloj","slide":23,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/ojw6vl","slide":23,"text":"Trong họp thật, demo một case routine trong scope pilot."}
+{"kind":"slide","id":"sl/b3y8bd","slide":24,"title":"OWNERSHIP","textShapes":9}
+{"kind":"textbox","id":"sh/6hcrmhk3","slide":24,"text":"OWNERSHIP","textPreview":"OWNERSHIP","textChars":9,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/d8v6psfi","slide":24,"text":"Pilot cần một owner kinh doanh","textPreview":"Pilot cần một owner kinh doanh","textChars":30,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/onyd0z61","slide":24,"text":"Kế toán trưởng / KTTH\npilot owner","textPreview":"Kế toán trưởng / KTTH | pilot owner","textChars":33,"textLines":2,"bbox":[455,190,370,94]}
+{"kind":"textbox","id":"sh/vahoza1g","slide":24,"text":"NVMH","textPreview":"NVMH","textChars":4,"textLines":1,"bbox":[156,380,180,70]}
+{"kind":"shape","id":"sh/6tovahoz","slide":24,"bbox":[246,284,394,96]}
+{"kind":"textbox","id":"sh/dg7adsji","slide":24,"text":"Lãnh đạo","textPreview":"Lãnh đạo","textChars":8,"textLines":1,"bbox":[386,430,180,70]}
+{"kind":"shape","id":"sh/ovahoza1","slide":24,"bbox":[476,284,164,146]}
+{"kind":"textbox","id":"sh/vmtwra5g","slide":24,"text":"Huy","textPreview":"Huy","textChars":3,"textLines":1,"bbox":[616,380,180,70]}
+{"kind":"shape","id":"sh/61032lsz","slide":24,"bbox":[640,284,66,96]}
+{"kind":"textbox","id":"sh/wval87ed","slide":24,"text":"Thủ quỹ","textPreview":"Thủ quỹ","textChars":7,"textLines":1,"bbox":[846,430,180,70]}
+{"kind":"shape","id":"sh/pg3ex0nu","slide":24,"bbox":[640,284,296,146]}
+{"kind":"textbox","id":"sh/epkzupwb","slide":24,"text":"Một người chịu trách nhiệm kết luận: đạt, chưa đạt, hay cần thêm một vòng pilot.","textPreview":"Một người chịu trách nhiệm kết luận: đạt, chưa đạt, hay cần thêm một vòng pilot.","textChars":80,"textLines":1,"bbox":[206,584,868,40]}
+{"kind":"textbox","id":"sh/7adsji5s","slide":24,"text":"24","textPreview":"24","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/w7mp0bi9","slide":24,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/b3y8bd","slide":24,"text":"Huy là product/support owner; business owner nên là kế toán trưởng hoặc KTTH."}
+{"kind":"slide","id":"sl/ga0ocu","slide":25,"title":"PILOT CLOSEOUT","textShapes":7}
+{"kind":"textbox","id":"sh/hcrmhk3q","slide":25,"text":"PILOT CLOSEOUT","textPreview":"PILOT CLOSEOUT","textChars":14,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/al87ed8b","slide":25,"text":"Sau 2 tuần, báo cáo để quyết định mở rộng","textPreview":"Sau 2 tuần, báo cáo để quyết định mở rộng","textChars":41,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/z61032ls","slide":25,"text":"Pilot evidence","textPreview":"Pilot evidence","textChars":14,"textLines":1,"bbox":[174,264,240,110]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":25,"text":"Fix list","textPreview":"Fix list","textChars":8,"textLines":1,"bbox":[520,264,240,110]}
+{"kind":"textbox","id":"sh/h0fepkzu","slide":25,"text":"Mở rộng\nhoặc lặp pilot","textPreview":"Mở rộng | hoặc lặp pilot","textChars":22,"textLines":2,"bbox":[866,264,240,110]}
+{"kind":"shape","id":"sh/a9w3m94f","slide":25,"bbox":[414,319,106,0]}
+{"kind":"shape","id":"sh/zupwb2hw","slide":25,"bbox":[760,319,106,0]}
+{"kind":"textbox","id":"sh/obm58z25","slide":25,"text":"Quyết định sau pilot dựa trên evidence, không dựa trên cảm giác.","textPreview":"Quyết định sau pilot dựa trên evidence, không dựa trên cảm giác.","textChars":64,"textLines":1,"bbox":[254,462,772,42]}
+{"kind":"textbox","id":"sh/hwfyxobm","slide":25,"text":"25","textPreview":"25","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/t83itgfm","slide":25,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/ga0ocu","slide":25,"text":"Không ai bị ép go-live sau buổi họp, nhưng cũng không để pilot trôi vô hạn."}
+{"kind":"slide","id":"sl/84z1aw","slide":26,"title":"LEADERSHIP DECISIONS","textShapes":13}
+{"kind":"textbox","id":"sh/p8nqxs72","slide":26,"text":"LEADERSHIP DECISIONS","textPreview":"LEADERSHIP DECISIONS","textChars":20,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/ih4byhgn","slide":26,"text":"Những câu hỏi cần chốt hôm nay","textPreview":"Những câu hỏi cần chốt hôm nay","textChars":30,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/72x4nap4","slide":26,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[150,188,42,42]}
+{"kind":"textbox","id":"sh/0z61032l","slide":26,"text":"Lane routine nào vào pilot?","textPreview":"Lane routine nào vào pilot?","textChars":27,"textLines":1,"bbox":[224,195,820,30]}
+{"kind":"textbox","id":"sh/pkzupwb2","slide":26,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[150,260,42,42]}
+{"kind":"textbox","id":"sh/itgfmlkj","slide":26,"text":"Ai là pilot owner?","textPreview":"Ai là pilot owner?","textChars":18,"textLines":1,"bbox":[224,267,820,30]}
+{"kind":"textbox","id":"sh/7ed8bat4","slide":26,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[150,332,42,42]}
+{"kind":"textbox","id":"sh/0bi9s36h","slide":26,"text":"App approval là chính trong scope?","textPreview":"App approval là chính trong scope?","textChars":34,"textLines":1,"bbox":[224,339,820,30]}
+{"kind":"textbox","id":"sh/pwb2hwfy","slide":26,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[150,404,42,42]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":26,"text":"Fallback Viber ghi nhận thế nào?","textPreview":"Fallback Viber ghi nhận thế nào?","textChars":32,"textLines":1,"bbox":[224,411,820,30]}
+{"kind":"textbox","id":"sh/kjm1cfa9","slide":26,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[150,476,42,42]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":26,"text":"Cuối pilot báo cáo theo tiêu chí nào?","textPreview":"Cuối pilot báo cáo theo tiêu chí nào?","textChars":37,"textLines":1,"bbox":[224,483,820,30]}
+{"kind":"textbox","id":"sh/2hwfyxob","slide":26,"text":"26","textPreview":"26","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/9gr2p8nq","slide":26,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/84z1aw","slide":26,"text":"Danh sách quyết định cần chốt để greenlight pilot."}
+{"kind":"slide","id":"sl/qa43k3","slide":27,"title":"FINAL ASK","textShapes":8}
+{"kind":"textbox","id":"sh/d8v6psfi","slide":27,"text":"FINAL ASK","textPreview":"FINAL ASK","textChars":9,"textLines":1,"bbox":[72,54,760,26]}
+{"kind":"textbox","id":"sh/6hcrmhk3","slide":27,"text":"Xin phê duyệt pilot 2 tuần","textPreview":"Xin phê duyệt pilot 2 tuần","textChars":26,"textLines":1,"bbox":[72,88,1050,86]}
+{"kind":"textbox","id":"sh/z25kb6xk","slide":27,"text":"Các đơn mua hàng routine hiện xử lý qua Viber\nsẽ được duyệt chính trong app và đi hết flow tới proof chi tiền.","textPreview":"Các đơn mua hàng routine hiện xử lý qua Viber | sẽ được duyệt chính trong app và đi hết flow tới proof chi tiền.","textChars":110,"textLines":2,"bbox":[156,206,968,154]}
+{"kind":"shape","id":"sh/ovahoza1","slide":27,"bbox":[220,444,34,34]}
+{"kind":"textbox","id":"sh/dg7adsji","slide":27,"text":"Chốt phạm vi pilot","textPreview":"Chốt phạm vi pilot","textChars":18,"textLines":1,"bbox":[268,439,210,44]}
+{"kind":"shape","id":"sh/6tovahoz","slide":27,"bbox":[520,444,34,34]}
+{"kind":"textbox","id":"sh/vahoza1g","slide":27,"text":"Chốt owner","textPreview":"Chốt owner","textChars":10,"textLines":1,"bbox":[568,439,210,44]}
+{"kind":"shape","id":"sh/o7qpg3ex","slide":27,"bbox":[820,444,34,34]}
+{"kind":"textbox","id":"sh/dsji5sne","slide":27,"text":"Chốt tiêu chí báo cáo","textPreview":"Chốt tiêu chí báo cáo","textChars":21,"textLines":1,"bbox":[868,439,210,44]}
+{"kind":"textbox","id":"sh/pwb2hwfy","slide":27,"text":"Greenlight hôm nay = bắt đầu pilot có kiểm soát, không phải go-live toàn bộ.","textPreview":"Greenlight hôm nay = bắt đầu pilot có kiểm soát, không phải go-live toàn bộ.","textChars":76,"textLines":1,"bbox":[232,582,816,38]}
+{"kind":"textbox","id":"sh/0bi9s36h","slide":27,"text":"27","textPreview":"27","textChars":2,"textLines":1,"bbox":[72,668,52,20]}
+{"kind":"shape","id":"sh/7qpg3ex0","slide":27,"bbox":[112,678,90,0]}
+{"kind":"notes","id":"nt/qa43k3","slide":27,"text":"Kết thúc bằng ask cụ thể. Nếu leadership đồng ý ba checkbox, có thể chạy pilot."}
