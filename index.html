@@ -448,6 +448,7 @@
       doiTuong: [],
       vatTu: [],
       departments: [],
+      proposers: [],
       permissions: [],
       screen: 'quotes',
       quote: null
@@ -631,6 +632,16 @@
       const day = String(d.getDate()).padStart(2, '0');
       return `${d.getFullYear()}-${m}-${day}`;
     }
+    function uploadWeekFolder(date=new Date()) {
+      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const jan1 = new Date(d.getFullYear(), 0, 1);
+      const week = Math.ceil((((d - jan1) / 864e5) + jan1.getDay() + 1) / 7);
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      return `tuan-${String(week).padStart(2, '0')}_thang-${month}_${d.getFullYear()}`;
+    }
+    function uniqueNames(list) {
+      return Array.from(new Set((list || []).map(x => String(x || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'vi'));
+    }
 
     function fmtMoney(v) {
       const n = Number(v || 0);
@@ -693,7 +704,17 @@
       if ((state.departments || []).length) return state.departments;
       const res = await call('rpc_list_catalog');
       state.departments = normalizeDepartments(res.departments || []);
+      state.proposers = res.proposers || state.proposers || [];
       return state.departments;
+    }
+    // Nạp danh mục bộ phận + người đề nghị (theo tên admin đã đặt) khi màn cần lọc.
+    async function ensureCatalogLists() {
+      if ((state.departments || []).length && (state.proposers || []).length) return;
+      try {
+        const res = await call('rpc_list_catalog');
+        state.departments = normalizeDepartments(res.departments || state.departments || []);
+        state.proposers = res.proposers || state.proposers || [];
+      } catch (e) {}
     }
     function deptNameById(id) {
       const d = (state.departments || []).find(x => String(x.id) === String(id || ''));
@@ -1196,6 +1217,7 @@
       try {
         const res = await call('rpc_list_catalog');
         proposers = res.proposers || [];
+        state.proposers = proposers;
         state.departments = normalizeDepartments(res.departments || []);
       } catch (e) {}
       const cur = state.user?.name || '';
@@ -1920,13 +1942,14 @@
     }
     // ===== Kế toán: Duyệt chứng từ & lưu công nợ ============================
     function renderCongNoConfirm() {
+      const today = todayStr();
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>Duyệt hồ sơ thanh toán</h2>
           <div class="notice ok">Đơn đã NVMH nghiệm thu, chờ kế toán kiểm tra. Bấm vào <b>mã CN</b> để xổ chi tiết + chứng từ. Đủ hồ sơ → <b>Lưu về công nợ</b>; thiếu → <b>Trả lại NVMH</b>.</div>
           <div class="actions" style="align-items:flex-end;flex-wrap:wrap">
-            <div class="field" style="margin:0"><label>Từ ngày nhận</label><input id="cnFrom" type="date" onchange="drawReceiptReview()"></div>
-            <div class="field" style="margin:0"><label>Đến ngày</label><input id="cnTo" type="date" onchange="drawReceiptReview()"></div>
+            <div class="field" style="margin:0"><label>Từ ngày nhận</label><input id="cnFrom" type="date" value="${today}" onchange="drawReceiptReview()"></div>
+            <div class="field" style="margin:0"><label>Đến ngày</label><input id="cnTo" type="date" value="${today}" onchange="drawReceiptReview()"></div>
             <div class="field" style="margin:0"><label>Bộ phận</label><select id="cnBoPhan" onchange="drawReceiptReview()"><option value="">Tất cả</option></select></div>
             <div class="field" style="margin:0"><label>Người đề nghị/nghiệm thu</label><select id="cnNguoi" onchange="drawReceiptReview()"><option value="">Tất cả</option></select></div>
             <button class="secondary" onclick="loadReceiptReview(this)">↻ Tải lại</button>
@@ -1940,13 +1963,14 @@
       const box = document.getElementById('cnReviewBox'); if (!box) return;
       box.innerHTML = loadingText('Đang tải...');
       try {
+        await ensureCatalogLists();
         const fn = () => call('rpc_get_receipt_review', {});
         const res = await (btn ? withBusy(btn, 'Đang tải...', fn) : fn());
         state.receiptReview = res.rows || [];
         // Nạp option bộ phận + người đề nghị từ dữ liệu.
         const bpSel = document.getElementById('cnBoPhan'), nguoiSel = document.getElementById('cnNguoi');
-        const bps = [...new Set(state.receiptReview.map(r => r.boPhan).filter(Boolean))].sort();
-        const nguois = [...new Set(state.receiptReview.map(r => r.nguoiDeNghi).filter(Boolean))].sort();
+        const bps = uniqueNames([...(state.departments || []).map(d => d.ten), ...state.receiptReview.map(r => r.boPhan)]);
+        const nguois = uniqueNames([...(state.proposers || []).map(p => typeof p === 'string' ? p : p.ten), ...state.receiptReview.map(r => r.nguoiDeNghi)]);
         if (bpSel) bpSel.innerHTML = '<option value="">Tất cả bộ phận</option>' + bps.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
         if (nguoiSel) nguoiSel.innerHTML = '<option value="">Tất cả người</option>' + nguois.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
         drawReceiptReview();
@@ -2281,6 +2305,7 @@
       try {
         const res = await call('rpc_list_catalog');
         state.departments = normalizeDepartments(res.departments || state.departments || []);
+        state.proposers = res.proposers || state.proposers || [];
         state.catalog = { materials: res.materials || [], suppliers: res.suppliers || [], groups: res.groups || [], canCreate: !!res.canCreate, canManage: !!res.canManage };
         drawCatalog();
       } catch (err) {
@@ -2886,25 +2911,42 @@
     }
     // ===== Thủ quỹ: Chi tiền =================================================
     function renderCashier() {
+      const today = todayStr();
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>Chi tiền (thủ quỹ)</h2>
           <div class="notice ok">Chuyển tiền qua ngân hàng (hoặc chi tiền mặt) → chọn hình thức, nhập số tiền, <b>đính kèm ảnh uỷ nhiệm chi / phiếu chi</b> → <b>Xác nhận</b>. Hệ thống tự trừ công nợ + báo NVMH & kế toán.</div>
           <div id="cashierDash" style="margin-top:6px"></div>
-          <div class="actions"><button class="secondary" onclick="loadCashierQueue(this)">↻ Tải lại</button></div>
+          <div class="actions" style="align-items:flex-end;flex-wrap:wrap">
+            <div class="field" style="margin:0"><label>Ngày chi</label><input id="cashDate" type="date" value="${today}" onchange="loadCashierQueue()"></div>
+            <label class="check-line" style="margin:0 0 9px"><input id="cashIncludeOld" type="checkbox" checked onchange="loadCashierQueue()"> Kèm DXTT tồn từ ngày trước</label>
+            <button class="secondary" onclick="loadCashierQueue(this)">↻ Tải lại</button>
+          </div>
           <div id="cashierBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
+        </section>
+        <section class="card" style="margin-top:16px">
+          <h2>Khoản đã xác nhận chi</h2>
+          <div class="actions" style="align-items:flex-end;flex-wrap:wrap">
+            <div class="field" style="margin:0"><label>Từ ngày</label><input id="cashHistFrom" type="date" value="${today}"></div>
+            <div class="field" style="margin:0"><label>Đến ngày</label><input id="cashHistTo" type="date" value="${today}"></div>
+            <button class="secondary" onclick="loadCashierHistory(this)">↻ Xem lịch sử</button>
+          </div>
+          <div id="cashierHistoryBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
         </section>`;
       loadCashierQueue();
+      loadCashierHistory();
     }
     async function loadCashierQueue(btn) {
       const box = document.getElementById('cashierBox'); if (!box) return;
       box.innerHTML = loadingText('Đang tải...');
       try {
-        const fn = () => call('rpc_get_cashier_queue', {});
+        const day = val('cashDate') || todayStr();
+        const includeOld = document.getElementById('cashIncludeOld')?.checked !== false;
+        const fn = () => call('rpc_get_cashier_queue', { p_from: includeOld ? null : day, p_to: day });
         const res = await (btn ? withBusy(btn, 'Đang tải...', fn) : fn());
         const rows = res.rows || [];
         // Dashboard nhỏ: hôm nay cần chuyển + tồn từ hôm trước.
-        const today = todayStr();
+        const today = day;
         let tN = 0, tAmt = 0, pN = 0, pAmt = 0;
         rows.forEach(r => (r.lines || []).forEach(l => { if (!l.paid) { if (r.ngay === today) { tN++; tAmt += Number(l.soTien || 0); } else { pN++; pAmt += Number(l.soTien || 0); } } }));
         const dash = document.getElementById('cashierDash');
@@ -2919,8 +2961,11 @@
             <div class="ac-obj">Ngày ${esc(r.ngay)} · Người lập: ${esc(r.nguoiLap || '—')} · Tổng: <b>${fmtMoney(r.tong)}đ</b> · Đã chuyển: <b>${fmtMoney(r.daChuyen)}đ</b></div>
             ${(r.lines || []).map(l => `<div class="cash-line" style="border-top:1px solid var(--line);padding:8px 0">
               <div class="ac-meta"><b>${esc(l.ncc || '')}</b> · Đề xuất: ${fmtMoney(l.soTien)}đ${l.maCN ? ` · CN: <a class="mini-link" onclick="openDebtDetail('${esc(l.maCN)}')">${esc(l.maCN)}</a>` : ''}</div>
+              <div class="ac-meta">${l.maDeXuat ? `ĐXMH: <code>${esc(l.maDeXuat)}</code>` : 'Dòng ngoài công nợ'}${l.boPhan ? ' · Bộ phận: ' + esc(l.boPhan) : ''}${l.nguoiDeNghi ? ' · Người đề nghị: ' + esc(l.nguoiDeNghi) : ''}</div>
               <div class="ac-meta">STK: ${l.soTk ? '<b>' + esc(l.soTk) + '</b>' : '<span class="pill warn">thiếu STK</span>'}${l.chiNhanh ? ' · ' + esc(l.chiNhanh) : ''}${l.mst ? ' · MST: ' + esc(l.mst) : ''}</div>
-              ${(l.chungTu || []).length ? `<div class="ac-meta">Chứng từ (VAT/BBGN): ${attachLinks(l.chungTu)}</div>` : ''}
+              ${(l.chungTuTypes || []).length ? `<div class="ac-meta">Loại chứng từ: ${(l.chungTuTypes || []).map(esc).join(', ')}</div>` : ''}
+              ${(l.chungTu || []).length ? `<div class="ac-meta">VAT / BBGN / ảnh vật tư: ${attachLinks(l.chungTu)}</div>` : ''}
+              ${(l.baoGia || []).length ? `<div class="ac-meta">Báo giá: ${attachLinks(l.baoGia)}</div>` : ''}
               ${l.maCN ? `<div class="ac-meta"><button class="secondary" style="min-height:26px;padding:2px 10px" onclick="openDebtDetail('${esc(l.maCN)}')">Xem đầy đủ + tải chứng từ</button></div>` : ''}
               ${l.paid
                 ? `<div class="notice ok" style="margin:6px 0">✔ Đã chi ${fmtMoney(l.soTienDaChuyen != null ? l.soTienDaChuyen : l.soTien)}đ. Chứng từ chi: ${attachLinks(l.paidProof)}</div>`
@@ -2933,6 +2978,47 @@
             </div>`).join('')}
           </div>`).join('') : '<p class="status">Không có khoản nào chờ chi.</p>';
       } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    function cashierHistoryCard(l) {
+      const status = l.correctionStatus === 'Chờ admin'
+        ? '<span class="pill warn">Đang chờ Admin</span>'
+        : (l.correctionStatus ? `<span class="pill">${esc(l.correctionStatus)}</span>` : '');
+      return `<div class="approve-card" style="margin-bottom:10px">
+        <div class="ac-top"><strong>${esc(l.maDeXuatTT || '')}</strong>${status || '<span class="pill ok">Đã chi</span>'}</div>
+        <div class="ac-obj">${esc(l.paidAt || '—')} · ${esc(l.ncc || '')} · <b>${fmtMoney(l.soTienDaChuyen)}đ</b> · ${esc(l.hinhThucTT || '')}${l.maThanhToan ? ' · ' + esc(l.maThanhToan) : ''}</div>
+        <div class="ac-meta">DXTT ngày ${esc(l.ngayDeXuatTT || '—')} · Người lập: ${esc(l.nguoiLap || '—')}${l.maCN ? ` · CN: <a class="mini-link" onclick="openDebtDetail('${esc(l.maCN)}')">${esc(l.maCN)}</a>` : ''}</div>
+        <div class="ac-meta">${l.maDeXuat ? `ĐXMH: <code>${esc(l.maDeXuat)}</code> · Ngày ${esc(l.ngayDeXuat || '—')}` : 'Dòng ngoài công nợ'}${l.boPhan ? ' · Bộ phận: ' + esc(l.boPhan) : ''}${l.nguoiDeNghi ? ' · Người đề nghị: ' + esc(l.nguoiDeNghi) : ''}</div>
+        <div class="ac-meta"><b>${esc(l.matHang || l.noiDung || '')}</b>${l.slThucNhan != null ? ` · SL thực nhận ${fmtMaybeMoney(l.slThucNhan)}` : ''}${l.thanhTienThucNhan != null ? ` · Thành tiền ${fmtMoney(l.thanhTienThucNhan)}đ` : ''}${l.hanThanhToan ? ' · Hạn TT: ' + esc(l.hanThanhToan) : ''}</div>
+        <div class="ac-meta">Chứng từ chi: ${attachLinks(l.proof)}</div>
+        ${(l.chungTuTypes || []).length ? `<div class="ac-meta">Loại chứng từ: ${(l.chungTuTypes || []).map(esc).join(', ')}</div>` : ''}
+        ${(l.nghiemThuFiles || []).length ? `<div class="ac-meta">VAT / BBGN / ảnh vật tư: ${attachLinks(l.nghiemThuFiles)}</div>` : ''}
+        ${(l.baoGia || []).length ? `<div class="ac-meta">Báo giá: ${attachLinks(l.baoGia)}</div>` : ''}
+        ${l.correctionReason ? `<div class="notice" style="margin-top:8px">Yêu cầu sửa: ${esc(l.correctionReason)}${l.correctionRequestedAt ? ' · ' + esc(l.correctionRequestedAt) : ''}${l.correctionAdminNote ? '<br>Admin: ' + esc(l.correctionAdminNote) : ''}</div>` : ''}
+        <div class="actions" style="margin-top:8px">
+          ${l.maCN ? `<button class="secondary" onclick="openDebtDetail('${esc(l.maCN)}')">Xem chi tiết công nợ</button>` : ''}
+          ${l.correctionStatus === 'Chờ admin' ? '' : `<button class="secondary" onclick="requestCashierCorrection('${esc(l.lineId)}')">Yêu cầu Admin sửa</button>`}
+        </div>
+      </div>`;
+    }
+    async function loadCashierHistory(btn) {
+      const box = document.getElementById('cashierHistoryBox'); if (!box) return;
+      box.innerHTML = loadingText('Đang tải lịch sử...');
+      try {
+        const fn = () => call('rpc_get_cashier_paid_history', { p_from: val('cashHistFrom') || todayStr(), p_to: val('cashHistTo') || todayStr() });
+        const res = await (btn ? withBusy(btn, 'Đang tải...', fn) : fn());
+        const rows = res.rows || [];
+        const total = rows.reduce((s, r) => s + Number(r.soTienDaChuyen || 0), 0);
+        box.innerHTML = rows.length
+          ? `<div class="ac-meta" style="margin-bottom:8px">Đã xác nhận <b>${rows.length}</b> khoản · Tổng <b>${fmtMoney(total)}đ</b></div>${rows.map(cashierHistoryCard).join('')}`
+          : '<p class="status">Không có khoản đã xác nhận trong khoảng ngày này.</p>';
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    function requestCashierCorrection(lineId) {
+      promptReason('Yêu cầu Admin sửa khoản chi', 'Nhập rõ cần sửa gì và vì sao...', async (reason) => {
+        await call('rpc_request_cashier_payment_correction', { p_line_id: lineId, p_reason: reason });
+        toast('Đã gửi yêu cầu cho Admin.', 'ok');
+        loadCashierHistory();
+      }, 'Gửi yêu cầu');
     }
     function cashierLabel(lineId) {
       const ht = val('htf_' + lineId); const lbl = document.getElementById('clbl_' + lineId);
@@ -3268,9 +3354,10 @@
       const privateUpload = isBusinessAttachmentPrefix(prefix);
       const bucket = privateUpload ? BUSINESS_ATTACHMENTS_BUCKET : ATTACHMENT_BUCKET;
       const userId = privateUpload ? await currentUserId() : '';
+      const weekFolder = uploadWeekFolder();
       for (const f of files) {
         const safe = f.name.replace(/[^\w.\-]+/g, '_');
-        const pathPrefix = privateUpload ? `${userId}/${prefix}` : prefix;
+        const pathPrefix = privateUpload ? `${userId}/${prefix}/${weekFolder}` : `${prefix}/${weekFolder}`;
         const path = `${pathPrefix}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${safe}`;
         const { error } = await sb.storage.from(bucket).upload(path, f, { upsert: false, contentType: f.type || undefined });
         if (error) throw new Error('Tải tệp lỗi: ' + (error.message || error));
@@ -4113,8 +4200,14 @@
           <div class="actions"><button onclick="openUserForm()">＋ Thêm tài khoản</button><button class="secondary" onclick="addDeptPrompt()">＋ Bộ phận</button><button class="secondary" onclick="loadUsers(this)">↻ Tải lại</button></div>
           <div id="usersBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
           <div class="notice" style="margin-top:12px">Vai trò &amp; quyền: <b>Nhân viên mua hàng</b> tạo đề xuất/nghiệm thu phiếu của mình · <b>Trưởng phòng</b> xem phiếu đã trình của bộ phận · <b>Kế toán công nợ</b> duyệt hồ sơ, lập đề xuất thanh toán và điều chỉnh công nợ · <b>Thủ quỹ</b> chi tiền đã duyệt · <b>Admin</b> quản lý tài khoản/bộ phận.</div>
+        </section>
+        <section class="card" style="margin-top:16px">
+          <h2>Yêu cầu sửa khoản chi</h2>
+          <div class="actions"><button class="secondary" onclick="loadCashierCorrectionRequests(this)">↻ Tải yêu cầu</button></div>
+          <div id="cashierCorrectionBox" style="margin-top:12px">${loadingText('Đang tải...')}</div>
         </section>`;
       loadUsers();
+      loadCashierCorrectionRequests();
     }
     async function loadUsers(btn) {
       const box = document.getElementById('usersBox');
@@ -4194,6 +4287,31 @@
         await withBusy(btn, 'Đang đặt lại...', () => call('rpc_admin_reset_pin', { p_id: id, p_pin: pin }));
         toast('Đã đặt lại PIN.', 'ok');
       } catch (err) { toast(err.message || String(err), 'err'); }
+    }
+    async function loadCashierCorrectionRequests(btn) {
+      const box = document.getElementById('cashierCorrectionBox'); if (!box) return;
+      box.innerHTML = loadingText('Đang tải yêu cầu...');
+      try {
+        const res = await withBusy(btn, 'Đang tải...', () => call('rpc_admin_list_cashier_correction_requests', { p_limit: 100 }));
+        const rows = res.rows || [];
+        box.innerHTML = rows.length ? rows.map(r => `<div class="approve-card" style="margin-bottom:10px">
+          <div class="ac-top"><strong>${esc(r.maDeXuatTT || '')}</strong><span class="pill warn">Chờ xử lý</span></div>
+          <div class="ac-obj">${esc(r.cashier || 'Thủ quỹ')} · ${esc(r.paidAt || '—')} · ${esc(r.ncc || '')} · <b>${fmtMoney(r.soTienDaChuyen)}đ</b>${r.maCN ? ' · CN: ' + esc(r.maCN) : ''}${r.maThanhToan ? ' · ' + esc(r.maThanhToan) : ''}</div>
+          <div class="notice" style="margin-top:8px">Giải trình: ${esc(r.reason || '')}${r.requestedAt ? ' · ' + esc(r.requestedAt) : ''}</div>
+          <div class="ac-meta">Chứng từ chi: ${attachLinks(r.proof)}</div>
+          <div class="actions" style="margin-top:8px">
+            ${r.maCN ? `<button class="secondary" onclick="openDebtDetail('${esc(r.maCN)}')">Xem chi tiết công nợ</button>` : ''}
+            <button class="danger" onclick="adminReturnCashierPayment('${esc(r.lineId)}')">Trả lại để sửa</button>
+          </div>
+        </div>`).join('') : '<p class="status">Không có yêu cầu sửa khoản chi nào.</p>';
+      } catch (err) { box.innerHTML = `<p class="status">${esc(err.message || err)}</p>`; }
+    }
+    function adminReturnCashierPayment(lineId) {
+      promptReason('Trả lại khoản chi cho thủ quỹ sửa', 'Ghi chú lý do trả lại...', async (reason) => {
+        await call('rpc_admin_return_cashier_payment', { p_line_id: lineId, p_reason: reason });
+        toast('Đã trả lại khoản chi để thủ quỹ sửa.', 'ok');
+        loadCashierCorrectionRequests();
+      }, 'Trả lại');
     }
 
     // ===== Nhật ký hệ thống (Admin) ========================================
