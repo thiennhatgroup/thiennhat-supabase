@@ -871,35 +871,18 @@
     }
 
     function renderScreen(id) {
-      state.screen = id;
+      const target = resolveScreenId(id) || defaultScreenId();
+      const s = screenDef(target);
+      if (!s || !canOpenScreen(target)) {
+        const fallback = defaultScreenId();
+        if (fallback !== target) return renderScreen(fallback);
+        document.getElementById('content').innerHTML = '<section class="card"><div class="notice err">Bạn không có quyền mở màn hình này.</div></section>';
+        return;
+      }
+      state.screen = target;
       renderDrawer();
       updateTabActive();
-      if (id === 'account') return renderAccount();
-      if (id === 'guide') return renderGuide();
-      if (id === 'chat') return renderChat();
-      if (id === 'improve') return renderImprove();
-      if (id === 'exp_pp') return renderExport('pp');
-      if (id === 'exp_tt') return renderExport('tt');
-      if (id === 'exp_bg') return renderExport('bg');
-      if (id === 'quotes') return renderQuotes();
-      if (id === 'proposal') return renderProposal();
-      if (id === 'approve') return renderApprove();
-      if (id === 'receipt') return renderReceipt();
-      if (id === 'congnoconfirm') return renderCongNoConfirm();
-      if (id === 'payment') return renderPayment();
-      if (id === 'payreq') return renderPayReq();
-      if (id === 'payapprove') return renderPayApprove();
-      if (id === 'oversight') return renderOversight();
-      if (id === 'cashier') return renderCashier();
-      if (id === 'leaderdash') return renderLeaderDash();
-      if (id === 'debtpay') return renderDebtPay();
-      if (id === 'dashboard') return renderDashboard();
-      if (id === 'settlement') return renderSettlement();
-      if (id === 'catalog') return renderCatalog();
-      if (id === 'users') return renderUsers();
-      if (id === 'audit') return renderAudit();
-      if (id === 'printpp') return renderPrintPP();
-      if (id === 'printyctt') return renderPrintYCTT();
+      return s.render && s.render();
     }
 
     function renderQuotes() {
