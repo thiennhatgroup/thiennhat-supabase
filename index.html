@@ -452,26 +452,55 @@
       screen: 'quotes',
       quote: null
     };
-    // Moi man hinh gan voi 1 quyen; nav chi hien man hinh ma vai tro co quyen (server VAN chot chan lai qua require_permission()).
-    const allScreens = [
-      ['quotes', 'Báo giá vật tư', 'quote:read'],
-      ['proposal', 'Đề xuất mua hàng & tạm ứng', 'proposal:create'],
-      ['oversight', 'Theo dõi đề xuất mua hàng & tạm ứng', 'oversight:read'],
-      ['approve', 'Duyệt đề xuất mua hàng', 'proposal:approve'],
-      ['receipt', 'Nghiệm thu đơn hàng', 'receipt:update'],
-      ['congnoconfirm', 'Duyệt hồ sơ thanh toán', 'receipt:review'],
-      ['payreq', 'Đề xuất thanh toán', 'payment:request'],
-      ['payapprove', 'Duyệt đề xuất thanh toán', 'payment:approve'],
-      ['cashier', 'Chi tiền (thủ quỹ)', 'payment:execute'],
-      ['leaderdash', 'Tổng quan điều hành', 'leaderdash:read'],
-      ['dashboard', 'Theo dõi công nợ', 'dashboard:read'],
-      ['debtpay', 'Cập nhật thanh toán (thủ công)', 'payment:adjust'],
-      ['printpp', 'In đề xuất mua hàng', 'print:purchasing'],
-      ['printyctt', 'In phiếu yêu cầu TT', 'print:purchasing'],
-      ['catalog', 'Danh mục', 'catalog:read'],
-      ['users', 'Tài khoản', 'user:manage'],
-      ['audit', 'Nhật ký hệ thống', 'user:manage']
+    // Moi man hinh gom quyen, menu, tab, deep-link va renderer o mot noi.
+    // Server van la noi chot chan lai bang require_permission().
+    const SCREEN_REGISTRY = [
+      { id:'quotes', label:'Báo giá vật tư', shortLabel:'Báo giá', icon:'🏷️', permission:'quote:read', menu:'feature', tabOrder:90,
+        menuOrder:{ NhanVienMuaHang:30, KeToanCongNo:80, ChuTich:60, TongGiamDoc:50, TruongPhong:30 }, render:renderQuotes },
+      { id:'proposal', label:'Đề xuất mua hàng & tạm ứng', shortLabel:'Tạo ĐX', icon:'➕', permission:'proposal:create', menu:'feature', tabOrder:10,
+        menuOrder:{ NhanVienMuaHang:10 }, render:renderProposal },
+      { id:'oversight', label:'Theo dõi đề xuất mua hàng & tạm ứng', shortLabel:'Theo dõi ĐX', icon:'🔍', permission:'oversight:read', menu:'feature', tabOrder:40,
+        menuOrder:{ KeToanCongNo:10, ChuTich:50, TongGiamDoc:40, TruongPhong:10 }, render:renderOversight },
+      { id:'approve', label:'Duyệt đề xuất mua hàng', shortLabel:'Duyệt ĐX', icon:'✅', permission:'proposal:approve', menu:'feature', tabOrder:20,
+        menuOrder:{ ChuTich:20, TongGiamDoc:20 }, render:renderApprove },
+      { id:'receipt', label:'Nghiệm thu đơn hàng', shortLabel:'Nghiệm thu', icon:'📦', permission:'receipt:update', menu:'feature', tabOrder:80,
+        menuOrder:{ NhanVienMuaHang:20 }, render:renderReceipt },
+      { id:'congnoconfirm', label:'Duyệt hồ sơ thanh toán', shortLabel:'Duyệt HS', icon:'📋', permission:'receipt:review', menu:'feature', tabOrder:50,
+        menuOrder:{ KeToanCongNo:20, ThuQuy:20 }, render:renderCongNoConfirm },
+      { id:'payreq', label:'Đề xuất thanh toán', shortLabel:'ĐX chi', icon:'🧾', permission:'payment:request', menu:'feature', tabOrder:60,
+        menuOrder:{ KeToanCongNo:30 }, render:renderPayReq },
+      { id:'payapprove', label:'Duyệt đề xuất thanh toán', shortLabel:'Duyệt TT', icon:'💳', permission:'payment:approve', menu:'feature', tabOrder:30,
+        menuOrder:{ ChuTich:30 }, render:renderPayApprove },
+      { id:'cashier', label:'Chi tiền (thủ quỹ)', shortLabel:'Chi tiền', icon:'💸', permission:'payment:execute', menu:'feature', tabOrder:15,
+        menuOrder:{ ThuQuy:10 }, render:renderCashier },
+      { id:'leaderdash', label:'Tổng quan điều hành', shortLabel:'Điều hành', icon:'📈', permission:'leaderdash:read', menu:'feature', tabOrder:5,
+        menuOrder:{ ChuTich:10, TongGiamDoc:10 }, render:renderLeaderDash },
+      { id:'dashboard', label:'Theo dõi công nợ', shortLabel:'Công nợ', icon:'📊', permission:'dashboard:read', menu:'feature', tabOrder:100,
+        menuOrder:{ KeToanCongNo:50, ChuTich:40, TongGiamDoc:30, TruongPhong:20, NhanVienMuaHang:50 }, render:renderDashboard },
+      { id:'debtpay', label:'Cập nhật thanh toán (thủ công)', shortLabel:'Ghi TT', icon:'💵', permission:'payment:adjust', menu:'feature', tabOrder:70,
+        menuOrder:{ KeToanCongNo:60 }, render:renderDebtPay },
+      { id:'printpp', label:'In đề xuất mua hàng', permission:'print:purchasing', menu:'feature',
+        menuOrder:{ NhanVienMuaHang:60 }, render:renderPrintPP },
+      { id:'printyctt', label:'In phiếu yêu cầu TT', permission:'print:purchasing', menu:'feature',
+        menuOrder:{ NhanVienMuaHang:70 }, render:renderPrintYCTT },
+      { id:'catalog', label:'Danh mục', shortLabel:'Danh mục', icon:'📚', permission:'catalog:read', menu:'feature', tabOrder:110,
+        menuOrder:{ NhanVienMuaHang:40, KeToanCongNo:70 }, render:renderCatalog },
+      { id:'users', label:'Tài khoản', shortLabel:'Tài khoản', icon:'👥', permission:'user:manage', menu:'feature', tabOrder:120,
+        menuOrder:{ Admin:10 }, render:renderUsers },
+      { id:'audit', label:'Nhật ký hệ thống', shortLabel:'Nhật ký', icon:'🧾', permission:'user:manage', menu:'feature', tabOrder:130,
+        menuOrder:{ Admin:20 }, render:renderAudit },
+      { id:'account', label:'👤 Tài khoản', menu:'top', render:renderAccount },
+      { id:'chat', label:'💬 Tin nhắn', menu:'top', render:renderChat },
+      { id:'improve', label:'💡 Đề xuất cải tiến', menu:'bottom', render:renderImprove },
+      { id:'guide', label:'📘 Hướng dẫn', menu:'bottom', render:renderGuide },
+      { id:'exp_pp', label:'Dữ liệu đề xuất mua hàng', permission:'recent:read', menu:'export', render:() => renderExport('pp') },
+      { id:'exp_tt', label:'Dữ liệu đề xuất thanh toán', permission:'payment:request:read', menu:'export', render:() => renderExport('tt') },
+      { id:'exp_bg', label:'Dữ liệu báo giá NCC', permission:'quote:read', menu:'export', render:() => renderExport('bg') },
+      { id:'settlement', label:'Tất toán công nợ', permission:'settlement:confirm', hidden:true, deepLink:true, render:renderSettlement },
+      { id:'payment', label:'Cập nhật thanh toán', hidden:true, deepLink:true, redirect:'debtpay' }
     ];
+    SCREEN_REGISTRY.forEach((s, i) => { s.index = i; });
+    const SCREEN_BY_ID = Object.fromEntries(SCREEN_REGISTRY.map(s => [s.id, s]));
     const ROLE_LABELS = {
       NhanVienMuaHang: 'Nhân viên mua hàng',
       KeToanCongNo: 'Kế toán tổng hợp',
@@ -494,10 +523,46 @@
     const UPLOAD_ACCEPT = '.pdf,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,application/pdf,image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif';
     const UPLOAD_RULE_TEXT = 'Chỉ nhận PDF/ảnh (JPG, PNG, WebP, GIF, HEIC); tối đa 5 MB/tệp và 20 MB/lần tải.';
     function can(perm) {
-      return state.permissions.includes(perm);
+      return !perm || state.permissions.includes(perm);
+    }
+    function screenDef(id) {
+      return SCREEN_BY_ID[id] || null;
+    }
+    function resolveScreenId(id) {
+      const seen = new Set();
+      let s = screenDef(id);
+      while (s && s.redirect && !seen.has(s.id)) {
+        seen.add(s.id);
+        s = screenDef(s.redirect);
+      }
+      return s ? s.id : null;
+    }
+    function canOpenScreen(id) {
+      const resolved = resolveScreenId(id);
+      const s = resolved && screenDef(resolved);
+      return !!s && can(s.permission);
+    }
+    function isDeepLinkScreen(id) {
+      const s = screenDef(id);
+      return !!s && s.deepLink !== false;
+    }
+    function screenFromHash() {
+      const id = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim();
+      if (!id || !isDeepLinkScreen(id)) return null;
+      const resolved = resolveScreenId(id);
+      return resolved && canOpenScreen(resolved) ? resolved : null;
     }
     function visibleScreens() {
-      return allScreens.filter(s => can(s[2]));
+      return SCREEN_REGISTRY.filter(s => s.menu === 'feature' && !s.hidden && can(s.permission));
+    }
+    function menuScreens(group) {
+      return SCREEN_REGISTRY.filter(s => s.menu === group && !s.hidden && can(s.permission));
+    }
+    function defaultScreenId() {
+      const current = resolveScreenId(state.screen);
+      if (current && canOpenScreen(current)) return current;
+      const allowed = visibleScreens();
+      return allowed.length ? allowed[0].id : 'account';
     }
 
     // Thin wrapper around supabase.rpc(...) that mirrors the old
@@ -682,8 +747,7 @@
         document.getElementById('appView').classList.remove('hidden');
         const ub = document.getElementById('userBadge'); if (ub) ub.textContent = `${state.user.name} - ${state.user.role}${state.user.boPhan ? ' - ' + state.user.boPhan : ''}`;
         renderLists();
-        const allowed = visibleScreens();
-        if (!allowed.some(s => s[0] === state.screen)) state.screen = allowed.length ? allowed[0][0] : 'quotes';
+        state.screen = screenFromHash() || defaultScreenId();
         renderDrawer();
         renderTabBar();
         renderScreen(state.screen);
@@ -705,12 +769,6 @@
       document.getElementById('vatTuList').innerHTML = state.vatTu.map(x => `<option value="${esc(x)}"></option>`).join('');
     }
 
-    // Menu "Tải dữ liệu" — xuất raw data phục vụ phân tích.
-    const EXPORT_SCREENS = [
-      ['exp_pp', 'Dữ liệu đề xuất mua hàng', 'recent:read'],
-      ['exp_tt', 'Dữ liệu đề xuất thanh toán', 'payment:request:read'],
-      ['exp_bg', 'Dữ liệu báo giá NCC', 'quote:read']
-    ];
     function toggleDrawer() {
       const d = document.getElementById('drawer'); const b = document.getElementById('drawerBackdrop');
       const open = !d.classList.contains('open');
@@ -722,15 +780,11 @@
       document.getElementById('drawerBackdrop').classList.add('hidden');
     }
     function toggleGroup(el) { el.closest('.drawer-group').classList.toggle('collapsed'); }
-    const TAB_ICON = { proposal:'➕', approve:'✅', payapprove:'💳', payreq:'🧾', cashier:'💸', leaderdash:'📈', debtpay:'💵', receipt:'📦', congnoconfirm:'📋', oversight:'🔍', dashboard:'📊', quotes:'🏷️', settlement:'✔️', catalog:'📚', users:'👥', audit:'🧾' };
-    const TAB_LABEL = { proposal:'Tạo ĐX', approve:'Duyệt ĐX', payapprove:'Duyệt TT', payreq:'ĐX chi', cashier:'Chi tiền', leaderdash:'Điều hành', debtpay:'Ghi TT', receipt:'Nghiệm thu', congnoconfirm:'Duyệt HS', oversight:'Theo dõi ĐX', dashboard:'Công nợ', quotes:'Báo giá', catalog:'Danh mục', users:'Tài khoản', audit:'Nhật ký' };
-    const TAB_ORDER = ['proposal','approve','payapprove','oversight','congnoconfirm','payreq','debtpay','receipt','dashboard','quotes','catalog','users','audit'];
     function renderTabBar() {
       let bar = document.getElementById('tabbar');
       if (!bar) { bar = document.createElement('nav'); bar.id = 'tabbar'; bar.className = 'tabbar'; document.body.appendChild(bar); }
-      const allow = visibleScreens().map(s => s[0]);
-      const picked = TAB_ORDER.filter(id => allow.includes(id)).slice(0, 4);
-      const tab = id => `<button class="tab" data-id="${id}" onclick="navTo('${id}')"><span class="ic">${TAB_ICON[id] || '•'}</span><span class="tl">${esc(TAB_LABEL[id] || id)}</span></button>`;
+      const picked = visibleScreens().filter(s => Number.isFinite(s.tabOrder)).sort((a, b) => a.tabOrder - b.tabOrder || a.index - b.index).slice(0, 4);
+      const tab = s => `<button class="tab" data-id="${s.id}" onclick="navTo('${s.id}')"><span class="ic">${s.icon || '•'}</span><span class="tl">${esc(s.shortLabel || s.label || s.id)}</span></button>`;
       bar.innerHTML = picked.map(tab).join('') + `<button class="tab" data-id="__more" onclick="toggleDrawer()"><span class="ic">☰</span><span class="tl">Thêm</span></button>`;
       updateTabActive();
     }
@@ -739,11 +793,13 @@
       bar.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.id === state.screen));
     }
     function navTo(id) {
+      const target = resolveScreenId(id);
+      if (!target || !canOpenScreen(target)) { toast('Bạn không có quyền mở màn hình này.', 'err'); return; }
       closeDrawer();
-      if (id === state.screen && !document.getElementById('catModal')) { renderScreen(id); return; }
-      try { history.pushState({ screen: id }, '', '#' + id); } catch (e) {}
+      if (target === state.screen && !document.getElementById('catModal')) { renderScreen(target); return; }
+      try { history.pushState({ screen: target }, '', '#' + target); } catch (e) {}
       state.histDepth = (state.histDepth || 0) + 1;
-      renderScreen(id);
+      renderScreen(target);
       updateBackBtn();
     }
     function updateBackBtn() {
@@ -763,40 +819,32 @@
       const s = e.state && e.state.screen;
       if (s) { state.histDepth = Math.max(0, (state.histDepth || 0) - 1); renderScreen(s); updateBackBtn(); }
     });
-    const ROLE_MENU_ORDER = {
-      KeToanCongNo: ['oversight','congnoconfirm','payreq','payapprove','dashboard','debtpay','catalog','quotes'],
-      ThuQuy: ['cashier','congnoconfirm'],
-      ChuTich: ['leaderdash','approve','payapprove','dashboard','oversight','quotes'],
-      TongGiamDoc: ['leaderdash','approve','dashboard','oversight','quotes'],
-      TruongPhong: ['oversight','dashboard','quotes'],
-      NhanVienMuaHang: ['proposal','receipt','quotes','catalog','dashboard','printpp','printyctt'],
-      Admin: ['users']
-    };
     function orderScreensForRole(list) {
-      const pref = ROLE_MENU_ORDER[state.user && state.user.role] || [];
+      const role = state.user && state.user.role;
       return [...list].sort((a, b) => {
-        const ia = pref.indexOf(a[0]), ib = pref.indexOf(b[0]);
-        return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+        const ia = (a.menuOrder && role && a.menuOrder[role]) ?? a.menuOrder?.default ?? 999;
+        const ib = (b.menuOrder && role && b.menuOrder[role]) ?? b.menuOrder?.default ?? 999;
+        return ia - ib || a.index - b.index;
       });
     }
     function renderDrawer() {
-      const features = orderScreensForRole(visibleScreens()); // các màn thao tác theo quyền, xếp theo vai trò
-      const exps = EXPORT_SCREENS.filter(s => can(s[2]));
-      const item = (id, label) => `<button class="drawer-item ${state.screen === id ? 'active' : ''}" onclick="navTo('${id}')">${label}</button>`;
+      const features = orderScreensForRole(visibleScreens());
+      const exps = menuScreens('export');
+      const topItems = menuScreens('top');
+      const bottomItems = menuScreens('bottom');
+      const item = s => `<button class="drawer-item ${state.screen === s.id ? 'active' : ''}" onclick="navTo('${s.id}')">${s.label}</button>`;
       document.getElementById('drawer').innerHTML = `
         <div class="drawer-brand"><img src="./logo.png" onerror="this.onerror=null;this.src='./logo.svg'" alt="Thiên Nhật"><button class="drawer-x" onclick="closeDrawer()">✕</button></div>
-        ${item('account', '👤 Tài khoản')}
-        ${item('chat', '💬 Tin nhắn')}
+        ${topItems.map(item).join('')}
         <div class="drawer-group">
           <button class="drawer-group-h" onclick="toggleGroup(this)">Thao tác <span>▾</span></button>
-          <div class="drawer-group-body">${features.map(([id, label], i) => item(id, `${i + 1}. ${label}`)).join('')}</div>
+          <div class="drawer-group-body">${features.map((s, i) => item({ ...s, label:`${i + 1}. ${s.label}` })).join('')}</div>
         </div>
         ${exps.length ? `<div class="drawer-group">
           <button class="drawer-group-h" onclick="toggleGroup(this)">Tải dữ liệu <span>▾</span></button>
-          <div class="drawer-group-body">${exps.map(([id, label]) => item(id, label)).join('')}</div>
+          <div class="drawer-group-body">${exps.map(item).join('')}</div>
         </div>` : ''}
-        ${item('improve', '💡 Đề xuất cải tiến')}
-        ${item('guide', '📘 Hướng dẫn')}
+        ${bottomItems.map(item).join('')}
         <div class="drawer-note">Yêu cầu cụ thể liên hệ tới email <b>ahuyle.work@gmail.com</b></div>`;
     }
 
