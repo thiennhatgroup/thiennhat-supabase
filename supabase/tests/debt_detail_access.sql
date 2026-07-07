@@ -65,7 +65,14 @@ begin
     'SIM NCC debt detail',
     'Đã duyệt',
     null,
-    jsonb_build_array(jsonb_build_object('name', 'bao-gia.pdf', 'path', 'sim/bao-gia.pdf'))
+    jsonb_build_array(jsonb_build_object(
+      'name', 'bao-gia.pdf',
+      'bucket', 'attachments',
+      'path', 'bao-gia/sim/bao-gia.pdf',
+      'size', 1024,
+      'type', 'application/pdf',
+      'ext', 'pdf'
+    ))
   )
   returning id into v_proposal;
 
@@ -105,7 +112,14 @@ begin
     true,
     'SIM-VAT-01',
     jsonb_build_array('VAT', 'BBGN'),
-    jsonb_build_array(jsonb_build_object('name', 'vat.pdf', 'path', 'sim/vat.pdf'))
+    jsonb_build_array(jsonb_build_object(
+      'name', 'vat.pdf',
+      'bucket', 'attachments',
+      'path', 'nghiem-thu/sim/vat.pdf',
+      'size', 1024,
+      'type', 'application/pdf',
+      'ext', 'pdf'
+    ))
   );
 
   v_ok := true;
