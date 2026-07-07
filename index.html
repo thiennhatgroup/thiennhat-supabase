@@ -1265,8 +1265,9 @@
       const wrap = document.getElementById('pJustifyWrap');
       if (wrap) wrap.style.display = inPlan ? 'none' : 'block';
     }
-    function collectProposal(status) {
+    function readProposalDraftForm(status='Nháp') {
       const inPlan = document.getElementById('pInPlan')?.checked || false;
+      const prepay = document.getElementById('pPrepay')?.checked || false;
       return {
         status,
         loaiDeXuat: val('pLoai'),
@@ -1278,27 +1279,55 @@
         hanThanhToan: val('pHan') || null,
         tonKho: val('pTonKho') || null,
         truongBpDuyet: document.getElementById('pTruongBp')?.checked || false,
-        prepay: document.getElementById('pPrepay')?.checked || false,
-        prepayPercent: (document.getElementById('pPrepay')?.checked ? (Number(val('pPrepayPct')) || null) : null),
+        prepay,
+        prepayPercent: prepay ? (Number(val('pPrepayPct')) || null) : null,
         doiTuong: { ma: comboValue('pmaDoiTuong', 'pmaDoiTuongMoi'), ten: val('ptenDoiTuong'), dieuKhoanTT: val('pDieuKhoanTT') },
         dieuKhoanTT: val('pDieuKhoanTT'),
-        lines: getProposalLines().filter(l => l.matHang && l.slDat && l.donGia)
+        lines: getProposalLines()
+      };
+    }
+    function completeProposalLines(lines) {
+      return (lines || []).filter(l => l.matHang && l.slDat && l.donGia);
+    }
+    function buildProposalDraftPayload(formDraft) {
+      return { ...formDraft, lines: completeProposalLines(formDraft.lines) };
+    }
+    function proposalQuoteState(editingProposal) {
+      return {
+        newFiles: document.getElementById('pFiles')?.files.length || 0,
+        hasExisting: !!(editingProposal && (editingProposal.Attachments || []).length)
+      };
+    }
+    function validateProposalDraft(payload, opts={}) {
+      if (!String(payload.nguoiDeNghi || '').trim()) return 'Cần chọn người đề nghị.';
+      if (needsDepartment(opts.role) && !String(opts.boPhan || '').trim()) return 'Tài khoản chưa được Admin gán bộ phận.';
+      if (!String(payload.doiTuong?.ten || '').trim()) return 'Cần nhập tên đối tượng / NCC.';
+      if (!payload.lines.length) return 'Cần ít nhất một dòng vật tư đầy đủ (mặt hàng, SL, đơn giá).';
+      if (!payload.trongKeHoachTuan && !String(payload.giaiTrinhNgoaiKeHoach || '').trim()) return 'Khoản ngoài kế hoạch tuần — cần nhập giải trình.';
+      if (payload.loaiDeXuat === 'MuaHang' && !opts.newQuoteFiles && !opts.hasExistingQuoteFiles) return 'Đề xuất mua hàng cần đính kèm báo giá.';
+      return '';
+    }
+    async function withProposalQuoteAttachments(payload, btn) {
+      const files = selectedUploadFiles('pFiles');
+      validateUploadFiles(files);
+      return {
+        ...payload,
+        attachments: files.length ? await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('pFiles', 'bao-gia')) : []
       };
     }
     async function saveDraft(btn) {
       const ed = state.editingProposal;
-      const p = collectProposal('Nháp');
-      if (!p.nguoiDeNghi.trim()) { toast('Cần chọn người đề nghị.', 'err'); return; }
-      if (needsDepartment(state.user?.role) && !String(state.user?.boPhan || '').trim()) { toast('Tài khoản chưa được Admin gán bộ phận.', 'err'); return; }
-      if (!p.doiTuong.ten.trim()) { toast('Cần nhập tên đối tượng / NCC.', 'err'); return; }
-      if (!p.lines.length) { toast('Cần ít nhất một dòng vật tư đầy đủ (mặt hàng, SL, đơn giá).', 'err'); return; }
-      if (!p.trongKeHoachTuan && !p.giaiTrinhNgoaiKeHoach.trim()) { toast('Khoản ngoài kế hoạch tuần — cần nhập giải trình.', 'err'); return; }
-      const nFiles = document.getElementById('pFiles')?.files.length || 0;
-      const hasOld = ed && (ed.Attachments || []).length > 0;
-      if (p.loaiDeXuat === 'MuaHang' && !nFiles && !hasOld) { toast('Đề xuất mua hàng cần đính kèm báo giá.', 'err'); return; }
+      const quoteState = proposalQuoteState(ed);
+      const p0 = buildProposalDraftPayload(readProposalDraftForm('Nháp'));
+      const errMsg = validateProposalDraft(p0, {
+        role: state.user?.role,
+        boPhan: state.user?.boPhan,
+        newQuoteFiles: quoteState.newFiles,
+        hasExistingQuoteFiles: quoteState.hasExisting
+      });
+      if (errMsg) { toast(errMsg, 'err'); return; }
       try {
-        validateUploadInputs('pFiles');
-        p.attachments = await withBusy(btn, 'Đang tải tệp...', () => uploadAttachments('pFiles', 'bao-gia'));
+        const p = await withProposalQuoteAttachments(p0, btn);
         if (ed) {
           await call('rpc_update_proposal', { p_ma_de_xuat: ed.MaDeXuat, p_payload: p });
           toast(`Đã cập nhật nháp ${ed.MaDeXuat}.`, 'ok');
@@ -1470,34 +1499,6 @@
         ghiChu: tr.querySelector('.js-ghichu')?.value || ''
       }));
     }
-    async function saveProposal(status, btn) {
-      setMsg('Đang lưu đề xuất...');
-      try {
-        const inPlan = document.getElementById('pInPlan')?.checked || false;
-        const payload = {
-          status,
-          loaiDeXuat: val('pLoai'),
-          trongKeHoachTuan: inPlan,
-          giaiTrinhNgoaiKeHoach: inPlan ? '' : val('pGiaiTrinh'),
-          ngayDeXuat: val('pNgay'),
-          nguoiDeNghi: val('pNguoi'),
-          doiTuong: { ma: comboValue('pmaDoiTuong', 'pmaDoiTuongMoi'), ten: val('ptenDoiTuong'), dieuKhoanTT: val('pDieuKhoanTT') },
-          noiDung: val('pNoiDung'),
-          dieuKhoanTT: val('pDieuKhoanTT'),
-          lines: getProposalLines()
-        };
-        if (status === 'Chờ duyệt' && !inPlan && !val('pGiaiTrinh').trim()) {
-          setMsg('Khoản chưa có trong kế hoạch chi tuần — cần nhập giải trình trước khi gửi duyệt.');
-          toast('Cần giải trình khoản ngoài kế hoạch tuần.', 'err');
-          return;
-        }
-        const res = await withBusy(btn, 'Đang lưu...', () => call('rpc_create_proposal', { p_payload: payload }));
-        setMsg(`Đã lưu ${res.maDeXuat} ở trạng thái ${res.status}.`);
-        toast(`Đã lưu ${res.maDeXuat}.`, 'ok');
-        renderProposal();
-      } catch (err) { setMsg(err.message || err); toast(err.message || String(err), 'err'); }
-    }
-
     function renderApprove() {
       document.getElementById('content').innerHTML = `
         <section class="card">
