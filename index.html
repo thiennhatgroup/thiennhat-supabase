@@ -169,8 +169,14 @@
     label { display: block; margin-bottom: 6px; color: var(--muted); font-weight: 700; font-size: 13px; }
     .line-table { min-width: 760px; }
     .line-table input, .line-table select { min-height: 42px; font-size: 14px; padding: 9px 11px; }
+    .line-table textarea { min-height: 42px; font-size: 14px; padding: 9px 11px; resize: vertical; }
     .line-table .js-mat-select, .line-table .js-vat-select { min-height: 40px; }
     .line-table th, .line-table td { padding: 9px 9px; vertical-align: middle; }
+    .line-table tr.pr-outside { background: #FFF9EE; }
+    .payreq-modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin: 10px 0 12px; }
+    .payreq-mode { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #fff; }
+    .payreq-mode b { display: block; margin: 6px 0 2px; color: var(--ink); }
+    .payreq-mode small { color: var(--muted); line-height: 1.45; }
     .proposal-layout { display: grid; grid-template-columns: minmax(520px, 1.5fr) minmax(300px, .85fr); gap: 18px; align-items: start; }
     .review-pane { position: sticky; top: 90px; }
     .review-head > div { margin-bottom: 4px; }
@@ -503,7 +509,7 @@
         menuOrder:{ ChuTich:10, TongGiamDoc:10 }, render:renderLeaderDash },
       { id:'dashboard', label:'Theo dõi công nợ', shortLabel:'Công nợ', icon:'📊', permission:'dashboard:read', menu:'feature', tabOrder:100,
         menuOrder:{ KeToanCongNo:50, ChuTich:40, TongGiamDoc:30, TruongPhong:20, NhanVienMuaHang:50 }, render:renderDashboard },
-      { id:'debtpay', label:'Cập nhật thanh toán (thủ công)', shortLabel:'Ghi TT', icon:'💵', permission:'payment:adjust', menu:'feature', tabOrder:70,
+      { id:'debtpay', label:'Cập nhật thanh toán (thủ công)', shortLabel:'Ghi TT', icon:'💵', permission:'payment:adjust', menu:'feature', hidden:true, deepLink:false, tabOrder:70,
         menuOrder:{ KeToanCongNo:60 }, render:renderDebtPay },
       { id:'printpp', label:'In đề xuất mua hàng', permission:'print:purchasing', menu:'feature',
         menuOrder:{ NhanVienMuaHang:60 }, render:renderPrintPP },
@@ -523,7 +529,7 @@
       { id:'exp_tt', label:'Dữ liệu đề xuất thanh toán', permission:'payment:request:read', menu:'export', render:() => renderExport('tt') },
       { id:'exp_bg', label:'Dữ liệu báo giá NCC', permission:'quote:read', menu:'export', render:() => renderExport('bg') },
       { id:'settlement', label:'Tất toán công nợ', permission:'settlement:confirm', hidden:true, deepLink:true, render:renderSettlement },
-      { id:'payment', label:'Cập nhật thanh toán', hidden:true, deepLink:true, redirect:'debtpay' }
+      { id:'payment', label:'Cập nhật thanh toán', hidden:true, deepLink:true, redirect:'payreq' }
     ];
     SCREEN_REGISTRY.forEach((s, i) => { s.index = i; });
     const SCREEN_BY_ID = Object.fromEntries(SCREEN_REGISTRY.map(s => [s.id, s]));
@@ -2688,20 +2694,32 @@
       document.getElementById('content').innerHTML = `
         <section class="card">
           <h2>${ed ? 'Sửa đề xuất thanh toán ' + esc(ed.MaDeXuatTT) : 'Đề xuất thanh toán'}</h2>
-          <div class="notice ok">Gom các khoản đến hạn thành một đề xuất trình lãnh đạo. Nạp từ công nợ đã kế toán lưu, hoặc tự thêm dòng (điện, vận hành…) kèm giải trình. Chỉ đi tiền được sau khi lãnh đạo duyệt.</div>
+          <div class="notice ok">Gom các khoản cần chi thành một đề xuất trình lãnh đạo. Chỉ thủ quỹ được xác nhận chi sau khi phiếu đã duyệt.</div>
           ${ed && ed.LyDoTraLai ? `<div class="notice err">↩ Bị trả lại: ${esc(ed.LyDoTraLai)} — chỉnh lại rồi Gửi lại duyệt.</div>` : ''}
+          <div class="payreq-modes">
+            <div class="payreq-mode">
+              <span class="pill ok">Công nợ chuẩn</span>
+              <b>Nạp từ khoản đã lưu công nợ</b>
+              <small>Có mã CN, VAT/BBGN hoặc hồ sơ nghiệm thu. Khi thủ quỹ chi, số dư công nợ chuẩn tự giảm.</small>
+            </div>
+            <div class="payreq-mode">
+              <span class="pill warn">Ngoài công nợ</span>
+              <b>Không VAT / thiếu chứng từ</b>
+              <small>KTTH nhập dòng riêng, bắt buộc giải trình nội bộ. Khi thủ quỹ chi, khoản này vào lịch sử chi nhưng không trừ mã CN chuẩn.</small>
+            </div>
+          </div>
           <div class="grid">
             <div class="field"><label>Ngày đề xuất</label><input id="prNgay" type="date" value="${ed ? esc(ed.Ngay) : todayStr()}"></div>
             <div class="field"><label>Ghi chú</label><input id="prGhiChu" value="${ed ? esc(ed.GhiChu || '') : ''}" placeholder="VD: Đề xuất chi ngày ${todayStr()}"></div>
           </div>
           <div class="actions">
-            <button class="secondary" onclick="openPayablePicker(this)">＋ Nạp phiếu đã lưu công nợ (đến hạn)</button>
-            <button class="secondary" onclick="addPayLine()">＋ Thêm dòng tự nhập</button>
+            <button class="secondary" onclick="openPayablePicker(this)">＋ Nạp khoản công nợ chuẩn</button>
+            <button class="secondary" onclick="addOutsidePayLine()">＋ Thêm dòng ngoài công nợ</button>
           </div>
           <div class="table-wrap"><table id="prTable" class="line-table"><thead><tr>
-            <th>Nhà cung cấp</th><th style="width:130px">Kế hoạch</th><th style="width:140px">Đề xuất TT</th>
+            <th>Loại / Nhà cung cấp</th><th style="width:130px">Kế hoạch</th><th style="width:140px">Đề xuất TT</th>
             <th>Nội dung</th><th style="width:110px">Hình thức</th><th style="width:150px">Tình trạng hồ sơ</th>
-            <th>Giải trình (nếu ngoài PO)</th><th style="width:56px"></th>
+            <th>Giải trình nội bộ</th><th style="width:56px"></th>
           </tr></thead><tbody></tbody></table></div>
           <div class="total-bar">Tổng đề xuất thanh toán: <strong id="prTotal">0 đ</strong></div>
           <div class="actions">
@@ -2724,20 +2742,29 @@
       catch (err) { toast(err.message || String(err), 'err'); }
     }
     function payLineRow(d={}) {
-      return `<tr data-debt-id="${esc(d.debtId || '')}">
-        <td><input class="pr-ncc" value="${esc(d.ncc || '')}" placeholder="Tên NCC">${d.maCN ? `<small class="status">CN: ${esc(d.maCN)}</small>` : '<small class="status">tự nhập</small>'}</td>
-        <td><input class="pr-kehoach js-money" inputmode="decimal" value="${d.keHoach ? esc(moneyFormat(d.keHoach)) : ''}"></td>
-        <td><input class="pr-sotien js-money" inputmode="decimal" value="${d.soTien ? esc(moneyFormat(d.soTien)) : ''}" oninput="recalcPayReqTotal()"></td>
-        <td><input class="pr-noidung" value="${esc(d.noiDung || '')}"></td>
-        <td><select class="pr-hinhthuc"><option ${d.hinhThucTT==='Tiền mặt'?'':'selected'}>CK</option><option ${d.hinhThucTT==='Tiền mặt'?'selected':''}>Tiền mặt</option></select></td>
-        <td><input class="pr-hoso" value="${esc(d.tinhTrangHoSo || '')}" placeholder="Đã có hồ sơ / Đang trình…"></td>
-        <td><input class="pr-giaitrinh" value="${esc(d.giaiTrinh || '')}" ${d.debtId ? 'placeholder="(đã nối công nợ)"' : 'placeholder="Bắt buộc nếu ngoài PO"'}></td>
-        <td><button class="secondary" onclick="this.closest('tr').remove(); recalcPayReqTotal();">Xóa</button></td>
+      const linked = !!(d.debtId || d.maCN || d.linked);
+      const hoso = d.tinhTrangHoSo || (linked ? 'Đã có hồ sơ' : 'Ngoài công nợ - giải trình nội bộ');
+      return `<tr class="${linked ? 'pr-linked' : 'pr-outside'}" data-debt-id="${esc(d.debtId || '')}">
+        <td data-label="Loại / Nhà cung cấp">
+          ${linked ? `<span class="pill ok">Công nợ chuẩn</span>` : `<span class="pill warn">Ngoài công nợ</span>`}
+          <input class="pr-ncc" value="${esc(d.ncc || '')}" placeholder="Tên NCC">
+          ${linked ? `<small class="status">CN: ${esc(d.maCN || '')}</small>` : '<small class="status">Không trừ công nợ chuẩn · bắt buộc giải trình</small>'}
+        </td>
+        <td data-label="Kế hoạch"><input class="pr-kehoach js-money" inputmode="decimal" value="${d.keHoach ? esc(moneyFormat(d.keHoach)) : ''}"></td>
+        <td data-label="Đề xuất TT"><input class="pr-sotien js-money" inputmode="decimal" value="${d.soTien ? esc(moneyFormat(d.soTien)) : ''}" oninput="recalcPayReqTotal()"></td>
+        <td data-label="Nội dung"><input class="pr-noidung" value="${esc(d.noiDung || '')}" placeholder="${linked ? 'Nội dung chi' : 'VD: phần không VAT / thiếu chứng từ'}"></td>
+        <td data-label="Hình thức"><select class="pr-hinhthuc"><option ${d.hinhThucTT==='Tiền mặt'?'':'selected'}>CK</option><option ${d.hinhThucTT==='Tiền mặt'?'selected':''}>Tiền mặt</option></select></td>
+        <td data-label="Tình trạng hồ sơ"><input class="pr-hoso" value="${esc(hoso)}" placeholder="Đã có hồ sơ / Chưa đủ chứng từ"></td>
+        <td data-label="Giải trình nội bộ"><textarea class="pr-giaitrinh" ${linked ? 'placeholder="Không bắt buộc với công nợ chuẩn"' : 'placeholder="Bắt buộc: vì sao khoản này chi ngoài công nợ/chưa đủ chứng từ"'}>${esc(d.giaiTrinh || '')}</textarea></td>
+        <td data-label=""><button class="secondary" onclick="this.closest('tr').remove(); recalcPayReqTotal();">Xóa</button></td>
       </tr>`;
     }
     function addPayLine(d) {
       document.querySelector('#prTable tbody').insertAdjacentHTML('beforeend', payLineRow(d || {}));
       recalcPayReqTotal();
+    }
+    function addOutsidePayLine() {
+      addPayLine({ tinhTrangHoSo: 'Ngoài công nợ - giải trình nội bộ' });
     }
     function recalcPayReqTotal() {
       const trs = [...document.querySelectorAll('#prTable tbody tr')];
@@ -2770,7 +2797,7 @@
             <td class="num-cell">${fmtMoney(r.soDuConLai)}</td>
             <td><button class="secondary" onclick="openDebtDetail('${esc(r.maCN)}')">Chi tiết</button> <button class="secondary" onclick='addPayableRow(${JSON.stringify(r).replace(/'/g,"&#39;")}); toast("Đã thêm ${esc(r.maCN)}","ok");'>+ Thêm</button></td>
           </tr>`).join('')}</tbody></table></div>`
-          : '<p class="status">Không có khoản công nợ nào còn số dư. Với khoản trả trước chưa nhận hàng, hãy dùng "Thêm dòng tự nhập" kèm giải trình.</p>';
+          : '<p class="status">Không có khoản công nợ chuẩn nào còn số dư. Với khoản không VAT/thiếu chứng từ, dùng "Thêm dòng ngoài công nợ" kèm giải trình nội bộ.</p>';
         openModal('Khoản đã lưu công nợ / đến hạn', body, null, null);
       } catch (err) { toast(err.message || String(err), 'err'); }
     }
@@ -2873,7 +2900,7 @@
       const lines = getPayLines().filter(l => moneyNum({value:l.soTien}) > 0 || Number(l.soTien) > 0);
       if (!lines.length) { toast('Cần ít nhất một dòng có số tiền.', 'err'); return; }
       const bad = lines.find(l => !l.debtId && !l.giaiTrinh.trim());
-      if (status === 'Chờ duyệt' && bad) { toast(`Dòng "${bad.ncc||'?'}" ngoài công nợ — cần giải trình.`, 'err'); return; }
+      if (status === 'Chờ duyệt' && bad) { toast(`Dòng "${bad.ncc||'?'}" ngoài công nợ/chưa đủ chứng từ — cần giải trình nội bộ.`, 'err'); return; }
       try {
         const ed = state.editingPayReq;
         const payload = { status, ngay: val('prNgay'), ghiChu: val('prGhiChu'), lines };
@@ -2910,15 +2937,15 @@
     function openMyPayReqLines(i) {
       const r = (state.myPayReq || [])[i]; if (!r) return;
       const lines = (r.lines || []).map(l => `<tr>
-          <td>${l.maCN ? `<a class="mini-link" onclick="openDebtDetail('${esc(l.maCN)}')">${esc(l.maCN)}</a>` : '<span class="pill warn">ngoài PO</span>'}</td>
+          <td>${l.maCN ? `<a class="mini-link" onclick="openDebtDetail('${esc(l.maCN)}')">${esc(l.maCN)}</a>` : '<span class="pill warn">ngoài công nợ</span>'}</td>
           <td>${esc(l.ncc || '')}</td>
           <td>${esc(l.noiDung || '')}</td>
           <td class="num-cell">${fmtMoney(l.soTien)}</td>
-          <td>${l.maCN ? `<button class="secondary" onclick="openDebtDetail('${esc(l.maCN)}')">Chi tiết</button>` : (l.giaiTrinh ? esc(l.giaiTrinh) : '—')}</td>
+          <td>${l.maCN ? `<button class="secondary" onclick="openDebtDetail('${esc(l.maCN)}')">Chi tiết</button>` : `<b>Giải trình:</b> ${esc(l.giaiTrinh || '—')}<br><small class="status">Không trừ công nợ chuẩn</small>`}</td>
         </tr>`).join('');
       openModal(`Phiếu ${esc(r.MaDeXuatTT)} — ${payReqPill(r.TrangThai)}`, `
         <div class="ac-meta" style="margin-bottom:8px">Ngày ${esc(r.Ngay)} · Người lập: ${esc(r.NguoiLap || '—')} · Tổng: <b>${fmtMoney(r.TongTien)}đ</b></div>
-        <div class="table-wrap" style="max-height:none"><table><thead><tr><th>Mã CN</th><th>NCC</th><th>Nội dung</th><th>Số tiền</th><th></th></tr></thead><tbody>${lines}</tbody></table></div>
+        <div class="table-wrap" style="max-height:none"><table><thead><tr><th>Loại</th><th>NCC</th><th>Nội dung</th><th>Số tiền</th><th>Chi tiết / giải trình</th></tr></thead><tbody>${lines}</tbody></table></div>
         <p class="status" style="margin-top:6px">Bấm vào từng khoản (Mã CN / nút Chi tiết) để xem đầy đủ thông tin & chứng từ đính kèm.</p>`, null, null);
     }
     async function withdrawPayReq(ma) {
@@ -3225,9 +3252,9 @@
         const bp = (d.boPhan || []).map(b => `${esc(b.boPhan)}: <b>${fmtMoney(b.tong)}đ</b>`).join(' · ');
         const phieu = (d.phieu || []).map(p => {
           const lines = (p.lines || []).map(l => `<tr>
-              <td>${esc(l.ncc || '')}${l.maCN ? ` <small class="status">CN:${esc(l.maCN)}</small>` : ' <span class="pill warn">ngoài PO</span>'}</td>
+              <td>${esc(l.ncc || '')}${l.maCN ? ` <small class="status">CN:${esc(l.maCN)}</small>` : ' <span class="pill warn">ngoài công nợ</span>'}</td>
               <td>${esc(l.boPhan || '—')}</td><td>${esc(l.matHang || l.noiDung || '')}</td>
-              <td>${esc(l.tinhTrangHoSo || '—')}</td><td class="num-cell">${fmtMoney(l.soTien)}</td></tr>`).join('');
+              <td>${esc(l.tinhTrangHoSo || '—')}${!l.maCN && l.giaiTrinh ? `<br><small class="status">${esc(l.giaiTrinh)}</small>` : ''}</td><td class="num-cell">${fmtMoney(l.soTien)}</td></tr>`).join('');
           return `<div class="card" style="padding:12px;margin:8px 0;box-shadow:none;border:1px solid var(--line)">
               <div class="ac-top" style="justify-content:space-between"><strong>${esc(p.maDeXuatTT)}</strong><span>${esc(p.nguoiLap || '')} · <b>${fmtMoney(p.tong)}đ</b></span></div>
               <div class="table-wrap" style="max-height:none"><table><thead><tr><th>NCC</th><th>Bộ phận</th><th>Nội dung</th><th>Hồ sơ</th><th class="num-cell">Số tiền</th></tr></thead><tbody>${lines}</tbody></table></div>
@@ -3257,7 +3284,7 @@
     function payLineBlock(l, i) {
       const head = `<div class="ac-top" style="justify-content:space-between">
           <strong>${i + 1}. ${esc(l.ncc || '')}</strong>
-          ${l.linked ? `<span class="pill ok">CN: ${esc(l.maCN || '')}</span>` : '<span class="pill warn">Ngoài PO (tự nhập)</span>'}
+          ${l.linked ? `<span class="pill ok">CN: ${esc(l.maCN || '')}</span>` : '<span class="pill warn">Ngoài công nợ / thiếu chứng từ</span>'}
         </div>
         <div class="ac-money" style="margin:2px 0">${fmtMoney(l.soTien)} <small>đ đề xuất chi</small></div>
         <div class="ac-meta">Kế hoạch: ${fmtMoney(l.keHoach)} đ · Hình thức: ${esc(l.hinhThucTT || '')} · Hồ sơ: ${esc(l.tinhTrangHoSo || '—')}</div>
@@ -3286,7 +3313,7 @@
           <div class="field"><label>Báo giá gốc (bản chào NCC)</label><div>${attachLinks(l.baoGia)}</div></div>
           ${l.maCN ? `<div class="actions" style="margin-top:6px"><button class="secondary" onclick="openDebtDetail('${esc(l.maCN)}')">Xem chi tiết công nợ</button></div>` : ''}`;
       } else {
-        body = `<div class="notice" style="margin-top:8px">⚠ Dòng tự nhập, không nối phiếu mua hàng. Giải trình:<br><b>${esc(l.giaiTrinh || '(chưa nhập)')}</b></div>`;
+        body = `<div class="notice" style="margin-top:8px">Dòng ngoài công nợ/chưa đủ chứng từ. Khoản này vẫn phải được duyệt và thủ quỹ xác nhận, nhưng không trừ số dư công nợ chuẩn.<br><b>Giải trình nội bộ:</b> ${esc(l.giaiTrinh || '(chưa nhập)')}</div>`;
       }
       return `<div class="card" style="padding:14px;margin:10px 0;box-shadow:none;border:1px solid var(--line)">${head}${body}</div>`;
     }
@@ -3906,8 +3933,8 @@
             <li><b>Lãnh đạo</b> duyệt: <b>Chủ tịch</b> nhận &amp; duyệt <b>mọi khoản</b>; <b>Tổng giám đốc</b> chỉ nhận khoản <b>dưới ngưỡng</b> (mặc định 10 triệu). Duyệt cả ngày một thể; có thể <b>trả lại kèm lý do</b> để mua hàng giải trình.</li>
             <li>Duyệt xong → <b>Mua hàng Nghiệm thu</b>: nhập <b>SL thực nhận</b>, tick <b>loại chứng từ</b> (biên bản/phiếu cân/hóa đơn VAT…) + đính kèm. <u>Lúc này khoản CHƯA thành công nợ.</u></li>
             <li><b>Kế toán duyệt chứng từ &amp; lưu công nợ</b>: kiểm tra chứng từ, nhập <b>số đã trả trước</b> (nếu có) rồi <b>"Lưu về công nợ"</b> — hoặc <b>Trả lại</b> mua hàng bổ sung chứng từ. Chỉ khoản đã lưu công nợ mới vào các màn thanh toán/theo dõi.</li>
-            <li><b>Kế toán</b> lập <b>Đề xuất thanh toán</b> (chỉ nạp được khoản đã lưu công nợ/đến hạn; khoản đã nằm trong một đề xuất đang chờ/đã duyệt <b>sẽ không hiện lại</b>) → gửi duyệt.</li>
-            <li><b>Chủ tịch</b> duyệt đề xuất thanh toán (<b>gộp theo ngày</b>), hoặc trả lại kế toán sửa → <b>Thủ quỹ xác nhận chi</b> để trừ công nợ và lưu chứng từ chi.</li>
+            <li><b>Kế toán</b> lập <b>Đề xuất thanh toán</b>: nạp khoản đã lưu công nợ/đến hạn, hoặc thêm dòng <b>ngoài công nợ/chưa đủ chứng từ</b> kèm giải trình nội bộ. Khoản đã nằm trong một đề xuất đang chờ/đã duyệt <b>sẽ không hiện lại</b>.</li>
+            <li><b>Chủ tịch</b> duyệt đề xuất thanh toán (<b>gộp theo ngày</b>), hoặc trả lại kế toán sửa → <b>Thủ quỹ xác nhận chi</b>. Dòng công nợ chuẩn tự trừ mã CN; dòng ngoài công nợ chỉ ghi lịch sử chi.</li>
             <li><b>Tất toán</b>: khoản trả đủ được lưu trữ.</li>
           </ol>
           <h3>Vai trò</h3>
@@ -3915,7 +3942,7 @@
             <li><b>Nhân viên mua hàng</b>: báo giá, đề xuất mua/tạm ứng, thêm nhanh danh mục, <b>nghiệm thu nhận hàng</b>, in phiếu. (Không còn ghi thanh toán.)</li>
             <li><b>Tổng giám đốc</b>: duyệt đề xuất <b>dưới ngưỡng</b> (mặc định 10 triệu).</li>
             <li><b>Chủ tịch</b>: duyệt <b>mọi</b> đề xuất mua hàng, và duyệt đề xuất thanh toán.</li>
-            <li><b>Kế toán công nợ</b>: <b>duyệt chứng từ &amp; lưu công nợ</b>, lập đề xuất thanh toán, theo dõi/điều chỉnh công nợ, tất toán.</li>
+            <li><b>Kế toán công nợ</b>: <b>duyệt chứng từ &amp; lưu công nợ</b>, lập đề xuất thanh toán, phân loại dòng ngoài công nợ/chưa đủ chứng từ, theo dõi công nợ, tất toán.</li>
             <li><b>Thủ quỹ</b>: chi các đề xuất thanh toán đã duyệt và đính kèm chứng từ chi.</li>
             <li><b>Admin</b>: tạo tài khoản, phân quyền và quản lý bộ phận.</li>
           </ul>
@@ -3937,7 +3964,7 @@
       'receipt:update': 'Nghiệm thu nhận hàng',
       'payment:request': 'Lập đề xuất thanh toán', 'payment:approve': 'Duyệt đề xuất thanh toán',
       'payment:execute': 'Đi tiền theo đề xuất',
-      'payment:read': 'Xem lịch sử thanh toán', 'payment:adjust': 'Điều chỉnh thanh toán thủ công',
+      'payment:read': 'Xem lịch sử thanh toán', 'payment:adjust': 'Điều chỉnh thanh toán đặc biệt',
       'payment:request:read': 'Xem dữ liệu đề xuất thanh toán',
       'settlement:preview': 'Xem tất toán', 'settlement:confirm': 'Xác nhận tất toán',
       'dashboard:read': 'Theo dõi công nợ', 'leaderdash:read': 'Tổng quan điều hành',
@@ -3949,7 +3976,7 @@
     const DATA_ACCESS = {
       NhanVienMuaHang: 'Báo giá vật tư, đề xuất mua hàng của bạn, nghiệm thu, in phiếu.',
       ThuQuy: 'Đề xuất thanh toán đã duyệt để chuyển tiền, xác nhận chi + ảnh chuyển khoản.',
-      KeToanCongNo: 'Công nợ, đề xuất thanh toán, lịch sử thanh toán, dữ liệu tổng hợp.',
+      KeToanCongNo: 'Công nợ, đề xuất thanh toán, dòng ngoài công nợ/chưa đủ chứng từ, lịch sử thanh toán.',
       ChuTich: 'Đề xuất mua hàng ≥ 10 triệu, đề xuất thanh toán, theo dõi công nợ.',
       TongGiamDoc: 'Đề xuất mua hàng < 10 triệu, theo dõi công nợ.',
       TruongPhong: 'Báo giá, đề xuất đã trình của bộ phận mình.',
@@ -4276,9 +4303,10 @@
       refreshNotif();
       if (loai === 'proposal_bounced' && refId && canOpenScreen('proposal')) { navTo('proposal'); editProposal(refId); return; }
       if (loai === 'chat_group' && refId && canOpenScreen('chat')) { state.chatMode = 'group'; state.chatGroup = refId; state.chatWith = null; navTo('chat'); return; }
-      if (!screen || !isDeepLinkScreen(screen) || !canOpenScreen(screen)) return;
+      const targetScreen = screen === 'debtpay' && canOpenScreen('payreq') ? 'payreq' : screen;
+      if (!targetScreen || !isDeepLinkScreen(targetScreen) || !canOpenScreen(targetScreen)) return;
       if (loai === 'chat' && refId) { state.chatMode = 'user'; state.chatWith = refId; state.chatWithName = ''; state.chatGroup = null; }
-      navTo(screen);
+      navTo(targetScreen);
     }
     async function markAllNotif() {
       try { await call('rpc_mark_all_notifications_read'); } catch (e) {}
