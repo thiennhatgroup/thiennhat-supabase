@@ -523,7 +523,7 @@
     const UPLOAD_ACCEPT = '.pdf,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,application/pdf,image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif';
     const UPLOAD_RULE_TEXT = 'Chỉ nhận PDF/ảnh (JPG, PNG, WebP, GIF, HEIC); tối đa 5 MB/tệp và 20 MB/lần tải.';
     function can(perm) {
-      return !perm || state.permissions.includes(perm);
+      return state.permissions.includes(perm);
     }
     function screenDef(id) {
       return SCREEN_BY_ID[id] || null;
@@ -540,23 +540,25 @@
     function canOpenScreen(id) {
       const resolved = resolveScreenId(id);
       const s = resolved && screenDef(resolved);
-      return !!s && can(s.permission);
+      return !!s && (!s.permission || can(s.permission));
     }
     function isDeepLinkScreen(id) {
       const s = screenDef(id);
       return !!s && s.deepLink !== false;
     }
     function screenFromHash() {
-      const id = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim();
+      let id = '';
+      try { id = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim(); }
+      catch (e) { id = ''; }
       if (!id || !isDeepLinkScreen(id)) return null;
       const resolved = resolveScreenId(id);
       return resolved && canOpenScreen(resolved) ? resolved : null;
     }
     function visibleScreens() {
-      return SCREEN_REGISTRY.filter(s => s.menu === 'feature' && !s.hidden && can(s.permission));
+      return SCREEN_REGISTRY.filter(s => s.menu === 'feature' && !s.hidden && (!s.permission || can(s.permission)));
     }
     function menuScreens(group) {
-      return SCREEN_REGISTRY.filter(s => s.menu === group && !s.hidden && can(s.permission));
+      return SCREEN_REGISTRY.filter(s => s.menu === group && !s.hidden && (!s.permission || can(s.permission)));
     }
     function defaultScreenId() {
       const current = resolveScreenId(state.screen);
