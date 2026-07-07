@@ -2403,9 +2403,9 @@
           <div class="actions"><button class="secondary" onclick="closeModal()">Đóng</button></div>`;
       overlay.innerHTML = `
         <div class="modal-card card">
-          <h2>${esc(title)}</h2>
+          <h2 class="js-modal-title">${esc(title)}</h2>
           <div class="notice err js-modal-msg hidden"></div>
-          ${bodyHtml}
+          <div class="js-modal-body">${bodyHtml}</div>
           ${footer}
         </div>`;
       document.body.appendChild(overlay);
@@ -2414,6 +2414,16 @@
       if (onSave) document.getElementById('catSaveBtn').onclick = function () { onSave(this); };
     }
     function closeModal() { const m = document.getElementById('catModal'); if (m) m.remove(); }
+    function setModalTitle(title) {
+      const el = document.querySelector('#catModal .js-modal-title');
+      if (el) el.textContent = title || '';
+    }
+    function setModalBody(bodyHtml) {
+      const el = document.querySelector('#catModal .js-modal-body');
+      if (!el) return;
+      el.innerHTML = bodyHtml || '';
+      try { labelTableCells(el); } catch (e) {}
+    }
     function modalErr(text) {
       const el = document.querySelector('#catModal .js-modal-msg');
       if (el) { el.textContent = text || ''; el.classList.toggle('hidden', !text); }
@@ -2718,40 +2728,96 @@
       addPayLine({ debtId: r.debtId, maCN: r.maCN, ncc: r.tenDoiTuong, keHoach: r.soDuConLai, soTien: r.soDuConLai, noiDung: r.matHang, tinhTrangHoSo: 'Đã có hồ sơ' });
     }
     // Popup chi tiết đầy đủ 1 khoản công nợ (dùng chung ở nhiều màn).
-    async function openDebtDetail(maCN) {
+    function debtDetailDenied(err) {
+      const msg = normLower(err && err.message ? err.message : err);
+      return msg.includes('không có quyền') || msg.includes('khong co quyen')
+        || msg.includes('permission') || msg.includes('denied') || msg.includes('not authorized');
+    }
+    function debtDetailMessage(err) {
+      if (debtDetailDenied(err)) return 'Bạn không có quyền xem chi tiết công nợ này.';
+      return (err && err.message) || String(err || 'Không tải được chi tiết công nợ.');
+    }
+    function debtMaybeMoney(v) {
+      return fmtMaybeMoney(v) || '—';
+    }
+    function debtMoney(v) {
+      if (v === '' || v === null || v === undefined) return '—';
+      return fmtMoney(v);
+    }
+    function debtMoneyDong(v) {
+      const amount = debtMoney(v);
+      return amount === '—' ? amount : `${amount}đ`;
+    }
+    function normalizeDebtDetail(d) {
+      if (!d) return null;
+      return {
+        ...d,
+        chungTuTypes: Array.isArray(d.chungTuTypes) ? d.chungTuTypes : [],
+        nghiemThuFiles: Array.isArray(d.nghiemThuFiles) ? d.nghiemThuFiles : [],
+        baoGia: Array.isArray(d.baoGia) ? d.baoGia : []
+      };
+    }
+    async function loadDebtDetail(maCN) {
+      const code = String(maCN || '').trim();
+      if (!code) throw new Error('Thiếu mã công nợ.');
+      const res = await call('rpc_get_debt_detail', { p_ma_cn: code });
+      return normalizeDebtDetail(res && res.debt);
+    }
+    function debtDetailErrorHtml(err) {
+      const msg = debtDetailMessage(err);
+      const title = debtDetailDenied(err) ? 'Không mở được chi tiết công nợ' : 'Không tải được chi tiết công nợ';
+      return `<div class="notice err"><b>${esc(title)}</b><br>${esc(msg)}</div>`;
+    }
+    function debtDetailBody(d) {
+      const types = d.chungTuTypes.length ? d.chungTuTypes.map(esc).join(', ') : '—';
+      return `
+        <div class="detail-head">
+          <div><label>Mã CN</label><div><code>${esc(d.maCN || '')}</code></div></div>
+          <div><label>Phiếu đề xuất</label><div>${esc(d.maDeXuat || '—')}</div></div>
+          <div><label>Nhà cung cấp</label><div>${esc(d.tenDoiTuong || '—')}</div></div>
+          <div><label>Bộ phận</label><div>${esc(d.boPhan || '—')}</div></div>
+          <div><label>Người đề nghị</label><div>${esc(d.nguoiDeNghi || '—')}</div></div>
+          <div><label>Mặt hàng</label><div>${esc(d.matHang || '—')} (${esc(d.dvt || '—')})</div></div>
+          <div><label>SL đặt / thực nhận</label><div>${debtMaybeMoney(d.slDat)} / <b>${debtMaybeMoney(d.slThucNhan)}</b></div></div>
+          <div><label>Đơn giá · VAT</label><div>${debtMoney(d.donGia)} · ${fmtPct(d.vatRate) || '—'}</div></div>
+          <div><label>Thành tiền thực nhận</label><div><b>${debtMoneyDong(d.thanhTienThucNhan)}</b></div></div>
+          <div><label>Đã thanh toán</label><div>${debtMoneyDong(d.daThanhToan)}</div></div>
+          <div><label>Số dư còn lại</label><div><b>${debtMoneyDong(d.soDuConLai)}</b></div></div>
+          <div><label>Hạn thanh toán</label><div>${esc(d.hanThanhToan || '—')}</div></div>
+          <div><label>Điều khoản TT</label><div>${esc(d.dieuKhoanTT || '—')}</div></div>
+          <div><label>STK ngân hàng NCC</label><div>${esc(d.soTk || '—')}</div></div>
+          <div><label>Chi nhánh ngân hàng</label><div>${esc(d.chiNhanh || '—')}</div></div>
+          <div><label>MST</label><div>${esc(d.mst || '—')}</div></div>
+          <div><label>Số hóa đơn VAT</label><div>${esc(d.soHoaDonVat || '—')}</div></div>
+          <div><label>Trạng thái</label><div>${esc(d.trangThai || '—')}</div></div>
+          <div><label>Thời gian đề xuất</label><div>${esc(d.thoiGianDeXuat || '—')}</div></div>
+          <div><label>Sếp duyệt lúc</label><div>${esc(d.thoiGianSepDuyet || '—')}${d.nguoiSepDuyet ? ' · ' + esc(d.nguoiSepDuyet) : ''}</div></div>
+          <div><label>Nghiệm thu lúc</label><div>${esc(d.thoiGianNghiemThu || '—')}${d.nguoiNghiemThu ? ' · ' + esc(d.nguoiNghiemThu) : ''}</div></div>
+          <div><label>KTTH duyệt hồ sơ lúc</label><div>${esc(d.thoiGianKtthDuyet || '—')}${d.ktthDuyet ? ' · ' + esc(d.ktthDuyet) : ''}</div></div>
+        </div>
+        <div class="field"><label>Loại chứng từ đã tick</label><div>${types}</div></div>
+        <div class="field"><label>Chứng từ nghiệm thu (BBGN / VAT / ảnh vật tư)</label><div>${attachLinks(d.nghiemThuFiles)}</div></div>
+        <div class="field"><label>Báo giá gốc</label><div>${attachLinks(d.baoGia)}</div></div>
+        ${d.maCN ? `<div class="actions" style="margin-top:10px"><button onclick="exportYCTTForDebt('${esc(d.maCN)}', this)">⬇ Tạo &amp; tải phiếu YCTT khoản này</button></div>` : ''}`;
+    }
+    async function showDebtDetail(maCN) {
+      const code = String(maCN || '').trim();
+      openModal(`Chi tiết khoản ${code || 'công nợ'}`, loadingText('Đang tải chi tiết công nợ...'), null, null);
       try {
-        const res = await call('rpc_get_debt_detail', { p_ma_cn: maCN });
-        const d = res.debt; if (!d) return;
-        openModal(`Chi tiết khoản ${esc(maCN)}`, `
-          <div class="detail-head">
-            <div><label>Mã CN</label><div><code>${esc(d.maCN)}</code></div></div>
-            <div><label>Phiếu đề xuất</label><div>${esc(d.maDeXuat || '—')}</div></div>
-            <div><label>Nhà cung cấp</label><div>${esc(d.tenDoiTuong || '')}</div></div>
-            <div><label>Bộ phận</label><div>${esc(d.boPhan || '—')}</div></div>
-            <div><label>Người đề nghị</label><div>${esc(d.nguoiDeNghi || '—')}</div></div>
-            <div><label>Mặt hàng</label><div>${esc(d.matHang || '')} (${esc(d.dvt || '—')})</div></div>
-            <div><label>SL đặt / thực nhận</label><div>${fmtMaybeMoney(d.slDat)} / <b>${fmtMaybeMoney(d.slThucNhan)}</b></div></div>
-            <div><label>Đơn giá · VAT</label><div>${fmtMoney(d.donGia)} · ${fmtPct(d.vatRate)}</div></div>
-            <div><label>Thành tiền thực nhận</label><div><b>${fmtMoney(d.thanhTienThucNhan)}đ</b></div></div>
-            <div><label>Đã thanh toán</label><div>${fmtMoney(d.daThanhToan)}đ</div></div>
-            <div><label>Số dư còn lại</label><div><b>${fmtMoney(d.soDuConLai)}đ</b></div></div>
-            <div><label>Hạn thanh toán</label><div>${esc(d.hanThanhToan || '—')}</div></div>
-            <div><label>Điều khoản TT</label><div>${esc(d.dieuKhoanTT || '—')}</div></div>
-            <div><label>STK ngân hàng NCC</label><div>${esc(d.soTk || '—')}</div></div>
-            <div><label>Chi nhánh ngân hàng</label><div>${esc(d.chiNhanh || '—')}</div></div>
-            <div><label>MST</label><div>${esc(d.mst || '—')}</div></div>
-            <div><label>Số hóa đơn VAT</label><div>${esc(d.soHoaDonVat || '—')}</div></div>
-            <div><label>Trạng thái</label><div>${esc(d.trangThai || '')}</div></div>
-            <div><label>Thời gian đề xuất</label><div>${esc(d.thoiGianDeXuat || '—')}</div></div>
-            <div><label>Sếp duyệt lúc</label><div>${esc(d.thoiGianSepDuyet || '—')}${d.nguoiSepDuyet ? ' · ' + esc(d.nguoiSepDuyet) : ''}</div></div>
-            <div><label>Nghiệm thu lúc</label><div>${esc(d.thoiGianNghiemThu || '—')}${d.nguoiNghiemThu ? ' · ' + esc(d.nguoiNghiemThu) : ''}</div></div>
-            <div><label>KTTH duyệt hồ sơ lúc</label><div>${esc(d.thoiGianKtthDuyet || '—')}${d.ktthDuyet ? ' · ' + esc(d.ktthDuyet) : ''}</div></div>
-          </div>
-          <div class="field"><label>Loại chứng từ đã tick</label><div>${(d.chungTuTypes || []).length ? (d.chungTuTypes || []).map(esc).join(', ') : '—'}</div></div>
-          <div class="field"><label>Chứng từ nghiệm thu (BBGN / VAT / ảnh vật tư)</label><div>${attachLinks(d.nghiemThuFiles)}</div></div>
-          <div class="field"><label>Báo giá gốc</label><div>${attachLinks(d.baoGia)}</div></div>
-          <div class="actions" style="margin-top:10px"><button onclick="exportYCTTForDebt('${esc(d.maCN)}', this)">⬇ Tạo &amp; tải phiếu YCTT khoản này</button></div>`, null, null);
-      } catch (err) { toast(err.message || String(err), 'err'); }
+        const d = await loadDebtDetail(code);
+        if (!d) {
+          setModalBody('<p class="status">Không có dữ liệu chi tiết công nợ.</p>');
+          return;
+        }
+        setModalTitle(`Chi tiết khoản ${d.maCN || code || 'công nợ'}`);
+        setModalBody(debtDetailBody(d));
+      } catch (err) {
+        setModalBody(debtDetailErrorHtml(err));
+        toast(debtDetailMessage(err), 'err');
+      }
+    }
+    function openDebtDetail(maCN) {
+      showDebtDetail(maCN);
     }
     async function savePayReq(status, btn) {
       const lines = getPayLines().filter(l => moneyNum({value:l.soTien}) > 0 || Number(l.soTien) > 0);
@@ -3030,7 +3096,8 @@
             <div><label>Hồ sơ đầy đủ</label><div>${l.hoSoDayDu ? '<span class="pill ok">Đủ</span>' : '<span class="pill warn">Chưa đủ</span>'}</div></div>
           </div>
           <div class="field" style="margin-top:6px"><label>Biên bản nghiệm thu</label><div>${attachLinks(l.nghiemThuFiles)}</div></div>
-          <div class="field"><label>Báo giá gốc (bản chào NCC)</label><div>${attachLinks(l.baoGia)}</div></div>`;
+          <div class="field"><label>Báo giá gốc (bản chào NCC)</label><div>${attachLinks(l.baoGia)}</div></div>
+          ${l.maCN ? `<div class="actions" style="margin-top:6px"><button class="secondary" onclick="openDebtDetail('${esc(l.maCN)}')">Xem chi tiết công nợ</button></div>` : ''}`;
       } else {
         body = `<div class="notice" style="margin-top:8px">⚠ Dòng tự nhập, không nối phiếu mua hàng. Giải trình:<br><b>${esc(l.giaiTrinh || '(chưa nhập)')}</b></div>`;
       }
@@ -3447,8 +3514,8 @@
     // Sinh phiếu YCTT cho 1 KHOẢN (dùng ở popup chi tiết — thủ quỹ/KTTH) theo dữ liệu NVMH đã nghiệm thu.
     async function exportYCTTForDebt(maCN, btn) {
       try {
-        const res = await call('rpc_get_debt_detail', { p_ma_cn: maCN });
-        const d = res.debt; if (!d) return;
+        const d = await loadDebtDetail(maCN);
+        if (!d) { toast('Không có dữ liệu chi tiết công nợ.', 'err'); return; }
         await withBusy(btn, 'Đang tạo phiếu...', async () => {
           const wb = await loadTemplateWb('./templates/yctt_template.xlsx');
           const ws = wb.worksheets[0];
@@ -3496,7 +3563,7 @@
           await saveWb(wb, `YCTT_${d.maCN}.xlsx`);
         });
         toast('Đã tạo phiếu YCTT.', 'ok');
-      } catch (err) { toast(err.message || String(err), 'err'); }
+      } catch (err) { toast(debtDetailMessage(err), 'err'); }
     }
 
     // ===== Theo dõi & rà soát (Kế toán / Trưởng bộ phận) ===================
